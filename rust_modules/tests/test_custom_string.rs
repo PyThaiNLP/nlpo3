@@ -1,32 +1,11 @@
-use pythainlp_rust_modules::{fixed_bytes_str::four_bytes::to_four_bytes, tokenizer::{ tcc,tcc_custom,trie,dict_reader::{DictSource,create_dict_trie}}};
-use regex::bytes::Regex;
-use std::{borrow::Borrow, path::{Path,PathBuf}};
-use std::env;
-use std::time::Instant;
-const DEFAULT_DICT_PATH_RELATIVE_TO_TEST:&str = "../pythainlp/corpus/words_th.txt"; 
-use pythainlp_rust_modules::fixed_bytes_str::four_bytes::CustomString;
+use oxidized_thainlp::{fixed_bytes_str::four_bytes::{CustomString}};
+
 
 const short_text_1:&str ="หมอนทองตากลมหูว์MBK39 :.ฉฺ๐๐๓-#™±";
 const short_text_2:&str = "ทดสอบ";
 
-// #[test]
-// fn test_tokenize_short_text(){
-//     let CURRENT_DIR = env::current_dir().unwrap();
-//     let dict_path = PathBuf::from(DEFAULT_DICT_PATH_RELATIVE_TO_TEST);
-//     let default_dict_path = CURRENT_DIR.join(dict_path);
-//     let default_dict =  create_dict_trie(DictSource::FilePath(default_dict_path));
-//     assert_eq!(Newmm::internal_segment("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", &default_dict, false), 
-//     ["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]);
-//     let problem_text = "ราชวงศ์ชิงพยายามลดการละเมิดสิทธิ์และความไม่ลงรอยกันในพื้นที่โดย
-//     ออกกฎหมายเพื่อจัดการตรวจ";
-//     let result = Newmm::internal_segment(problem_text, &default_dict, false);
-//     assert_eq!(result,["ราชวงศ์", "ชิง", "พยายาม", "ลด", "การ", "ละเมิดสิทธิ์", "และ", "ความ", "ไม่", "ลงรอยกัน", "ใน", "พื้นที่", "โดย", "\n", "    ", "ออกกฎหมาย", "เพื่อ", "จัดการ", "ตรวจ"]);
-//     println!("{:?}",result);
-    
-// }
 #[test]
 fn test_byte(){
-    // println!("{:?}",u8vec);
     let long_text = [ 
         "ไต้หวัน (แป่ะเอ๋ยี้: Tâi-oân; ไต่อวัน) หรือ ไถวาน ",
         "(อักษรโรมัน: Taiwan; จีนตัวย่อ: 台湾; จีนตัวเต็ม: 臺灣/台灣; พินอิน: ",
@@ -168,26 +147,9 @@ fn test_byte(){
         "วันที่ 17 พฤษภาคม 2562 สภานิติบัญญัติไต้หวันอนุมัติ",
         "ร่างกฎหมายทำให้การสมรสเพศเดียวกันชอบด้วยกฎหมาย",
         " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]"].join("");
-        let time_for_conversion = Instant::now();
-        let our_str = CustomString::new(&long_text);
-        let std_str = our_str.to_std_string();
+    let custom_string = CustomString::new(&long_text);
+    assert_eq!(custom_string.len() %4,0);
 
-        println!("time for conversion is {:?}",time_for_conversion.elapsed());
-        
-        let time_for_pos = Instant::now();
-        // let positions = tcc_custom::tcc_pos(&our_str);
-
-
-//    println!("time for pos is {:?}",time_for_pos.elapsed());
-//    let time_for_pos = Instant::now();
-//    let positions_from_specialized = tcc_custom::tcc_pos(&our_str);
-//    let position_from_naive_implementation = tcc::tcc_pos(&long_text);
-//    let sengment_from_naive = tcc::segment(&long_text);
-// println!("time for specialized_pos is {:?}",time_for_pos.elapsed());
-// assert_eq!(positions,positions_from_specialized);
-// println!("{} {}",position_from_naive_implementation.len(),positions_from_specialized.len());
-// println!("{} {}",sengment_from_naive.len(),tcc_custom::specialized_newmm_segment(our_str.raw_content()).len());
-// assert_eq!(positions_from_specialized,position_from_naive_implementation);
 
  
 }

@@ -2,7 +2,7 @@
 name = "pythainlp-rust-modules"
 version = "0.2.0"
 edition = "2018"
-include = ["pythainlp/corpus/*.txt","pyproject.toml"]
+include = ["pyproject.toml"]
 authors = ["Thanathip Suntorntip Gorlph"]
 
 [lib]
@@ -35,3 +35,7 @@ ahash = "0.7.2"
 [[test]]
 name = "basic" 
 path = "rust_modules/tests/test_tokenizer.rs"
+
+[[test]]
+name = "basic2" 
+path = "rust_modules/tests/test_custom_string.rs"
