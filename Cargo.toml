@@ -35,7 +35,9 @@ ahash = "0.7.2"
 [[test]]
 name = "basic" 
 path = "rust_modules/tests/test_tokenizer.rs"
+test = true
 
 [[test]]
 name = "basic2" 
 path = "rust_modules/tests/test_custom_string.rs"
+test = true

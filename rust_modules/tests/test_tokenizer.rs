@@ -164,19 +164,3 @@ fn test_long_text_byte_tokenizer(){
         assert_eq!(safe_result.len(),2011);
 }
 
-// #[test]
-// fn test_tokenize_non_thai(){
-//     let overall_time = Instant::now();
-//     let CURRENT_DIR = env::current_dir().unwrap();
-//     let dict_path = PathBuf::from(DEFAULT_DICT_PATH_RELATIVE_TO_TEST);
-//     let default_dict_path = CURRENT_DIR.join(dict_path);
-//     let default_dict =  create_dict_trie(DictSource::FilePath(default_dict_path));
-//     let result =  Newmm::internal_segment("ก12345 6789".to_string(), &default_dict, false);
-
-//     println!("{:?}",result);
-//     // println!("");
-//     // println!("{}",end_Time);
-//     // println!("{}",end_all);
-    
-  
-// }
