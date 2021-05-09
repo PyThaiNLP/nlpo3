@@ -46,3 +46,5 @@ Just that!
 # TODO
 
 - Distribute module on pip or whatever, I really do not know much about Python env.
+
+# oxidized-thainlp
