@@ -24,7 +24,7 @@ def segment(
     dict_name: str = "default",
     safe: bool = False,
     parallel: bool = False,
-) -> List[List[int]]:
+) -> List[str]:
     """Break text into tokens.
 
     This method is an implementation of newmm segmentaion.
@@ -39,8 +39,8 @@ def segment(
     :type safe: bool, optional
     :param parallel: Use multithread mode, defaults to False
     :type parallel: bool, optional
-    :return: List of tokens (a token is represented as a list of UTF-8 bytes)
-    :rtype: List[List[int]]
+    :return: List of tokens
+    :rtype: List[str]
     """
     result = rust_segment(text, dict_name, safe, parallel)
     for (index, utf8bytes) in enumerate(result):
