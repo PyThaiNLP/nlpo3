@@ -7,8 +7,7 @@ authors = ["Thanathip Suntorntip Gorlph"]
 
 [lib]
 name = "oxidized_thainlp"
-path = "rust_modules/src/lib.rs"
-include = ["pythainlp/corpus/*"]
+path = "src/lib.rs"
 # "cdylib" is necessary to produce a shared library for Python to import from.
 #
 # Downstream Rust code (including code in `bin/`, `examples/`, and `tests/`) will not be able
@@ -34,10 +33,10 @@ ahash = "0.7.2"
 
 [[test]]
 name = "basic" 
-path = "rust_modules/tests/test_tokenizer.rs"
+path = "tests/test_tokenizer.rs"
 test = true
 
 [[test]]
 name = "basic2" 
-path = "rust_modules/tests/test_custom_string.rs"
+path = "tests/test_custom_string.rs"
 test = true

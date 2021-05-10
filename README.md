@@ -25,7 +25,7 @@ pip install pythainlp-rust-modules
 
 
 
-At oxidized-thainlp project root directory, run the following commands.
+At oxidized-thainlp/rust_modules directory, run the following commands.
 
 ## Linux
 
