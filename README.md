@@ -27,7 +27,9 @@ At pythainlp root directory
 
 ```bash
 
-maturin build --release -i python --manylinux off 
+maturin build --release -i python --manylinux off  
+# Or 
+maturin build --release -i python
 
 ```
 
@@ -36,6 +38,12 @@ Windows Powershell
 path\\to\\maturin.exe build --release -i python
 
 ```
+
+MacOS
+```zsh
+maturin build --release -i python
+```
+
 
 This should generate a wheel file which can be installed by pip
 
