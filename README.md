@@ -1,3 +1,11 @@
+
+# BETA Release
+
+```bash
+pip install pythainlp-rust-modules
+```
+
+
 # Feature
 
 - newmm word tokenization with default dict, ultra fast speed.
