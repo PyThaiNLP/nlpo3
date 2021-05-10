@@ -9,9 +9,10 @@ from typing import List
 def load_dict(file_path: str, dict_name: str):
     """Load dictionary from a file.
 
-    :param file_path: Absolute path to dictionary file
+    :param file_path: Absolute path to a dictionary file
     :type file_path: str
-    :param dict_name: Dictionary file name. "default" is a reserved name.
+    :param dict_name: A unique dictionary name, use for reference.
+        Can be any valid utf-8 string, except "default" which is reserved.
     :type dict_name: str
     """
     load_result = load_dict_to_oxidized(file_path, dict_name)
@@ -27,9 +28,7 @@ def segment(
     """Break text into tokens.
 
     This method is an implementation of newmm segmentaion.
-    Currently uses only default dict (pythainlp/corpus/words_th.txt).
-
-    Support multithread mode - set by parallel flag
+    Support multithread mode - set by parallel flag.
 
     :param text: Input text
     :type text: str
