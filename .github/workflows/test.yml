@@ -36,7 +36,8 @@ jobs:
           toolchain: stable
           override: true
           target: i686-pc-windows-msvc
-
+      - name: Install
+        run: pip install maturin
       - name: Build package
         run: maturin build --release -i python --manylinux off
       - name: Test
