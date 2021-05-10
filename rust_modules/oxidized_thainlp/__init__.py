@@ -35,11 +35,12 @@ def segment(
     :type text: str
     :param dict_name: Path to dictionary, defaults to "default"
     :type dict_name: str, optional
-    :param safe: Use safe mode to avoid extra long waiting time in long text, defaults to False
+    :param safe: Use safe mode to avoid extra long waiting time in long text,
+        defaults to False
     :type safe: bool, optional
     :param parallel: Use multithread mode, defaults to False
     :type parallel: bool, optional
-    :return: List of tokens (represented in UTF-8 bytes)
+    :return: List of tokens (a token is represented as a list of UTF-8 bytes)
     :rtype: List[List[int]]
     """
     result = rust_segment(text, dict_name, safe, parallel)
