@@ -13,7 +13,7 @@ pip install pythainlp-rust-modules
 ------------------------------------------------------------------------------------------------------------------
 
 ------------------------
-# How To Build 
+# How To Build It Yourself.
 
 ## Requirements
 
@@ -22,11 +22,16 @@ pip install pythainlp-rust-modules
 - PyO3 - already included in Cargo.toml
 - *** For Linux *** sudo apt install python3-dev python-dev
 - [Maturin](https://github.com/PyO3/maturin)
-Linux
 
-At pythainlp root directory
+
+
+At oxidized-thainlp project root directory, run the following commands.
+
+## Linux
+
 
 ```bash
+
 
 maturin build --release -i python --manylinux off  
 # Or 
@@ -34,17 +39,18 @@ maturin build --release -i python
 
 ```
 
-Windows Powershell
+## Windows Powershell
 ```shell
 path\\to\\maturin.exe build --release -i python
 
 ```
 
-MacOS
+## MacOS
 ```zsh
 maturin build --release -i python
 ```
 
+Note: You can try omitting "-i python". This will let Maturin build this lib for many versions of python if detected.
 
 This should generate a wheel file which can be installed by pip
 
