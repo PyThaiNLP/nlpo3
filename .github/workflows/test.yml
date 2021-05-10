@@ -38,6 +38,6 @@ jobs:
           target: i686-pc-windows-msvc
 
       - name: Build package
-        run: pip install -e .
+        run: maturin build --release -i python --manylinux off
       - name: Test
         run: cargo test
