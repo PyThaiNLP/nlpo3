@@ -55,10 +55,14 @@ Note: You can try omitting "-i python". This will let Maturin build this lib for
 This should generate a wheel file which can be installed by pip
 
 -------------------
-# How To Use Built module
+# How To Use In Python
 
 ```python
 from oxidized_thainlp import segment,load_dict
+
+load_dict("path/to/dict.file","dict_name")
+segment("สวัสดีครับ","dict_name")
+
 
 
 ```
