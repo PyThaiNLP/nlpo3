@@ -70,28 +70,31 @@ impl Newmm {
             },
         }
     }
+
     #[inline]
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
+        reused_queue:&mut VecDeque<(usize, Vec<usize>)>,
         start: CharacterIndex,
         goal: CharacterIndex,
+        
     ) -> Vec<CharacterIndex> {
-        let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
+        reused_queue.clear();
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
         init_path.push(start);
-        current_queue.push_back((start, init_path));
-        while current_queue.len() > 0 {
-            let (vertex, path) = current_queue.pop_front().unwrap();
+        reused_queue.push_back((start, init_path));
+        while reused_queue.len() > 0 {
+            let (vertex, path) = reused_queue.pop_front().unwrap();
             if let Some(idk) = graph.get(&vertex) {
                 for position in idk {
                     if *position != goal {
                         let mut appended_path = path.clone();
                         appended_path.push(*position);
-                        current_queue.push_back((*position, appended_path));
+                        reused_queue.push_back((*position, appended_path));
                     } else {
                         let mut appended_path = path.clone();
                         appended_path.push(*position);
-
+                        reused_queue.clear();
                         return appended_path;
                     };
                 }
@@ -99,6 +102,7 @@ impl Newmm {
         }
         panic!("something wrong");
     }
+
     #[inline]
     fn one_cut(input: &CustomStringBytesSlice, custom_dict: &Trie) -> Vec<CustomStringBytesVec> {
         let text = input;
@@ -116,6 +120,7 @@ impl Newmm {
         position_list.push(0);
         existing_candidate.insert(0);
         let mut end_position: usize = 0;
+        let mut reused_queue:VecDeque<(usize, Vec<usize>)>  = VecDeque::with_capacity(input_char_len / 100);
         // as long as there is a value in the position_list priority queue
         // AND its value is less than text_length
         while match position_list.peek() {
@@ -156,7 +161,7 @@ impl Newmm {
                     //only one candidate!
                     if let Some(first_position_list) = position_list.peek() {
                         let group_of_end_position_candidate =
-                            Self::bfs_paths_graph(&graph, end_position, *first_position_list);
+                            Self::bfs_paths_graph(&graph,&mut reused_queue, end_position, *first_position_list);
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
@@ -254,6 +259,7 @@ impl Newmm {
         result_str.shrink_to_fit();
         result_str
     }
+    
     pub fn internal_segment(
         input: &CustomString,
         custom_dict: &Trie,
