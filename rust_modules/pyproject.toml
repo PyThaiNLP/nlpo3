@@ -2,3 +2,34 @@
 requires = ["maturin>=0.10,<0.11"]
 build-backend = "maturin"
 
+[tool.poetry]
+name = "pythainlp-rust-modules"
+version = "0.2.0"
+authors = ["Thanathip Suntorntip","Arthit Suriyawongkul","Wannaphong Phatthiyaphaibun"]
+description = "PyThaiNLP Port to Rust"
+readme = "README.md"
+repository = "https://github.com/PyThaiNLP/oxidized-thainlp"
+homepage = "https://github.com/PyThaiNLP/oxidized-thainlp"
+license = "Apache-2.0 License"
+keywords = [
+    "thai",
+    "nlp",
+    "rust",
+    "pyo3"
+]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Natural Language :: Thai",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Rust",
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+wheel = "*"
+pytest-runner = "*"
+maturin = "*"
