@@ -16,10 +16,10 @@ pip install pythainlp-rust-modules
 
 Use in Python:
 ```python
-from oxidized_thainlp import segment,load_dict
+from oxidized_thainlp import load_dict, segment
 
-load_dict("path/to/dict.file","dict_name")
-segment("สวัสดีครับ","dict_name")
+load_dict("path/to/dict.file", "dict_name")
+segment("สวัสดีครับ", "dict_name")
 ```
 
 Just that!
