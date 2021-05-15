@@ -1,21 +1,32 @@
+# oxidized-thainlp
 
-# BETA Release
+Thai Natural Language Processing in Rust, with Python-binding.
 
+## Features
+
+- newmm word tokenization with default dict, ultra fast speed.
+- support custom dict.
+
+## Use
+
+Install:
 ```bash
 pip install pythainlp-rust-modules
 ```
 
+Use in Python:
+```python
+from oxidized_thainlp import segment,load_dict
 
-# Feature
+load_dict("path/to/dict.file","dict_name")
+segment("สวัสดีครับ","dict_name")
+```
 
-- newmm word tokenization with default dict, ultra fast speed.
-- support custom dict.
-------------------------------------------------------------------------------------------------------------------
+Just that!
 
-------------------------
-# How To Build It Yourself.
+## How To Build It Yourself
 
-## Requirements
+### Requirements
 
 - Rust 2018 Edition [Download here](https://www.rust-lang.org/tools/install)
 - Python 3.6+
@@ -23,29 +34,21 @@ pip install pythainlp-rust-modules
 - *** For Linux *** sudo apt install python3-dev python-dev
 - [Maturin](https://github.com/PyO3/maturin)
 
-
-
 At oxidized-thainlp/rust_modules directory, run the following commands.
 
-## Linux
-
-
+### Linux
 ```bash
-
-
 maturin build --release -i python --manylinux off  
 # Or 
 maturin build --release -i python
-
 ```
 
-## Windows Powershell
+### Windows Powershell
 ```shell
 path\\to\\maturin.exe build --release -i python
-
 ```
 
-## MacOS
+### MacOS
 ```zsh
 maturin build --release -i python
 ```
@@ -54,24 +57,5 @@ Note: You can try omitting "-i python". This will let Maturin build this lib for
 
 This should generate a wheel file which can be installed by pip
 
--------------------
-# How To Use In Python
-
-```python
-from oxidized_thainlp import segment,load_dict
-
-load_dict("path/to/dict.file","dict_name")
-segment("สวัสดีครับ","dict_name")
-
-
-
-```
-
-Just that!
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
-# TODO
-
+## TODO
 - Distribute module on pip or whatever, I really do not know much about Python env.
-
-# oxidized-thainlp
