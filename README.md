@@ -28,10 +28,10 @@ Just that!
 
 ### Requirements
 
-- Rust 2018 Edition [Download here](https://www.rust-lang.org/tools/install)
+- Rust 2018 Edition - [download here](https://www.rust-lang.org/tools/install)
 - Python 3.6+
+- Python development packages - for Linux (sudo apt install python3-dev python-dev)
 - PyO3 - already included in Cargo.toml
-- *** For Linux *** sudo apt install python3-dev python-dev
 - [Maturin](https://github.com/PyO3/maturin)
 
 At oxidized-thainlp/rust_modules directory, run the following commands.
