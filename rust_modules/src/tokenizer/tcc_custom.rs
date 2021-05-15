@@ -21,6 +21,8 @@ use ahash::{ AHashSet as HashSet};
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
 
+use crate::fixed_bytes_str::four_bytes::{CustomString, CustomStringBytesSlice};
+
 use super::super::fixed_bytes_str::four_bytes::{BYTES_PER_CHAR};
 
 // regex crate does not support look-any-direction
@@ -67,7 +69,7 @@ lazy_static! {
 
 
 
-pub fn tcc_pos(custom_text_type:&[u8]) -> HashSet<usize> {
+pub fn tcc_pos(custom_text_type:&CustomStringBytesSlice) -> HashSet<usize> {
     let mut set: HashSet<usize> = HashSet::with_capacity(custom_text_type.len() / BYTES_PER_CHAR / 2);
     if custom_text_type.len() == 0 {
         set
@@ -84,7 +86,7 @@ pub fn tcc_pos(custom_text_type:&[u8]) -> HashSet<usize> {
     }
 }
 
-pub fn segment(custom_text_type:&[u8]) -> Vec<&[u8]> {
+pub fn segment(custom_text_type:&CustomStringBytesSlice) -> Vec<&CustomStringBytesSlice> {
     let mut txt  = custom_text_type.clone();
     let mut tcc_result: Vec<&[u8]> = Vec::with_capacity(txt.len() / 10);
     while txt.len() > 0 {

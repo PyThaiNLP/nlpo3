@@ -18,7 +18,6 @@ use lazy_static::__Deref;
 use smol_str::SmolStr;
 use std::{borrow::Borrow, str::from_utf8_unchecked};
 
-
 pub type ValidUTF8BytesVec = Vec<u8>;
 pub type CustomStringBytesVec = Vec<u8>;
 pub type ValidUTF8BytesSlice = [u8];
@@ -27,7 +26,7 @@ fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
     value >= range.0 && value <= range.1
 }
 /** returns bytes index */
-pub fn rfind_space(custom_text: &[u8]) -> Option<usize> {
+pub fn rfind_space(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     assert_eq!(custom_text.len() % 4, 0);
 
     for index in (0..(custom_text.len() / BYTES_PER_CHAR)).rev() {
@@ -41,7 +40,7 @@ pub fn rfind_space(custom_text: &[u8]) -> Option<usize> {
     None
 }
 /** return char index */
-pub fn rfind_space_char_index(custom_text: &[u8]) -> Option<usize> {
+pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     assert_eq!(custom_text.len() % 4, 0);
 
     for index in (0..(custom_text.len() / BYTES_PER_CHAR)).rev() {
@@ -61,7 +60,7 @@ pub fn rfind_space_char_index(custom_text: &[u8]) -> Option<usize> {
  28 ..
 
 */
-fn is_whitespace(custom_bytes: &[u8]) -> bool {
+fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
     match custom_bytes {
         [0, 0, 0, 9]
         | [0, 0, 0, 10]
@@ -77,7 +76,7 @@ fn is_whitespace(custom_bytes: &[u8]) -> bool {
         _ => false,
     }
 }
-pub fn to_four_bytes(input: &str) -> Vec<u8> {
+pub fn to_four_bytes(input: &str) -> CustomStringBytesVec {
     let output_size = num_chars(input.as_bytes());
     let mut output_vec: Vec<u8> = Vec::with_capacity(output_size * BYTES_PER_CHAR);
     // let mut output:&[u8;4] = &[0;output_size];
@@ -99,7 +98,7 @@ pub fn to_four_bytes(input: &str) -> Vec<u8> {
     output_vec.shrink_to_fit();
     output_vec
 }
-pub fn encode_utf8(input: &[u8]) -> SmolStr {
+pub fn encode_utf8(input: &CustomStringBytesSlice) -> SmolStr {
     assert_eq!(input.len(), 4);
     match input {
         [0, 0, 0, one_byte_char] if one_byte_char <= &VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE => {
@@ -131,7 +130,7 @@ pub fn encode_utf8(input: &[u8]) -> SmolStr {
         }
     }
 }
-pub fn trim_to_std_utf8(input: &[u8]) -> Box<[u8]> {
+pub fn trim_to_std_utf8(input: &CustomStringBytesSlice) -> Box<[u8]> {
     assert_eq!(input.len(), 4);
     match input {
         [0, 0, 0, one_byte_char] if one_byte_char <= &VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE => {
@@ -163,9 +162,9 @@ pub fn trim_to_std_utf8(input: &[u8]) -> Box<[u8]> {
         }
     }
 }
-pub fn to_std_string(input: &[u8]) -> String {
+pub fn to_std_string(input: &CustomStringBytesSlice) -> String {
     assert_eq!(input.len() % 4, 0);
-    let mut output_content: Vec<u8> = Vec::with_capacity(input.len()/10);
+    let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 10);
     for index in (0..input.len()).step_by(BYTES_PER_CHAR) {
         let end_offset = index + BYTES_PER_CHAR;
         for byte in trim_to_std_utf8(&input[index..end_offset]).deref() {
@@ -195,21 +194,18 @@ pub struct CustomString {
 }
 
 impl CustomString {
-    pub fn from(four_byte_vec: Vec<u8>) -> Self {
-        let content =  four_byte_vec;
+    pub fn from(four_byte_vec: ValidUTF8BytesVec) -> Self {
+        let content = four_byte_vec;
         let length = content.len() / BYTES_PER_CHAR;
-        Self {
-            content,
-            length
-        }
+        Self { content, length }
     }
     pub fn new(base_string: &str) -> Self {
         let content = Vec::from(to_four_bytes(base_string));
         let length = content.len() / BYTES_PER_CHAR;
         Self { content, length }
     }
-    pub fn substring_as_custom_bytes(&self,char_start:usize,char_end:usize)->&[u8]{
-        &self.content[(char_start*BYTES_PER_CHAR)..(char_end*BYTES_PER_CHAR)]
+    pub fn substring_as_custom_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
+        &self.content[(char_start * BYTES_PER_CHAR)..(char_end * BYTES_PER_CHAR)]
     }
     pub fn raw_content(&self) -> &[u8] {
         self.content.borrow()
@@ -242,8 +238,9 @@ impl CustomString {
         }
     }
     /** Modify this object - remove "chars" from start to end index */
-    pub fn remove_by_chars_indices(&mut self,start:usize,end:usize){
-        self.content.drain((start*BYTES_PER_CHAR)..(end*BYTES_PER_CHAR));
+    pub fn remove_by_chars_indices(&mut self, start: usize, end: usize) {
+        self.content
+            .drain((start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR));
         self.length = self.content.len() / 4;
     }
 
@@ -256,7 +253,7 @@ impl CustomString {
         to_std_string(&self.content)
     }
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {
-        let mut output_content: Vec<u8> = Vec::with_capacity(input.len()/100);
+        let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in (0..input.len()).step_by(BYTES_PER_CHAR) {
             let end_offset = index + BYTES_PER_CHAR;
             for byte in trim_to_std_utf8(&input[index..end_offset]).deref() {
@@ -268,7 +265,7 @@ impl CustomString {
         output
     }
     pub fn convert_raw_bytes_to_utf8_bytes(input: &[u8]) -> Vec<u8> {
-        let mut output_content: Vec<u8> = Vec::with_capacity(input.len()/100);
+        let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in (0..input.len()).step_by(BYTES_PER_CHAR) {
             let end_offset = index + BYTES_PER_CHAR;
             for byte in trim_to_std_utf8(&input[index..end_offset]).deref() {
@@ -279,49 +276,46 @@ impl CustomString {
         output_content.to_vec()
     }
 }
-// impl PartialEq for CustomString {
 
 pub trait FixedCharsLengthByteSlice {
     fn slice_by_char_indice(&self, start: usize, end: usize) -> Self;
     fn chars_len(&self) -> usize;
-    fn is_valid_custom_str_bytes(&self)->bool;
+    fn is_valid_custom_str_bytes(&self) -> bool;
 }
-impl FixedCharsLengthByteSlice for &[u8] {
+impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
     fn slice_by_char_indice(&self, start: usize, end: usize) -> Self {
         &self[(start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR)]
     }
     fn chars_len(&self) -> usize {
         self.len() / BYTES_PER_CHAR
     }
-    fn is_valid_custom_str_bytes(&self) ->bool {
+    fn is_valid_custom_str_bytes(&self) -> bool {
         if self.len() % 4 != 0 {
-            return false; 
-        }  
+            return false;
+        }
         for index in 0..self.chars_len() {
-            let current_slice = self.slice_by_char_indice(index, index+1);
+            let current_slice = self.slice_by_char_indice(index, index + 1);
             match current_slice {
-                [0, 0, 0, one_byte_char] if one_byte_char <= &VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE => {},
+                [0, 0, 0, one_byte_char]
+                    if one_byte_char <= &VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE => {}
                 [0, 0, first_byte, second_byte]
                     if is_in_range(*first_byte, VALID_TWO_BYTE_UTF8_FIRST_BYTE_RANGE)
-                        && is_in_range(*second_byte, VALID_TWO_BYTE_UTF8_SECOND_BYTE_RANGE)  => {},
+                        && is_in_range(*second_byte, VALID_TWO_BYTE_UTF8_SECOND_BYTE_RANGE) => {}
                 [0, first_byte, second_byte, third_byte]
                     if is_in_range(*first_byte, VALID_THREE_BYTE_UTF8_FIRST_BYTE_RANGE)
                         && is_in_range(*second_byte, VALID_THREE_BYTE_UTF8_SECOND_BYTE_RANGE)
-                        && is_in_range(*third_byte, VALID_THREE_BYTE_UTF8_THIRD_BYTE_RANGE)  => {},
+                        && is_in_range(*third_byte, VALID_THREE_BYTE_UTF8_THIRD_BYTE_RANGE) => {}
                 [first_byte, second_byte, third_byte, fourth_byte]
                     if is_in_range(*first_byte, VALID_FOUR_BYTE_UTF8_FIRST_BYTE_RANGE)
                         && is_in_range(*second_byte, VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE)
                         && is_in_range(*third_byte, VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE)
-                        && is_in_range(*fourth_byte, VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE)   => {}
-                            
-                        
+                        && is_in_range(*fourth_byte, VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE) => {}
+
                 _ => {
                     return false;
                 }
             }
-
         }
         true
-     
     }
 }

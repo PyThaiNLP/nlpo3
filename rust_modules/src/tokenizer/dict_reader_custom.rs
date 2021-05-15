@@ -7,7 +7,7 @@ use std::{
     path::PathBuf,
 };
 use super::super::fixed_bytes_str::four_bytes::{CustomString};
-const DEFAULT_DICT_FILE: &str = include_str!("../../../pythainlp/corpus/words_th.txt");
+const DEFAULT_DICT_FILE: &str = include_str!("../../../words_th.txt");
 pub enum DictSource {
     WordList(Vec<String>),
     FilePath(PathBuf),
