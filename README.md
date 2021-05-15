@@ -38,8 +38,10 @@ At oxidized-thainlp/rust_modules directory, run the following commands.
 
 ### Linux
 ```bash
-maturin build --release -i python --manylinux off  
-# Or 
+maturin build --release -i python --manylinux off
+```
+or
+```bash
 maturin build --release -i python
 ```
 
