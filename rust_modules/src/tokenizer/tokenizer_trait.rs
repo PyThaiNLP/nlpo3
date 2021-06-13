@@ -6,5 +6,6 @@ use crate::fixed_bytes_str::four_bytes::ValidUTF8BytesVec;
  */
 pub trait Tokenizer {
     fn segment(&self,text:&str,safe:Option<bool>,parallel:Option<bool>)->Vec<ValidUTF8BytesVec>;
+    fn segment_to_string(&self,text:&str,safe:Option<bool>,parallel:Option<bool>)->Vec<String>;
 
 }

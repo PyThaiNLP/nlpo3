@@ -59,5 +59,3 @@ Note: You can try omitting "-i python". This will let Maturin build this lib for
 
 This should generate a wheel file which can be installed by pip
 
-## TODO
-- Distribute module on pip or whatever, I really do not know much about Python env.

@@ -1,13 +1,7 @@
-use oxidized_thainlp::{fixed_bytes_str::four_bytes::CustomString, tokenizer::tokenizer_trait::Tokenizer};
+use oxidized_thainlp::{tokenizer::tokenizer_trait::Tokenizer};
 use oxidized_thainlp::tokenizer::{newmm_custom::{Newmm as NewmmCustom},dict_reader_custom::{DictSource as CustomDictSource,create_dict_trie as create_custom_dict_trie}};
-use std::{fs::canonicalize, path::{Path,PathBuf}};
-use std::env;
-use std::time::Instant;
-const CARGO_PATH:&str = env!("CARGO_MANIFEST_DIR");
-const DEFAULT_DICT_PATH_RELATIVE_CARGO:&str = "./pythainlp/corpus/words_th.txt"; 
 
-const short_text_1:&str ="หมอนทองตากลมหูว์MBK39 :.ฉฺ๐๐๓-#™±";
-const short_text_2:&str = "ทดสอบ";
+
 
 
 #[test]
@@ -158,9 +152,19 @@ fn test_long_text_byte_tokenizer(){
         let newmm_default_dict = NewmmCustom::new(None);
         let result = newmm_default_dict.segment(&long_text, None,Some(true));
         
-        let mut custom_input = CustomString::new(&long_text);
         let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true));
         assert_eq!(result.len(),1889);
         assert_eq!(safe_result.len(),2011);
 }
+#[test]
+fn test_standard_short_word(){
+    let newmm_default_dict = NewmmCustom::new(None);
+    assert_eq!(newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", None, None),["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]);
+    assert_eq!(newmm_default_dict.segment_to_string("19...", None, None),["19", "..."]);
+    assert_eq!(newmm_default_dict.segment_to_string("19.", None, None),["19", "."]);
+    assert_eq!(newmm_default_dict.segment_to_string("19.84", None, None),["19.84"]);
+    assert_eq!(newmm_default_dict.segment_to_string("127.0.0.1", None, None),["127.0.0.1"]);
+    assert_eq!(newmm_default_dict.segment_to_string("USD1,984.42", None, None),["USD", "1,984.42"]);
 
+
+}

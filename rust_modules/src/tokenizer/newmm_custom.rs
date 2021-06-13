@@ -46,8 +46,18 @@ const TEXT_SCAN_END: usize = TEXT_SCAN_POINT + TEXT_SCAN_RIGHT;
 type CharacterIndex = usize;
 
 lazy_static! {
+    // Regex here is very ugly. Any quantitative symbols (+ * {a,b}) must be used with grouped four bytes 
+
+    // for example:
+    // Normal String: \d+
+    // Custom String: (\x00\x00\x00\d)+
+
     static ref NON_THAI_PATTERN: Regex = Regex::new(
-        r"^(\x00\x00\x00[-a-zA-Z])+|^\x00\x00\x00\d(\x00\x00\x00[\d,\.])*|^(\x00\x00\x00[ \t])+|^(\x00\x00\x00\r)?\x00\x00\x00\n"
+        r"(?x)
+        ^(\x00\x00\x00[-a-zA-Z])+| # Latin characters
+        ^(\x00\x00\x00\d)+(\x00\x00\x00[,\.](\x00\x00\x00\d)+)*| # number
+        ^(\x00\x00\x00[\ \t])+| # space
+        ^(\x00\x00\x00\r)?\x00\x00\x00\n  # newline" 
     )
     .unwrap();
 }
@@ -359,5 +369,10 @@ impl Tokenizer for Newmm {
         let custom_string = CustomString::new(text);
         let tokens = Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag);
         tokens
+    }
+
+    fn segment_to_string(&self,text:&str,safe:Option<bool>,parallel:Option<bool>)->Vec<String> {
+        let bytes_result = self.segment(text, safe, parallel);
+        bytes_result.into_iter().map(|valid_bytes| String::from(std::str::from_utf8(&&valid_bytes).unwrap()) ).collect()
     }
 }
