@@ -6,9 +6,9 @@ This means any algorithm with operations based on "character" index position wil
 
 Hence; "fixed_bytes_str" which is transformed from a slice of valid UTF-8 bytes into a slice of 4-bytes length - padded left with 0.
 
-Consequently, regular expressions must be padded with \x00 for each unicode character to have 4 bytes
+Consequently, regular expressions must be padded with \x00 for each unicode character to have 4 bytes.
 
-Thai characters are 3-bytes length, so every thai char in regex is padded with \x00 one time.
+Thai characters are 3-bytes length, so every Thai char in regex is padded with \x00 one time.
 
 For "space" in regex, it is padded with \x00\x00\x00.
 
