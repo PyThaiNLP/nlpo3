@@ -4,8 +4,8 @@ Thai Natural Language Processing in Rust, with Python-binding.
 
 ## Features
 
-- newmm word tokenization with default dict, ultra fast speed.
-- support custom dict.
+- newmm dictionary-based word tokenization, at ultra fast speed
+- support custom dictionary
 
 ## Use
 
@@ -34,7 +34,7 @@ Just that!
 - PyO3 - already included in Cargo.toml
 - [Maturin](https://github.com/PyO3/maturin)
 
-At oxidized-thainlp/rust_modules directory, run the following commands.
+At `oxidized-thainlp/rust_modules` directory, run the following commands.
 
 ### Linux
 ```bash
@@ -57,5 +57,4 @@ maturin build --release -i python
 
 Note: You can try omitting "-i python". This will let Maturin build this lib for many versions of python if detected.
 
-This should generate a wheel file which can be installed by pip
-
+This should generate a wheel file which can be installed by pip.
