@@ -1,8 +1,8 @@
 use oxidized_thainlp::tokenizer::tokenizer_trait::Tokenizer;
 use oxidized_thainlp::tokenizer::{
-    dict_reader_custom::{
-        create_dict_trie as create_custom_dict_trie, DictSource as CustomDictSource,
-    },
+    //dict_reader_custom::{
+    //    create_dict_trie as create_custom_dict_trie, DictSource as CustomDictSource,
+    //},
     newmm_custom::Newmm as NewmmCustom,
 };
 
