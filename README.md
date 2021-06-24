@@ -26,7 +26,7 @@ Just that!
 
 ## Build It Yourself
 
-### Requirements
+### Build requirements
 
 - [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
 - Python 3.6 or newer
