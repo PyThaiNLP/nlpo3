@@ -157,7 +157,7 @@ fn test_long_text_byte_tokenizer() {
 
     let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true));
     assert_eq!(result.len(), 1889);
-    assert_eq!(safe_result.len(), 2011);
+    assert_eq!(safe_result.len(), 1991);
 }
 #[test]
 fn test_standard_short_word() {
