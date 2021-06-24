@@ -19,7 +19,7 @@ use crate::fixed_bytes_str::four_bytes::{
 };
 
 use super::super::fixed_bytes_str::four_bytes::{
-    CustomStringBytesSlice, CustomStringBytesVec, ValidUTF8BytesSlice, ValidUTF8BytesVec,
+    CustomStringBytesSlice, CustomStringBytesVec, ValidUTF8BytesVec,
 };
 use super::{
     dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
@@ -46,9 +46,9 @@ const TEXT_SCAN_END: usize = TEXT_SCAN_POINT + TEXT_SCAN_RIGHT;
 type CharacterIndex = usize;
 
 lazy_static! {
-    // Regex here is very ugly. Any quantitative symbols (+ * {a,b}) must be used with grouped four bytes 
-
-    // for example:
+    // Regex here is very ugly.
+    // Any quantitative symbols (+ * {a,b}) must be used with grouped four bytes.
+    // For example:
     // Normal String: \d+
     // Custom String: (\x00\x00\x00\d)+
 
@@ -65,6 +65,7 @@ lazy_static! {
 lazy_static! {
     static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(r"^(\x00[ก-ฮ]){0,2}$").unwrap();
 }
+
 pub struct Newmm {
     dict: Box<Trie>,
 }
@@ -76,7 +77,9 @@ impl Newmm {
                 dict: Box::from(create_default_dict()),
             },
             Some(path) => Self {
-                dict: Box::from(create_dict_trie(DictSource::FilePath(PathBuf::from(path))).unwrap()),
+                dict: Box::from(
+                    create_dict_trie(DictSource::FilePath(PathBuf::from(path))).unwrap(),
+                ),
             },
         }
     }
@@ -296,7 +299,7 @@ impl Newmm {
             while txt.chars_len() >= TEXT_SCAN_END {
                 let sample: &[u8] = txt.slice_by_char_indice(TEXT_SCAN_BEGIN, TEXT_SCAN_END);
 
-                let mut cut_pos = TEXT_SCAN_END;
+                let mut cut_pos;
 
                 let space_char_index = rfind_space_char_index(sample);
                 // there is a space
@@ -305,10 +308,9 @@ impl Newmm {
                 } else {
                     let word_tokens = Self::one_cut(sample, &custom_dict);
                     let mut token_max_index = 0;
+                    let mut token_max_length = 0;
                     for (idx, token) in word_tokens.iter().enumerate() {
-                        let mut token_max_length = 0;
-
-                        if token.as_slice().chars_len() > token_max_length {
+                        if token.as_slice().chars_len() >= token_max_length {
                             token_max_length = token.as_slice().chars_len();
                             token_max_index = idx;
                         }
@@ -371,8 +373,16 @@ impl Tokenizer for Newmm {
         tokens
     }
 
-    fn segment_to_string(&self,text:&str,safe:Option<bool>,parallel:Option<bool>)->Vec<String> {
+    fn segment_to_string(
+        &self,
+        text: &str,
+        safe: Option<bool>,
+        parallel: Option<bool>,
+    ) -> Vec<String> {
         let bytes_result = self.segment(text, safe, parallel);
-        bytes_result.into_iter().map(|valid_bytes| String::from(std::str::from_utf8(&&valid_bytes).unwrap()) ).collect()
+        bytes_result
+            .into_iter()
+            .map(|valid_bytes| String::from(std::str::from_utf8(&&valid_bytes).unwrap()))
+            .collect()
     }
 }

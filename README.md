@@ -7,7 +7,7 @@ Thai Natural Language Processing in Rust, with Python-binding.
 - newmm dictionary-based word tokenization, at ultra fast speed
 - support custom dictionary
 
-## Use
+## Usage
 
 Install:
 ```bash
@@ -24,19 +24,23 @@ segment("สวัสดีครับ", "dict_name")
 
 Just that!
 
-## How To Build It Yourself
+## Build It Yourself
 
 ### Requirements
 
-- Rust 2018 Edition - [download here](https://www.rust-lang.org/tools/install)
-- Python 3.6+
-- Python development packages - for Linux (sudo apt install python3-dev python-dev)
-- PyO3 - already included in Cargo.toml
+- [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
+- Python 3.6 or newer
+- Python Development Headers
+  - Ubuntu: `sudo apt-get install python3-dev`
+  - macOS: No action needed
+- [PyO3](https://github.com/PyO3/pyo3) - already included in Cargo.toml
 - [Maturin](https://github.com/PyO3/maturin)
 
-At `oxidized-thainlp/rust_modules` directory, run the following commands.
+### Build steps
 
-### Linux
+At `rust_modules/` directory, run:
+
+#### Linux
 ```bash
 maturin build --release -i python --manylinux off
 ```
@@ -45,16 +49,20 @@ or
 maturin build --release -i python
 ```
 
-### Windows Powershell
+#### Windows (PowerShell)
 ```shell
 path\\to\\maturin.exe build --release -i python
 ```
 
-### MacOS
+#### macOS
 ```zsh
-maturin build --release -i python
+maturin build --release -i python3
 ```
 
-Note: You can try omitting "-i python". This will let Maturin build this lib for many versions of python if detected.
+This should generate a wheel file, in `rust_modules/target/wheels/` directory, which can be installed by pip.
 
-This should generate a wheel file which can be installed by pip.
+Note: Omitting "-i python" will let Maturin build for all Python versions detected.
+
+## Support
+
+Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp

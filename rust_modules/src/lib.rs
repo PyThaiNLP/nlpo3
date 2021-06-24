@@ -5,9 +5,9 @@ use crate::tokenizer::newmm_custom::Newmm;
 use ahash::AHashMap as HashMap;
 use fixed_bytes_str::four_bytes::ValidUTF8BytesVec;
 use lazy_static::lazy_static;
-use std::sync::Mutex;
 use pyo3::prelude::*;
 use pyo3::{exceptions, wrap_pyfunction};
+use std::sync::Mutex;
 use tokenizer::tokenizer_trait::Tokenizer;
 lazy_static! {
     static ref  DICT_COLLECTION:Mutex<HashMap<String,Box<Newmm>>> = Mutex::new(HashMap::new());
@@ -71,10 +71,10 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<String> {
 #[pymodule]
 fn oxidized_thainlp(_py: Python, m: &PyModule) -> PyResult<()> {
     {
-    let mut dict_collect = DICT_COLLECTION.lock().unwrap();
-    dict_collect.insert("default".to_string(), Box::from(Newmm::new(None)));
+        let mut dict_collect = DICT_COLLECTION.lock().unwrap();
+        dict_collect.insert("default".to_string(), Box::from(Newmm::new(None)));
     }
-    m.add_function(wrap_pyfunction!(load_dict,m)?)?;
+    m.add_function(wrap_pyfunction!(load_dict, m)?)?;
     m.add_function(wrap_pyfunction!(segment, m)?)?;
     Ok(())
 }

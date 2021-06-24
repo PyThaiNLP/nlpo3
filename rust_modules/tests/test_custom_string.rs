@@ -1,12 +1,11 @@
-use oxidized_thainlp::{fixed_bytes_str::four_bytes::{CustomString}};
+use oxidized_thainlp::fixed_bytes_str::four_bytes::CustomString;
 
-
-const short_text_1:&str ="หมอนทองตากลมหูว์MBK39 :.ฉฺ๐๐๓-#™±";
-const short_text_2:&str = "ทดสอบ";
+// const short_text_1: &str = "หมอนทองตากลมหูว์MBK39 :.ฉฺ๐๐๓-#™±";
+// const short_text_2: &str = "ทดสอบ";
 
 #[test]
-fn test_byte(){
-    let long_text = [ 
+fn test_byte() {
+    let long_text = [
         "ไต้หวัน (แป่ะเอ๋ยี้: Tâi-oân; ไต่อวัน) หรือ ไถวาน ",
         "(อักษรโรมัน: Taiwan; จีนตัวย่อ: 台湾; จีนตัวเต็ม: 臺灣/台灣; พินอิน: ",
         "Táiwān; ไถวาน) หรือชื่อทางการว่า สาธารณรัฐจีน (จีนตัวย่อ: 中华民国; ",
@@ -146,11 +145,9 @@ fn test_byte(){
         "การสมรสเพศเดียวกันจะชอบด้วยกฎหมายโดยอัตโนมัติในไต้หวัน[17] ",
         "วันที่ 17 พฤษภาคม 2562 สภานิติบัญญัติไต้หวันอนุมัติ",
         "ร่างกฎหมายทำให้การสมรสเพศเดียวกันชอบด้วยกฎหมาย",
-        " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]"].join("");
+        " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]",
+    ]
+    .join("");
     let custom_string = CustomString::new(&long_text);
-    assert_eq!(custom_string.len() %4,0);
-
-
- 
+    assert_eq!(custom_string.len() % 4, 0);
 }
-
