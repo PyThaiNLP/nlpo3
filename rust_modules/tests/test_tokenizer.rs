@@ -1,12 +1,14 @@
-use oxidized_thainlp::{tokenizer::tokenizer_trait::Tokenizer};
-use oxidized_thainlp::tokenizer::{newmm_custom::{Newmm as NewmmCustom},dict_reader_custom::{DictSource as CustomDictSource,create_dict_trie as create_custom_dict_trie}};
-
-
-
+use oxidized_thainlp::tokenizer::tokenizer_trait::Tokenizer;
+use oxidized_thainlp::tokenizer::{
+    dict_reader_custom::{
+        create_dict_trie as create_custom_dict_trie, DictSource as CustomDictSource,
+    },
+    newmm_custom::Newmm as NewmmCustom,
+};
 
 #[test]
-fn test_long_text_byte_tokenizer(){
-    let long_text = [ 
+fn test_long_text_byte_tokenizer() {
+    let long_text = [
         "ไต้หวัน (แป่ะเอ๋ยี้: Tâi-oân; ไต่อวัน) หรือ ไถวาน ",
         "(อักษรโรมัน: Taiwan; จีนตัวย่อ: 台湾; จีนตัวเต็ม: 臺灣/台灣; พินอิน: ",
         "Táiwān; ไถวาน) หรือชื่อทางการว่า สาธารณรัฐจีน (จีนตัวย่อ: 中华民国; ",
@@ -146,25 +148,42 @@ fn test_long_text_byte_tokenizer(){
         "การสมรสเพศเดียวกันจะชอบด้วยกฎหมายโดยอัตโนมัติในไต้หวัน[17] ",
         "วันที่ 17 พฤษภาคม 2562 สภานิติบัญญัติไต้หวันอนุมัติ",
         "ร่างกฎหมายทำให้การสมรสเพศเดียวกันชอบด้วยกฎหมาย",
-        " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]"].join("");
- 
+        " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]",
+    ]
+    .join("");
 
-        let newmm_default_dict = NewmmCustom::new(None);
-        let result = newmm_default_dict.segment(&long_text, None,Some(true));
-        
-        let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true));
-        assert_eq!(result.len(),1889);
-        assert_eq!(safe_result.len(),2011);
+    let newmm_default_dict = NewmmCustom::new(None);
+    let result = newmm_default_dict.segment(&long_text, None, Some(true));
+
+    let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true));
+    assert_eq!(result.len(), 1889);
+    assert_eq!(safe_result.len(), 2011);
 }
 #[test]
-fn test_standard_short_word(){
+fn test_standard_short_word() {
     let newmm_default_dict = NewmmCustom::new(None);
-    assert_eq!(newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", None, None),["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]);
-    assert_eq!(newmm_default_dict.segment_to_string("19...", None, None),["19", "..."]);
-    assert_eq!(newmm_default_dict.segment_to_string("19.", None, None),["19", "."]);
-    assert_eq!(newmm_default_dict.segment_to_string("19.84", None, None),["19.84"]);
-    assert_eq!(newmm_default_dict.segment_to_string("127.0.0.1", None, None),["127.0.0.1"]);
-    assert_eq!(newmm_default_dict.segment_to_string("USD1,984.42", None, None),["USD", "1,984.42"]);
-
-
+    assert_eq!(
+        newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", None, None),
+        ["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
+    );
+    assert_eq!(
+        newmm_default_dict.segment_to_string("19...", None, None),
+        ["19", "..."]
+    );
+    assert_eq!(
+        newmm_default_dict.segment_to_string("19.", None, None),
+        ["19", "."]
+    );
+    assert_eq!(
+        newmm_default_dict.segment_to_string("19.84", None, None),
+        ["19.84"]
+    );
+    assert_eq!(
+        newmm_default_dict.segment_to_string("127.0.0.1", None, None),
+        ["127.0.0.1"]
+    );
+    assert_eq!(
+        newmm_default_dict.segment_to_string("USD1,984.42", None, None),
+        ["USD", "1,984.42"]
+    );
 }

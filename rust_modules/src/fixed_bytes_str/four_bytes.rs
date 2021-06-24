@@ -22,9 +22,11 @@ pub type ValidUTF8BytesVec = Vec<u8>;
 pub type CustomStringBytesVec = Vec<u8>;
 pub type ValidUTF8BytesSlice = [u8];
 pub type CustomStringBytesSlice = [u8];
+
 fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
     value >= range.0 && value <= range.1
 }
+
 /** returns bytes index */
 pub fn rfind_space(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     assert_eq!(custom_text.len() % 4, 0);
@@ -39,6 +41,7 @@ pub fn rfind_space(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     }
     None
 }
+
 /** return char index */
 pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     assert_eq!(custom_text.len() % 4, 0);
@@ -53,12 +56,12 @@ pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<us
     }
     None
 }
+
 /**
  bytes length = 32, char len = 8
  index 0..8 reverse
  7..=0
  28 ..
-
 */
 fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
     match custom_bytes {
@@ -76,6 +79,7 @@ fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
         _ => false,
     }
 }
+
 pub fn to_four_bytes(input: &str) -> CustomStringBytesVec {
     let output_size = num_chars(input.as_bytes());
     let mut output_vec: Vec<u8> = Vec::with_capacity(output_size * BYTES_PER_CHAR);
@@ -98,6 +102,7 @@ pub fn to_four_bytes(input: &str) -> CustomStringBytesVec {
     output_vec.shrink_to_fit();
     output_vec
 }
+
 pub fn encode_utf8(input: &CustomStringBytesSlice) -> SmolStr {
     assert_eq!(input.len(), 4);
     match input {
@@ -130,6 +135,7 @@ pub fn encode_utf8(input: &CustomStringBytesSlice) -> SmolStr {
         }
     }
 }
+
 pub fn trim_to_std_utf8(input: &CustomStringBytesSlice) -> Box<[u8]> {
     assert_eq!(input.len(), 4);
     match input {
@@ -162,6 +168,7 @@ pub fn trim_to_std_utf8(input: &CustomStringBytesSlice) -> Box<[u8]> {
         }
     }
 }
+
 pub fn to_std_string(input: &CustomStringBytesSlice) -> String {
     assert_eq!(input.len() % 4, 0);
     let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 10);
@@ -175,16 +182,19 @@ pub fn to_std_string(input: &CustomStringBytesSlice) -> String {
     output.shrink_to_fit();
     output
 }
-/** The content inside this string is a vector of bytes - ALWAYS with length %4 == 0
+/** The content inside this string is a vector of bytes - ALWAYS with length % 4 == 0
 
-    Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes space.
+    Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes.
 
-    For example, Thai characters which use 3 bytes are represented by [0,valid_first_byte,valid_second_byte,valid_third_byte].
+    For example, Thai characters which use 3 bytes are represented by
+    [0, valid_first_byte, valid_second_byte, valid_third_byte].
 
     ***Comparison***
-    String "กข " is represented by \[224, 184, 129, 224, 184, 130, 32\].
+    String "กข " is represented by
+    \[224, 184, 129, 224, 184, 130, 32\]
 
-    CustomString "กข " is represented by \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\].
+    CustomString "กข " is represented by
+    \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\]
 */
 
 #[derive(Clone)]
@@ -282,6 +292,7 @@ pub trait FixedCharsLengthByteSlice {
     fn chars_len(&self) -> usize;
     fn is_valid_custom_str_bytes(&self) -> bool;
 }
+
 impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
     fn slice_by_char_indice(&self, start: usize, end: usize) -> Self {
         &self[(start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR)]
@@ -310,7 +321,6 @@ impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
                         && is_in_range(*second_byte, VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE)
                         && is_in_range(*third_byte, VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE)
                         && is_in_range(*fourth_byte, VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE) => {}
-
                 _ => {
                     return false;
                 }

@@ -1,13 +1,12 @@
+use super::super::fixed_bytes_str::four_bytes::CustomString;
 use super::trie_custom::Trie;
 use rayon::prelude::*;
-use std::{error::Error, io::prelude::*};
 use std::io::BufReader;
-use std::{
-    fs::{ File},
-    path::PathBuf,
-};
-use super::super::fixed_bytes_str::four_bytes::{CustomString};
-const DEFAULT_DICT_FILE: &str = include_str!("../../../words_th.txt");
+use std::{error::Error, io::prelude::*};
+use std::{fs::File, path::PathBuf};
+
+const DEFAULT_DICT_FILE: &str = include_str!("../../words_th.txt");
+
 pub enum DictSource {
     WordList(Vec<String>),
     FilePath(PathBuf),
@@ -21,7 +20,7 @@ pub fn create_default_dict() -> Trie {
     Trie::new(&default_dict)
 }
 
-pub fn create_dict_trie(source: DictSource) -> Result<Trie,Box<dyn Error>> {
+pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
     match source {
         DictSource::FilePath(single_source) => {
             let file_reader = File::open(single_source.as_path());
@@ -36,10 +35,10 @@ pub fn create_dict_trie(source: DictSource) -> Result<Trie,Box<dyn Error>> {
                     }
                     dict.shrink_to_fit();
                     Ok(Trie::new(&dict))
-                },
-                Err(error)=> Err(Box::from(error))
+                }
+                Err(error) => Err(Box::from(error)),
             }
-        },
+        }
         DictSource::WordList(word_list) => {
             let custom_word_list: Vec<CustomString> = word_list
                 .into_iter()

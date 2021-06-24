@@ -1,6 +1,9 @@
-use crate::fixed_bytes_str::four_bytes::{CustomString, BYTES_PER_CHAR,FixedCharsLengthByteSlice,CustomStringBytesSlice,CustomStringBytesVec};
+use crate::fixed_bytes_str::four_bytes::{
+    CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
+    BYTES_PER_CHAR,
+};
 use ahash::{AHashMap as HashMap, AHashSet as HashSet};
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::BorrowMut;
 use std::iter::Iterator;
 /**
 This module is meant to be a direct implementation of Dict Trie in PythaiNLP.
@@ -54,7 +57,7 @@ impl TrieNode {
         let char_count = word.len() / BYTES_PER_CHAR;
         // if has atleast 1 char
         if word.len() >= BYTES_PER_CHAR {
-            let character = &word.slice_by_char_indice(0,1);
+            let character = &word.slice_by_char_indice(0, 1);
             if let Some(child) = self.find_mut_child(character) {
                 // move 1 character
                 word = &word[BYTES_PER_CHAR..];
@@ -74,12 +77,14 @@ impl TrieNode {
         let prefix_cpy = prefix;
         let mut current_index = 0;
         let mut current_node_wrap = Some(self);
-        while (current_index) * BYTES_PER_CHAR <  prefix_cpy.len()   {
-            let character = &prefix_cpy[(current_index * BYTES_PER_CHAR)..((current_index+1)*BYTES_PER_CHAR)];
+        while (current_index) * BYTES_PER_CHAR < prefix_cpy.len() {
+            let character = &prefix_cpy
+                [(current_index * BYTES_PER_CHAR)..((current_index + 1) * BYTES_PER_CHAR)];
             if let Some(current_node) = current_node_wrap {
                 if let Some(child) = current_node.find_child(character) {
                     if child.end {
-                        let substring_of_prefix = &prefix_cpy[0..(current_index+1)*BYTES_PER_CHAR];
+                        let substring_of_prefix =
+                            &prefix_cpy[0..(current_index + 1) * BYTES_PER_CHAR];
                         result.push(substring_of_prefix.to_owned());
                     }
                     current_node_wrap = Some(child);
@@ -93,6 +98,7 @@ impl TrieNode {
         result
     }
 }
+
 #[derive(Debug)]
 pub struct Trie {
     words: HashSet<CustomStringBytesVec>,
@@ -101,7 +107,7 @@ pub struct Trie {
 impl Trie {
     pub fn new(words: &Vec<CustomString>) -> Self {
         let mut instance = Self {
-            words: HashSet::with_capacity(words.len()/10),
+            words: HashSet::with_capacity(words.len() / 10),
             root: TrieNode::new(),
         };
         for word in words.into_iter() {
