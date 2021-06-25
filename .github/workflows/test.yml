@@ -38,8 +38,6 @@ jobs:
       - name: Install
         run: pip install maturin
       - name: Build package
-        working-directory: ./rust_modules/
         run: maturin build --release -i python
       - name: Test
-        working-directory: ./rust_modules/
         run: cargo test
