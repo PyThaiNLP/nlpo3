@@ -38,8 +38,6 @@ Just that!
 
 ### Build steps
 
-At `rust_modules/` directory, run:
-
 #### Linux
 ```bash
 maturin build --release -i python --manylinux off
@@ -59,7 +57,7 @@ path\\to\\maturin.exe build --release -i python
 maturin build --release -i python3
 ```
 
-This should generate a wheel file, in `rust_modules/target/wheels/` directory, which can be installed by pip.
+This should generate a wheel file, in `target/wheels/` directory, which can be installed by pip.
 
 Note: Omitting "-i python" will let Maturin build for all Python versions detected.
 
