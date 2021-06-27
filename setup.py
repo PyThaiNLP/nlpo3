@@ -15,14 +15,14 @@ setup(
     python_requires=">=3.6",
     zip_safe=False,
     license="Apache-2.0",
-    keywords = [
+    keywords=[
         "thai",
         "tokenizer",
         "nlp",
         "rust",
         "pythainlp",
     ],
-    classifiers = [
+    classifiers=[
         # "3 - Alpha", "4 - Beta" or "5 - Production/Stable"
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
@@ -32,6 +32,5 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Text Processing :: Linguistic",
         "Topic :: Software Development :: Libraries :: Python Modules",
-    ]
-
+    ],
 )
