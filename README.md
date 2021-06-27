@@ -34,7 +34,7 @@ Just that!
   - Ubuntu: `sudo apt-get install python3-dev`
   - macOS: No action needed
 - [PyO3](https://github.com/PyO3/pyo3) - already included in Cargo.toml
-- [Maturin](https://github.com/PyO3/maturin)
+- [setuptools-rust](https://github.com/PyO3/setuptools-rust)
 
 ### Build steps
 

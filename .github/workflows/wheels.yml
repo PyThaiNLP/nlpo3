@@ -22,14 +22,14 @@ jobs:
       # Used to host cibuildwheel
       - uses: actions/setup-python@v2
 
-#      - uses: actions-rs/toolchain@v1
-#        with:
-#          profile: minimal
-#          toolchain: stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
 
-#      - uses: actions-rs/cargo@v1
-#        with:
-#          command: check
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
 
       - name: Setup build enc
         run: |
