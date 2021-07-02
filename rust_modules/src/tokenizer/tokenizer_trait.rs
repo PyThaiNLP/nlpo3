@@ -9,11 +9,12 @@ pub trait Tokenizer {
         text: &str,
         safe: Option<bool>,
         parallel: Option<bool>,
-    ) -> Vec<ValidUTF8BytesVec>;
+    ) -> Vec<String>;
     fn segment_to_string(
         &self,
         text: &str,
         safe: Option<bool>,
         parallel: Option<bool>,
     ) -> Vec<String>;
+ 
 }

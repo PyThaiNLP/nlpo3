@@ -83,13 +83,17 @@ impl Newmm {
             },
         }
     }
-    #[inline]
+  
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
         goal: CharacterIndex,
+        current_queue:&mut VecDeque<(usize, Vec<usize>)>
     ) -> Vec<CharacterIndex> {
-        let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
+     
+        current_queue.clear();
+        // let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
+        
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
         init_path.push(start);
         current_queue.push_back((start, init_path));
@@ -112,10 +116,11 @@ impl Newmm {
         }
         panic!("something wrong");
     }
-    #[inline]
+   
     fn one_cut(input: &CustomStringBytesSlice, custom_dict: &Trie) -> Vec<CustomStringBytesVec> {
         let text = input;
-        let input_char_len = text.len() / BYTES_PER_CHAR;
+        let input_char_len = text.chars_len();
+        let mut reused_queue : VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10); 
         let mut graph_size: usize = 0;
         let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> =
             HashMap::with_capacity(input_char_len / 100);
@@ -128,20 +133,19 @@ impl Newmm {
         let mut existing_candidate: HashSet<CharacterIndex> = HashSet::with_capacity(50);
         position_list.push(0);
         existing_candidate.insert(0);
-        let mut end_position: usize = 0;
+        let mut end_position: CharacterIndex = 0;
         // as long as there is a value in the position_list priority queue
         // AND its value is less than text_length
         while match position_list.peek() {
-            std::option::Option::Some(position) if *position < text_length => true,
-            std::option::Option::None => false,
+            Some(position) if *position < text_length => true,
+            None => false,
             _ => false,
         } {
             if let Some(begin_position) = position_list.pop() {
-                let byte_index_of_begin_char = begin_position * BYTES_PER_CHAR;
-                let sub_text_prefix = &text[byte_index_of_begin_char..];
+                let sub_text_prefix = text.slice_by_char_indice(begin_position, text.chars_len());
                 let prefixes = custom_dict.prefix(sub_text_prefix);
                 for word in prefixes {
-                    let word_length = word.len() / BYTES_PER_CHAR;
+                    let word_length = word.as_slice().chars_len();
                     let end_position_candidate = begin_position + word_length;
                     if valid_position.contains(&end_position_candidate) {
                         let target_graph = graph.get_mut(&begin_position);
@@ -169,12 +173,12 @@ impl Newmm {
                     //only one candidate!
                     if let Some(first_position_list) = position_list.peek() {
                         let group_of_end_position_candidate =
-                            Self::bfs_paths_graph(&graph, end_position, *first_position_list);
+                            Self::bfs_paths_graph(&graph, end_position, *first_position_list,&mut reused_queue);
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
-                            let token = &text
-                                [(end_position * BYTES_PER_CHAR)..(*position * BYTES_PER_CHAR)];
+                            let token = text.slice_by_char_indice(end_position, *position);
+
                             result_str.push(Vec::from(token));
                             end_position = *position;
                         }
@@ -185,10 +189,16 @@ impl Newmm {
                     // no candidate, deal with non-dict word
                     match NON_THAI_PATTERN.find(sub_text_prefix) {
                         Some(match_point) => {
+                            let matched_start_char_index = match_point.start() / BYTES_PER_CHAR;
+                            let matched_end_char_index = match_point.end() / BYTES_PER_CHAR;
                             //  non thai -> skip to the end of match - this is byte index not char index...
                             end_position = begin_position
-                                + sub_text_prefix[match_point.start()..match_point.end()].len()
-                                    / BYTES_PER_CHAR;
+                                + sub_text_prefix
+                                    .slice_by_char_indice(
+                                        matched_start_char_index,
+                                        matched_end_char_index,
+                                    )
+                                    .chars_len();
                         }
                         None => {
                             // Is thai -> find min skip
@@ -197,11 +207,11 @@ impl Newmm {
                                 if valid_position.contains(&position) {
                                     // let (prefix_byte_index,_) = text.char_indices().nth(position).unwrap();
                                     // let prefix = text.substring(position, text_length);
-                                    let prefix = &text
-                                        [position * BYTES_PER_CHAR..text_length * BYTES_PER_CHAR];
+                                    let prefix = &text.slice_by_char_indice(position, text_length);
+
                                     let list_of_prefixes = custom_dict.prefix(&prefix);
                                     let valid_word_filter = |word: &Vec<u8>| {
-                                        let new_position = position + (word.len() / BYTES_PER_CHAR);
+                                        let new_position = position + word.as_slice().chars_len();
                                         let is_valid = valid_position.contains(&new_position);
                                         let is_two_thai_chars =
                                             THAI_TWOCHARS_PATTERN.is_match(&word);
@@ -242,8 +252,8 @@ impl Newmm {
                         Some(existing_path) => {
                             existing_path.push(end_position);
                             graph_size += 1;
-                            let token = &text
-                                [begin_position * BYTES_PER_CHAR..end_position * BYTES_PER_CHAR];
+                            let token = text.slice_by_char_indice(begin_position, end_position);
+
                             result_str.push(Vec::from(token));
                             position_list.push(end_position);
                             existing_candidate.insert(end_position);
@@ -253,8 +263,7 @@ impl Newmm {
                             graph_elem.push(end_position);
                             graph.insert(begin_position, graph_elem);
                             graph_size += 1;
-                            let token = &text
-                                [begin_position * BYTES_PER_CHAR..end_position * BYTES_PER_CHAR];
+                            let token = text.slice_by_char_indice(begin_position, end_position);
                             result_str.push(Vec::from(token));
                             position_list.push(end_position);
                             existing_candidate.insert(end_position);
@@ -272,7 +281,7 @@ impl Newmm {
         custom_dict: &Trie,
         safe: bool,
         parallel: bool,
-    ) -> Vec<CustomStringBytesVec> {
+    ) -> Vec<String> {
         if input.len() == 0 {
             return vec![];
         }
@@ -282,14 +291,14 @@ impl Newmm {
                 result
                     .into_par_iter()
                     .map(|custom_string_bytes| {
-                        CustomString::convert_raw_bytes_to_utf8_bytes(&custom_string_bytes)
+                        CustomString::convert_raw_bytes_to_std_string(&custom_string_bytes)
                     })
                     .collect()
             } else {
                 result
                     .into_iter()
                     .map(|custom_string_bytes| {
-                        CustomString::convert_raw_bytes_to_utf8_bytes(&custom_string_bytes)
+                        CustomString::convert_raw_bytes_to_std_string(&custom_string_bytes)
                     })
                     .collect()
             };
@@ -334,20 +343,23 @@ impl Newmm {
                     .flat_map(|part| {
                         Self::one_cut(&part, &custom_dict)
                             .into_par_iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_utf8_bytes(&word))
-                            .collect::<Vec<ValidUTF8BytesVec>>()
+                            .map(|word| CustomString::convert_raw_bytes_to_std_string(&word))
+                            .collect::<Vec<String>>()
                     })
-                    .collect::<Vec<ValidUTF8BytesVec>>()
+                    .collect::<Vec<String>>()
             } else {
                 txt_parts
                     .iter()
                     .flat_map(|part| {
                         Self::one_cut(&part, &custom_dict)
                             .iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_utf8_bytes(&word))
-                            .collect::<Vec<ValidUTF8BytesVec>>()
+                            .map(|word| {
+
+                                CustomString::convert_raw_bytes_to_std_string(&word)
+                            })
+                            .collect::<Vec<String>>()
                     })
-                    .collect::<Vec<ValidUTF8BytesVec>>()
+                    .collect::<Vec<String>>()
             }
         }
     }
@@ -359,7 +371,7 @@ impl Tokenizer for Newmm {
         text: &str,
         safe: Option<bool>,
         parallel: Option<bool>,
-    ) -> Vec<ValidUTF8BytesVec> {
+    ) -> Vec<String> {
         let safe_flag = match safe {
             Some(val) => val,
             None => false,
@@ -379,10 +391,8 @@ impl Tokenizer for Newmm {
         safe: Option<bool>,
         parallel: Option<bool>,
     ) -> Vec<String> {
-        let bytes_result = self.segment(text, safe, parallel);
-        bytes_result
-            .into_iter()
-            .map(|valid_bytes| String::from(std::str::from_utf8(&&valid_bytes).unwrap()))
-            .collect()
+        self.segment(text, safe, parallel)
+       
     }
+   
 }
