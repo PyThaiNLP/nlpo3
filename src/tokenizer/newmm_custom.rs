@@ -19,7 +19,7 @@ use crate::fixed_bytes_str::four_bytes::{
 };
 
 use super::super::fixed_bytes_str::four_bytes::{
-    CustomStringBytesSlice, CustomStringBytesVec, ValidUTF8BytesVec,
+    CustomStringBytesSlice, CustomStringBytesVec,
 };
 use super::{
     dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
