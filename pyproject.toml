@@ -13,7 +13,7 @@ homepage = "https://github.com/PyThaiNLP/oxidized-thainlp"
 license = "Apache-2.0"
 keywords = [
     "thai",
-    "tokenizer,
+    "tokenizer",
     "nlp",
     "rust",
     "pyo3",
