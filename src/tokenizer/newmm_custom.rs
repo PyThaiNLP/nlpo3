@@ -7,9 +7,7 @@ with heuristic graph size limit added to avoid exponential wait time.
 
 :See Also:
     * \
-        https://colab.research.google.com/notebook#fileId=1V1Z657_5eSWPo8rLfVRwA0A5E4vkg7SI
-    * \
-        https://colab.research.google.com/drive/14Ibg-ngZXj15RKwjNwoZlOT32fQBOrBx#scrollTo=MYZ7NzAR7Dmw
+        https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/tokenize/newmm.py
 
 Rust implementation: ["Thanathip Suntorntip"]
 */
@@ -173,7 +171,7 @@ impl Newmm {
                     //only one candidate!
                     if let Some(first_position_list) = position_list.peek() {
                         let group_of_end_position_candidate =
-                            Self::bfs_paths_graph(&graph, end_position, *first_position_list,&mut reused_queue);
+                            Self::bfs_paths_graph(&graph, end_position, *first_position_list, &mut reused_queue);
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
