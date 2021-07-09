@@ -43,6 +43,4 @@ def segment(
     :rtype: List[str]
     """
     result = rust_segment(text, dict_name, safe, parallel)
-    for (index, utf8bytes) in enumerate(result):
-        result[index] = codecs.decode(bytearray(utf8bytes), encoding="utf-8")
     return result

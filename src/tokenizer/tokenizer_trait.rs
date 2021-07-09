@@ -1,4 +1,3 @@
-use crate::fixed_bytes_str::four_bytes::ValidUTF8BytesVec;
 
 /**
    This should be the only part exposed to lib.rs
@@ -9,11 +8,12 @@ pub trait Tokenizer {
         text: &str,
         safe: Option<bool>,
         parallel: Option<bool>,
-    ) -> Vec<ValidUTF8BytesVec>;
+    ) -> Vec<String>;
     fn segment_to_string(
         &self,
         text: &str,
         safe: Option<bool>,
         parallel: Option<bool>,
     ) -> Vec<String>;
+ 
 }

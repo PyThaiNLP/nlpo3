@@ -3,9 +3,9 @@ pub mod tokenizer;
 
 use crate::tokenizer::newmm_custom::Newmm;
 use ahash::AHashMap as HashMap;
-use fixed_bytes_str::four_bytes::ValidUTF8BytesVec;
 use lazy_static::lazy_static;
 use pyo3::prelude::*;
+use pyo3::types::{PyString};
 use pyo3::{exceptions, wrap_pyfunction};
 use std::sync::Mutex;
 use tokenizer::tokenizer_trait::Tokenizer;
@@ -25,13 +25,14 @@ lazy_static! {
 /// signature:    (text: str, safe = false, parallel = false) -> List[List[u8]]
 #[pyfunction]
 fn segment(
-    text: &str,
+    text: &PyString,
     dict_name: &str,
     safe: Option<bool>,
     parallel: Option<bool>,
-) -> PyResult<Vec<ValidUTF8BytesVec>> {
+) -> PyResult<Vec<String>> {
+    // let utf8_text = std::str::from_utf8(text.as_bytes())?; 
     if let Some(loaded_dict) = DICT_COLLECTION.lock().unwrap().get(dict_name) {
-        let result = loaded_dict.segment(text, safe, parallel);
+        let result = loaded_dict.segment_to_string(text.to_str()?, safe, parallel);
         Ok(result)
     } else {
         Err(exceptions::PyRuntimeError::new_err(format!(
