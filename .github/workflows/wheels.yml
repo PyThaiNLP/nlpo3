@@ -1,13 +1,13 @@
 # Build wheels for many platforms
 # see: https://github.com/pypa/cibuildwheel
 
-name: Build
+name: Build wheels
 
 on: [push, pull_request]
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}
     runs-on: ${{ matrix.os }}
     
     strategy:
@@ -15,19 +15,52 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
+        python: [36, 37, 38, 39]
+        bitness: [32, 64]
+        manylinux_image: [manylinux1, manylinux2010]
+        include:
+          # Run 32 and 64 bit version in parallel for Linux and Windows
+          - os: windows-latest
+            bitness: 64
+            platform_id: win_amd64
+          - os: windows-latest
+            bitness: 32
+            platform_id: win32
+          - os: ubuntu-latest
+            bitness: 64
+            platform_id: manylinux_x86_64
+          - os: ubuntu-latest
+            bitness: 32
+            platform_id: manylinux_i686
+          - os: macos-latest
+            bitness: 64
+            platform_id: macosx_x86_64
+        exclude:
+          - os: macos-latest
+            bitness: 32
+          # Remove manylinux1 from the windows and osx build matrix since
+          # manylinux_image is not used for these platforms
+          - os: windows-latest
+            manylinux_image: manylinux1
+          - os: macos-latest
+            manylinux_image: manylinux1
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout oxidized-thainlp
+        uses: actions/checkout@v2
 
       # Used to host cibuildwheel
-      - uses: actions/setup-python@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
 
-      - uses: actions-rs/toolchain@v1
+      - name: Setup Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
 
-      - uses: actions-rs/cargo@v1
+      - name: Setup Rust cargo
+        uses: actions-rs/cargo@v1
         with:
           command: check
 
@@ -35,24 +68,34 @@ jobs:
         run: |
           python -m pip install --upgrade pip
 
-      - name: Setup build enc
+      - name: Setup Python/Rust build env
         run: |
           python -m pip install --upgrade wheel setuptools setuptools-rust
+
+#      - name: Setup cibuildwheel
+#        run: python -m pip install cibuildwheel==2.0.0a2
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v1.12.0
         with:
           output-dir: wheelhouse
         env:
-          CIBW_BUILD: ${{ matrix.target }}
-          CIBW_PLATFORM: ${{ matrix.platform || matrix.os }}
-          CIBW_BEFORE_BUILD_LINUX: >
-            pip install -U setuptools-rust &&
-            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=nightly --profile=minimal -y
-          CIBW_BEFORE_BUILD_WINDOWS: 'rustup default nightly'
-        CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
-        CIBW_ENVIRONMENT_WINDOWS: 'PATH="$HOME\.cargo\bin:$PATH"'
+          SCCACHE_VERSION: 0.2.15
+          CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
+                            MACOSX_DEPLOYMENT_TARGET=10.13
+          CIBW_ENVIRONMENT_WINDOWS: 'PATH="$HOME\.cargo\bin:$PATH"'
+          CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
+          CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_BUILD_VERBOSITY: 1
+          #CIBW_BEFORE_BUILD_LINUX: >
+          #  pip install -U setuptools-rust &&
+          #  curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=nightly --profile=minimal -y
+          #CIBW_BEFORE_BUILD_WINDOWS: 'rustup default nightly'
 
-      - uses: actions/upload-artifact@v2
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
