@@ -81,10 +81,9 @@ jobs:
           output-dir: wheelhouse
         env:
           SCCACHE_VERSION: 0.2.15
-          CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
+          CIBW_ENVIRONMENT: PATH="$HOME/.cargo/bin:$PATH"
                             MACOSX_DEPLOYMENT_TARGET=10.13
-          CIBW_ENVIRONMENT_WINDOWS: 'PATH="$HOME\.cargo\bin:$PATH"'
-          CIBW_ENVIRONMENT: MACOSX_DEPLOYMENT_TARGET=10.13
+          CIBW_ENVIRONMENT_WINDOWS: PATH="$HOME\.cargo\bin:$PATH"
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
