@@ -1,0 +1,20 @@
+[package]
+name = "oxidized-nodejs-thainlp"
+version = "0.1.0"
+license = "Apache"
+edition = "2018"
+exclude = ["index.node"]
+
+[lib]
+name = "oxidized_nodejs_thainlp"
+path = "./src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies.neon]
+version = "0.8"
+default-features = false
+features = ["napi-6"]
+
+[dependencies]
+
+pythainlp-rust-modules = { path = ".." }
