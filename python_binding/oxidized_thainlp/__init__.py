@@ -2,7 +2,6 @@ from .oxidized_thainlp import (
     load_dict as load_dict_to_oxidized,
     segment as rust_segment,
 )
-import codecs
 from typing import List
 
 

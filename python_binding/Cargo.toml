@@ -1,12 +1,12 @@
+
 [package]
-name = "pythainlp-rust-modules"
+name = "oxidized-thainlp"
 version = "1.1.0"
 edition = "2018"
-include = ["pyproject.toml"]
 authors = ["Thanathip Suntorntip Gorlph"]
 
 [lib]
-name = "oxidized_thainlp_main_lib"
+name = "oxidized_thainlp"
 path = "src/lib.rs"# "cdylib" is necessary to produce a shared library for Python to import from.
 #
 # Downstream Rust code (including code in `bin/`, `examples/`, and `tests/`) will not be able
@@ -14,28 +14,11 @@ path = "src/lib.rs"# "cdylib" is necessary to produce a shared library for Pytho
 # crate-type = ["cdylib", "rlib"]
 crate-type = ["cdylib", "rlib"]
 
-[workspace]
-
-members = ["nodejs_binding","python_binding"]
-
-
+[dependencies.pyo3]
+version = "0.13.2"
+features = ["extension-module"]
 
 [dependencies]
-regex = "1.4.6"
-rayon = "1.5"
-binary-heap-plus = "0.4.1"
 lazy_static = "1.4.0"
-bytecount = "0.6.2"
-smol_str = "0.1.17"
 ahash = "0.7.2"
-
-
-[[test]]
-name = "basic"
-path = "tests/test_tokenizer.rs"
-test = true
-
-[[test]]
-name = "basic2"
-path = "tests/test_custom_string.rs"
-test = true
+pythainlp-rust-modules = { path = ".." }
