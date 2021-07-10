@@ -1,0 +1,3 @@
+include LICENSE README.md Cargo.toml words_th.txt
+recursive-include src *
+exclude build-wheels.sh

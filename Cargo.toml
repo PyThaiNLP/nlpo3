@@ -15,28 +15,27 @@ path = "src/lib.rs"
 # crate-type = ["cdylib", "rlib"]
 crate-type = ["cdylib", "rlib"]
 
+[dependencies]
+ahash = "0.7.2"
+binary-heap-plus = "0.4.1"
+bytecount = "0.6.2"
+lazy_static = "1.4.0"
+rayon = "1.5"
+regex = "1.4.6"
+rustc-hash = "1.1.0"
+smol_str = "0.1.17"
 
 [dependencies.pyo3]
 version = "0.13.2"
 features = ["extension-module"]
 
-[dependencies]
-regex = "1.4.6"
-rayon = "1.5"
-binary-heap-plus = "0.4.1"
-lazy_static = "1.4.0"
-bytecount = "0.6.2"
-smol_str = "0.1.17"
-rustc-hash = "1.1.0"
-ahash = "0.7.2"
-
 
 [[test]]
-name = "basic" 
+name = "basic"
 path = "tests/test_tokenizer.rs"
 test = true
 
 [[test]]
-name = "basic2" 
+name = "basic2"
 path = "tests/test_custom_string.rs"
 test = true

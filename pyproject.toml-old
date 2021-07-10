@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools", "wheel", "setuptools-rust"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=0.10,<0.11"]
+build-backend = "maturin"
 
 [tool.poetry]
 name = "pythainlp-rust-modules"
