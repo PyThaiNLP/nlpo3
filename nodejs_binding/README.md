@@ -53,7 +53,7 @@ In TypeScript (run on node)
 
 ```typescript
 
-import {segment,loadDict} from `${path_to_oxidized_nodejs_thainlp_directory}`
+import {segment,loadDict} from `${path_to_oxidized_nodejs_thainlp_directory}/index`
 
 loadDict("path/to/dict.file", "dict_name")
 segment("สวัสดีครับ", "dict_name")
