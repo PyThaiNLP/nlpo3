@@ -38,30 +38,19 @@ Just that!
 
 ### Build steps
 
-(to be revise for setuptools-rust toolchain)
-
-#### Linux
+#### Linux / macOS
 ```bash
-maturin build --release -i python --manylinux off
-```
-or
-```bash
-maturin build --release -i python
+python3 -m pip install --upgrade build
+python3 -m build
 ```
 
-#### Windows (PowerShell)
+#### Windows
 ```shell
-path\\to\\maturin.exe build --release -i python
+py -m pip install --upgrade build
+py -m build
 ```
 
-#### macOS
-```zsh
-maturin build --release -i python3
-```
-
-This should generate a wheel file, in `target/wheels/` directory, which can be installed by pip.
-
-Note: Omitting "-i python" will let Maturin build for all Python versions detected.
+This should generate a wheel file, in `dist/` directory, which can be installed by pip.
 
 ## Support
 
