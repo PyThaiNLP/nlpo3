@@ -51,7 +51,7 @@ jobs:
       #  run: |
       #    python -m pip install --upgrade pip
 
-      - if: ${{ !startsWith(matrix.os, 'windows')) || bitness != '32' }}
+      - if: ${{ !startsWith(matrix.os, 'windows') || bitness != '32' }}
         name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
         with:
@@ -100,6 +100,3 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
-
-#            pip install -U setuptools-rust &&
-#          CIBW_ENVIRONMENT_WINDOWS: PATH="$HOME\.cargo\bin:$PATH"
