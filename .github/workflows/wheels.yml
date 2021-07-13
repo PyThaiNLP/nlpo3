@@ -93,7 +93,6 @@ jobs:
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_BEFORE_BUILD_LINUX: >
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
-#            pip install -U setuptools-rust &&
             CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
           CIBW_TEST_REQUIRES: pytest
 
@@ -101,3 +100,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
+
+#            pip install -U setuptools-rust &&
