@@ -14,14 +14,14 @@ jobs:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
       matrix:
-        #os: [windows-latest, ubuntu-latest, macos-latest,]
+        os: [windows-latest, ubuntu-latest, macos-latest,]
         #python: [36, 37, 38, 39]
-        #bitness: [32, 64]
-        #manylinux_image: [manylinux2010, manylinux2014]
-        os: [ubuntu-latest]
+        bitness: [32, 64]
+        manylinux_image: [manylinux2010, manylinux2014]
+        # os: [ubuntu-latest]
         python: [36]
-        bitness: [64]
-        manylinux_image: [manylinux2014]
+        # bitness: [64]
+        # manylinux_image: [manylinux2014]
         include:
           - os: windows-latest
             bitness: 64

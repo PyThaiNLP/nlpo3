@@ -2,14 +2,12 @@
 requires = ["setuptools", "setuptools-rust", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "pythainlp-rust-modules"
 version = "1.0.0"
-authors = ["Thanathip Suntorntip", "Arthit Suriyawongkul", "Wannaphong Phatthiyaphaibun"]
 description = "Thai Natural Language Processing in Rust, with Python-binding"
 readme = "README.md"
-repository = "https://github.com/PyThaiNLP/oxidized-thainlp"
-homepage = "https://github.com/PyThaiNLP/oxidized-thainlp"
+requires-python = ">=3.6"
 license = "Apache-2.0"
 keywords = [
     "thai",
@@ -17,6 +15,11 @@ keywords = [
     "nlp",
     "rust",
     "pythainlp",
+]
+authors = [
+  {name = "Thanathip Suntorntip"},
+  {name = "Arthit Suriyawongkul"},
+  {name = "Wannaphong Phatthiyaphaibun"},
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -28,6 +31,10 @@ classifiers = [
     "Topic :: Text Processing :: Linguistic",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+
+[project.urls]
+homepage = "https://github.com/PyThaiNLP/oxidized-thainlp"
+repository = "https://github.com/PyThaiNLP/oxidized-thainlp"
 
 [tool.poetry.dependencies]
 python = "^3.6"
