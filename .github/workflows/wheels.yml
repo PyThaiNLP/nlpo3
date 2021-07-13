@@ -14,10 +14,14 @@ jobs:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest,]
-        python: [36, 37, 38, 39]
-        bitness: [32, 64]
-        manylinux_image: [manylinux2010, manylinux2014]
+        #os: [windows-latest, ubuntu-latest, macos-latest,]
+        #python: [36, 37, 38, 39]
+        #bitness: [32, 64]
+        #manylinux_image: [manylinux2010, manylinux2014]
+        os: [ubuntu-latest]
+        python: [36]
+        bitness: [64]
+        manylinux_image: [manylinux2014]
         include:
           - os: windows-latest
             bitness: 64
@@ -43,7 +47,7 @@ jobs:
             manylinux_image: manylinux2010
 
     steps:
-      - name: Checkout oxidized-thainlp
+      - name: Checkout source code
         uses: actions/checkout@v2
           
       - if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
@@ -91,9 +95,9 @@ jobs:
                                   CXX=/usr/bin/clang++
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
-          CIBW_BEFORE_ALL: >
-            python -m pip install --upgrade pip &&
-            python -m pip install --upgrade setuptools-rust
+#          CIBW_BEFORE_ALL: >
+#            python -m pip install --upgrade pip &&
+#            python -m pip install --upgrade setuptools-rust
           CIBW_BEFORE_BUILD_LINUX: >
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
           CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
@@ -102,3 +106,24 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Source distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+
+      - name: Build source distribution
+        run: bash build_tools/github/build_source.sh
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
