@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel", "setuptools-rust"]
+requires = ["setuptools", "setuptools-rust", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.poetry]
@@ -34,6 +34,5 @@ python = "^3.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
-wheel = "*"
 pytest-runner = "*"
-maturin = "*"
+wheel = "*"
