@@ -15,10 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest,]
-        #python: [36, 37, 38, 39]
         python: [39]
         bitness: [32, 64]
-        manylinux_image: [manylinux2010]
+        manylinux_image: [manylinux2014]
         include:
           - os: windows-latest
             bitness: 64
@@ -43,14 +42,17 @@ jobs:
       - name: Checkout oxidized-thainlp
         uses: actions/checkout@v2
 
-      # Used to host cibuildwheel
-      #- name: Setup Python
-      #  uses: actions/setup-python@v2
-
-      #- name: Upgrade Python pip
-      #  run: |
-      #    python -m pip install --upgrade pip
-
+      - name: Cache Rust Cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          
       - if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
         name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
@@ -65,10 +67,6 @@ jobs:
           profile: minimal
           toolchain: stable
           target: i686-pc-windows-msvc
-
-      #- name: Setup Python/Rust build env
-      #  run: |
-      #    python -m pip install --upgrade wheel setuptools setuptools-rust
 
       - name: Setup Rust dependencies
         uses: actions-rs/cargo@v1
