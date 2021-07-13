@@ -4,7 +4,7 @@ Thai Natural Language Processing in Rust, with Python-binding.
 
 ## Features
 
-- newmm dictionary-based word tokenization, at ultra fast speed
+- newmm dictionary-based word tokenization, 2x faster than PyThaiNLP pure Python implementation
 - support custom dictionary
 
 ## Usage
@@ -52,6 +52,6 @@ py -m build
 
 This should generate a wheel file, in `dist/` directory, which can be installed by pip.
 
-## Support
+## Issues
 
 Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
