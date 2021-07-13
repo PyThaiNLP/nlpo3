@@ -38,6 +38,8 @@ Just that!
 
 ### Build steps
 
+(to be revise for setuptools-rust toolchain)
+
 #### Linux
 ```bash
 maturin build --release -i python --manylinux off

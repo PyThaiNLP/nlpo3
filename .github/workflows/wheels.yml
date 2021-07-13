@@ -18,7 +18,7 @@ jobs:
         # python: [36, 37, 38, 39]
         python: [36]
         bitness: [32, 64]
-        manylinux_image: [manylinux1, manylinux2010]
+        manylinux_image: [manylinux2010]
         include:
           # Run 32 and 64 bit version in parallel for Linux and Windows
           - os: windows-latest
@@ -41,10 +41,10 @@ jobs:
             bitness: 32
           # Remove manylinux1 from the windows and osx build matrix since
           # manylinux_image is not used for these platforms
-          - os: windows-latest
-            manylinux_image: manylinux1
-          - os: macos-latest
-            manylinux_image: manylinux1
+          #- os: windows-latest
+          #  manylinux_image: manylinux1
+          #- os: macos-latest
+          #  manylinux_image: manylinux1
 
     steps:
       - name: Checkout oxidized-thainlp
