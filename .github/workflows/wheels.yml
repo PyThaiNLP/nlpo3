@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest,]
-        python: [36, 37, 38, 39]
-        #python: [36]
+        #python: [36, 37, 38, 39]
+        python: [39]
         bitness: [32, 64]
         manylinux_image: [manylinux2010]
         include:
@@ -77,6 +77,7 @@ jobs:
         env:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+          CIBW_ENVIRONMENT: PATH="$HOME/.cargo/bin:$PATH
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.13
                                   CC=/usr/bin/clang
                                   CXX=/usr/bin/clang++
@@ -96,4 +97,3 @@ jobs:
 
 #            pip install -U setuptools-rust &&
 #          CIBW_ENVIRONMENT_WINDOWS: PATH="$HOME\.cargo\bin:$PATH"
-#          CIBW_ENVIRONMENT: PATH="$HOME/.cargo/bin:$PATH"
