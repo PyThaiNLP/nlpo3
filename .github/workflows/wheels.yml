@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest,]
-        python: [39]
+        python: [36]
         bitness: [32, 64]
         manylinux_image: [manylinux2010, manylinux2014]
         include:
@@ -75,7 +75,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: cargo-cache-cp${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v1.12.0
