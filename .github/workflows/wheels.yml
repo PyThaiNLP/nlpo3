@@ -15,7 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        python: [36, 37, 38]
+        # python: [36, 37, 38, 39]
+        python: [36]
         bitness: [32, 64]
         manylinux_image: [manylinux1, manylinux2010]
         include:
@@ -38,16 +39,12 @@ jobs:
         exclude:
           - os: macos-latest
             bitness: 32
-          # Remove manylinux from the windows and osx build matrix since
+          # Remove manylinux1 from the windows and osx build matrix since
           # manylinux_image is not used for these platforms
           - os: windows-latest
             manylinux_image: manylinux1
           - os: macos-latest
             manylinux_image: manylinux1
-          - os: windows-latest
-            manylinux_image: manylinux2010
-          - os: macos-latest
-            manylinux_image: manylinux2010
 
     steps:
       - name: Checkout oxidized-thainlp
@@ -95,9 +92,9 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_BEFORE_BUILD_LINUX: >
-            pip install -U setuptools-rust &&
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
-          CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
+#            pip install -U setuptools-rust &&
+            CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
           CIBW_TEST_REQUIRES: pytest
 
       - name: Store artifacts
