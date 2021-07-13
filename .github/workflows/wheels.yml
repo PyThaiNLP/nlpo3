@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest,]
-        # python: [36, 37, 38, 39]
-        python: [36]
+        python: [36, 37, 38, 39]
+        #python: [36]
         bitness: [32, 64]
         manylinux_image: [manylinux2010]
         include:
@@ -33,17 +33,6 @@ jobs:
           - os: ubuntu-latest
             bitness: 32
             platform_id: manylinux_i686
-          - os: macos-latest
-            bitness: 64
-            platform_id: macosx_x86_64
-          - os: macos-latest
-            python: 39
-            bitness: 64
-            platform_id: macosx_arm64
-          - os: macos-latest
-            python: 39
-            bitness: 64
-            platform_id: macosx_universal2
         exclude:
           - os: macos-latest
             bitness: 32
@@ -57,7 +46,6 @@ jobs:
     steps:
       - name: Checkout oxidized-thainlp
         uses: actions/checkout@v2
-
 
       # Used to host cibuildwheel
       #- name: Setup Python
@@ -89,8 +77,6 @@ jobs:
         env:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
-          CIBW_ENVIRONMENT: PATH="$HOME/.cargo/bin:$PATH"
-          CIBW_ENVIRONMENT_WINDOWS: PATH="$HOME\.cargo\bin:$PATH"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.13
                                   CC=/usr/bin/clang
                                   CXX=/usr/bin/clang++
@@ -109,3 +95,5 @@ jobs:
           path: ./wheelhouse/*.whl
 
 #            pip install -U setuptools-rust &&
+#          CIBW_ENVIRONMENT_WINDOWS: PATH="$HOME\.cargo\bin:$PATH"
+#          CIBW_ENVIRONMENT: PATH="$HOME/.cargo/bin:$PATH"
