@@ -51,14 +51,14 @@ jobs:
       #  run: |
       #    python -m pip install --upgrade pip
 
-      - if: ! startsWith(matrix.os, "windows") || bitness != "32"
+      - if: ! startsWith(${{ matrix.os }}, "windows") || bitness != "32"
         name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
 
-      - if: startsWith(matrix.os, "windows") && bitness == "32"
+      - if: startsWith(${{ matrix.os }}, "windows") && bitness == "32"
         name: Setup Rust toolchain - win32
         uses: actions-rs/toolchain@v1
         with:
