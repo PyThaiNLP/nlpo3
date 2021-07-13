@@ -32,6 +32,9 @@ jobs:
           - os: ubuntu-latest
             bitness: 32
             platform_id: manylinux_i686
+          - os: macos-latest
+            bitness: 64
+            platform_id: macosx_x86_64
         exclude:
           - os: macos-latest
             bitness: 32
@@ -48,11 +51,20 @@ jobs:
       #  run: |
       #    python -m pip install --upgrade pip
 
-      - name: Setup Rust toolchain
+      - if: ! startsWith(matrix.os, "windows") || bitness != "32"
+        name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
+
+      - if: startsWith(matrix.os, "windows") && bitness == "32"
+        name: Setup Rust toolchain - win32
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: i686-pc-windows-msvc
 
       #- name: Setup Python/Rust build env
       #  run: |
@@ -72,6 +84,7 @@ jobs:
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.13
+                                  PATH="$HOME/.cargo/bin:$PATH"
                                   CC=/usr/bin/clang
                                   CXX=/usr/bin/clang++
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
