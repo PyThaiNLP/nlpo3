@@ -17,7 +17,7 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest,]
         python: [39]
         bitness: [32, 64]
-        manylinux_image: [manylinux2014]
+        manylinux_image: [manylinux2010, manylinux2014]
         include:
           - os: windows-latest
             bitness: 64
@@ -37,21 +37,14 @@ jobs:
         exclude:
           - os: macos-latest
             bitness: 32
+          - os: windows-latest
+            manylinux_image: manylinux2010
+          - os: macos-latest
+            manylinux_image: manylinux2010
 
     steps:
       - name: Checkout oxidized-thainlp
         uses: actions/checkout@v2
-
-      - name: Cache Rust Cargo
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           
       - if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
         name: Setup Rust toolchain - non-win32
@@ -72,6 +65,17 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
+
+      - name: Cache Rust Cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v1.12.0
