@@ -32,20 +32,20 @@ Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
 setup(
     name="pythainlp-rust-modules",
     version="1.0.0",
-    description = "Thai Natural Language Processing in Rust, with Python-binding",
+    description="Thai Natural Language Processing in Rust, with Python-binding",
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     python_requires=">=3.6",
-    license = "Apache-2.0",
-    keywords = [
+    license="Apache-2.0",
+    keywords=[
         "thai",
         "tokenizer",
         "nlp",
         "rust",
         "pythainlp",
     ],
-    author = "Thanathip Suntorntip, Arthit Suriyawongkul, Wannaphong Phatthiyaphaibun",
-    classifiers = [
+    author="Thanathip Suntorntip, Arthit Suriyawongkul, Wannaphong Phatthiyaphaibun",
+    classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
         "Intended Audience :: Developers",
@@ -60,7 +60,13 @@ setup(
         "repository": "https://github.com/PyThaiNLP/oxidized-thainlp",
     },
     include_package_data=True,
-    packages=find_packages(exclude=["tests", "tests.*", "notebooks",]),
+    packages=find_packages(
+        exclude=[
+            "tests",
+            "tests.*",
+            "notebooks",
+        ]
+    ),
     test_suite="tests",
     zip_safe=False,
     rust_extensions=[
