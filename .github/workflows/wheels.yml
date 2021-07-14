@@ -6,9 +6,28 @@ name: Build wheels
 on: [push, pull_request]
 
 jobs:
+  # Check whether to build the wheels and the source tarball
+  check_build_trigger:
+    name: Check build trigger
+    runs-on: ubuntu-latest
+    if: github.repository == 'pythainlp/oxidized-thainlp'
+    outputs:
+      build: ${{ steps.check_build_trigger.outputs.build }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - id: check_build_trigger
+        name: Check build trigger
+        run: bash build_tools/github/check_build_trigger.sh
+
   build_wheels:
     name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}
     runs-on: ${{ matrix.os }}
+    needs: check_build_trigger
     
     strategy:
       # Ensure that a wheel builder finishes even if another fails
@@ -107,6 +126,7 @@ jobs:
   build_sdist:
     name: Source distribution
     runs-on: ubuntu-latest
+    needs: check_build_trigger
 
     steps:
       - name: Checkout source code
@@ -125,12 +145,12 @@ jobs:
         with:
           path: dist/*.tar.gz
 
-  publish_pypi:
-    name: Publish package to PyPI
-    runs-on: ubuntu-latest
-    needs: [build_wheels, build_sdist]
-    # The artifacts cannot be uploaded on PRs
-    if: github.event_name != 'pull_request'
+  # publish_pypi:
+  #   name: Publish package to PyPI
+  #   runs-on: ubuntu-latest
+  #   needs: [build_wheels, build_sdist]
+  #   # The artifacts cannot be uploaded on PRs
+  #   if: github.event_name != 'pull_request'
 
   #   steps:
   #     - name: Publish package
