@@ -36,7 +36,7 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest,]
         python: [36, 37, 38, 39]
         bitness: [32, 64]
-        manylinux_image: [manylinux2010, manylinux2014, manylinux_2_24]
+        manylinux_image: [manylinux2010, manylinux2014]
         include:
           - os: windows-latest
             bitness: 64
@@ -60,10 +60,6 @@ jobs:
             manylinux_image: manylinux2010
           - os: macos-latest
             manylinux_image: manylinux2010
-          - os: windows-latest
-            manylinux_image: manylinux2014
-          - os: macos-latest
-            manylinux_image: manylinux2014
 
     steps:
       - name: Checkout source code
