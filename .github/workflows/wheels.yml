@@ -3,7 +3,15 @@
 
 name: Build wheels
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Manual run
+  workflow_dispatch:
 
 jobs:
   # Check whether to build the wheels and the source tarball
