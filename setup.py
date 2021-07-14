@@ -34,8 +34,10 @@ Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
 setup(
     name="pythainlp-rust-modules",
     version="1.0.0",
-    description=("Thai Natural Language Processing in Rust, "
-        "with Python-binding"),
+    description=(
+        "Thai Natural Language Processing in Rust, "
+        "with Python-binding"
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
@@ -47,9 +49,11 @@ setup(
         "rust",
         "pythainlp",
     ],
-    author=("Thanathip Suntorntip, "
+    author=(
+        "Thanathip Suntorntip, "
         "Arthit Suriyawongkul, "
-        "Wannaphong Phatthiyaphaibun"),
+        "Wannaphong Phatthiyaphaibun"
+    ),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
