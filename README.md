@@ -4,8 +4,10 @@ Thai Natural Language Processing in Rust, with Python-binding.
 
 ## Features
 
-- newmm dictionary-based word tokenization, 2x faster than PyThaiNLP pure Python implementation
-- support custom dictionary
+- Word tokenizer
+  - maximal-matching dictionary-based tokenization
+  - 2x faster than similar pure Python implementation (PyThaiNLP's newmm)
+  - support custom dictionary
 
 ## Usage
 
