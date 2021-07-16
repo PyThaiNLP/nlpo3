@@ -43,9 +43,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest,]
-        python: [cp36, cp37, cp38, cp39, pp36, pp37]
-        bitness: [32, 64]
+#        python: [cp36, cp37, cp38, cp39, pp36, pp37]
+#        bitness: [32, 64]
         manylinux_image: [manylinux2010, manylinux2014]
+        python: [cp38]
+        bitness: [64]
         include:
           - os: windows-latest
             bitness: 64

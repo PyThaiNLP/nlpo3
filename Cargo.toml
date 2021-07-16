@@ -24,8 +24,6 @@ ahash = "0.7.2"
 binary-heap-plus = "0.4.1"
 bytecount = "0.6.2"
 smol_str = "0.1.17"
-ahash = "0.7.2"
-
 
 [[test]]
 name = "basic"
