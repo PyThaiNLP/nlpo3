@@ -40,16 +40,9 @@ Just that!
 
 ### Build steps
 
-#### Linux / macOS
 ```bash
-python3 -m pip install --upgrade build
-python3 -m build
-```
-
-#### Windows
-```shell
-py -m pip install --upgrade build
-py -m build
+python -m pip install --upgrade build
+python -m build
 ```
 
 This should generate a wheel file, in `dist/` directory, which can be installed by pip.
