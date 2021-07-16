@@ -3,7 +3,7 @@
 set -e
 set -x
 
-cd ../../python_binding
+cd ../../
 
 python -m venv build_env
 source build_env/bin/activate
