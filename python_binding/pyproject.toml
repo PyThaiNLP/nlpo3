@@ -4,20 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [tool.poetry]
 name = "pythainlp-rust-modules"
-version = "1.0.0"
-authors = ["Thanathip Suntorntip", "Arthit Suriyawongkul", "Wannaphong Phatthiyaphaibun"]
-description = "Thai Natural Language Processing in Rust, with Python-binding"
+version = "1.1.0"
+authors = [
+    "Thanathip Suntorntip",
+    "Arthit Suriyawongkul",
+    "Wannaphong Phatthiyaphaibun",
+]
+description = "Thai Natural Language Processing in Rust, with Python-binding."
 readme = "README.md"
 repository = "https://github.com/PyThaiNLP/oxidized-thainlp"
 homepage = "https://github.com/PyThaiNLP/oxidized-thainlp"
 license = "Apache-2.0"
-keywords = [
-    "thai",
-    "tokenizer",
-    "nlp",
-    "rust",
-    "pythainlp",
-]
+keywords = ["thai", "tokenizer", "nlp", "rust", "pyo3"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
