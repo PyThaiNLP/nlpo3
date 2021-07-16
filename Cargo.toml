@@ -23,7 +23,9 @@ members = ["nodejs_binding", "python_binding"]
 ahash = "0.7.2"
 binary-heap-plus = "0.4.1"
 bytecount = "0.6.2"
+lazy_static = "1.4.0"
 smol_str = "0.1.17"
+
 
 [[test]]
 name = "basic"

@@ -10,8 +10,6 @@ exclude = ["index.node"]
 crate-type = ["cdylib"]
 
 [dependencies]
-lazy_static = "1.4.0"
-ahash = "0.7.2"
 pythainlp-rust-modules = { path = ".." }
 
 [dependencies.neon]

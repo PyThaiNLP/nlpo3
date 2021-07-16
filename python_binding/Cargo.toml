@@ -16,8 +16,6 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-lazy_static = "1.4.0"
-ahash = "0.7.2"
 pythainlp-rust-modules = { path = ".." }
 
 [dependencies.pyo3]
