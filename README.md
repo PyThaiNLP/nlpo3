@@ -4,8 +4,10 @@ Thai Natural Language Processing in Rust, with Python-binding.
 
 ## Features
 
-- newmm dictionary-based word tokenization, at ultra fast speed
-- support custom dictionary
+- Word tokenizer
+  - maximal-matching dictionary-based tokenization
+  - 2x faster than similar pure Python implementation (PyThaiNLP's newmm)
+  - support custom dictionary
 
 ## Usage
 
@@ -34,35 +36,18 @@ Just that!
   - Ubuntu: `sudo apt-get install python3-dev`
   - macOS: No action needed
 - [PyO3](https://github.com/PyO3/pyo3) - already included in Cargo.toml
-- [Maturin](https://github.com/PyO3/maturin) 
-  -  For Windows, use "pip install --pre -U maturin" as of 2021-07-10. See (this Maturin github issue for details)[https://github.com/PyO3/maturin/issues/579] 
+- [setuptools-rust](https://github.com/PyO3/setuptools-rust)
 
 ### Build steps
 
-#### Linux
 ```bash
-maturin build --release -i python --many-linux off -m python_binding/Cargo.toml
-```
-or
-```bash
-maturin build --release -i python -m python_binding/Cargo.toml
+python -m pip install --upgrade build
+python -m build
 ```
 
-#### Windows (PowerShell)
-```shell
-path\\to\\maturin.exe build --release -i python -m python_binding/Cargo.toml
-```
+This should generate a wheel file, in `dist/` directory, which can be installed by pip.
 
-#### macOS
-```zsh
-maturin build --release -i python3 -m python_binding/Cargo.toml
-```
-
-This should generate a wheel file, in `target/wheels/` directory, which can be installed by pip.
-
-Note: Omitting "-i python" will let Maturin build for all Python versions detected.
-
-## Support
+## Issues
 
 Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
 
