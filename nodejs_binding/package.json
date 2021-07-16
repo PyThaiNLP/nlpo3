@@ -1,11 +1,11 @@
 {
-  "name": "oxidized-nodejs-thainlp",
+  "name": "nlpo3",
   "version": "0.1.0",
   "description": "",
-  "main": "./oxidized_nodejs_thainlp/rust_mod.node",
+  "main": "./nlpo3/rust_mod.node",
   "scripts": {
-    "build": "cargo-cp-artifact -nc ./oxidized_nodejs_thainlp/rust_mod.node -- cargo build --message-format=json-render-diagnostics",
-    "release": "cargo-cp-artifact -nc ./oxidized_nodejs_thainlp/rust_mod.node -- cargo build  --release --message-format=json-render-diagnostics && tsc",
+    "build": "cargo-cp-artifact -nc ./nlpo3/rust_mod.node -- cargo build --message-format=json-render-diagnostics",
+    "release": "cargo-cp-artifact -nc ./nlpo3/rust_mod.node -- cargo build  --release --message-format=json-render-diagnostics && tsc",
     "install": "npm run build",
     "test": "cargo test"
   },

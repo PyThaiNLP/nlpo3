@@ -1,9 +1,8 @@
 use neon::prelude::*;
-use oxidized_thainlp_main_lib::tokenizer::{newmm_custom::Newmm, tokenizer_trait::Tokenizer};
-// use oxidized_newmm_tokenizer::tokenizer::newmm_custom::Newmm;
+use nlpo3::tokenizer::{newmm_custom::Newmm, tokenizer_trait::Tokenizer};
 use ahash::AHashMap as HashMap;
 use lazy_static::lazy_static;
-use oxidized_thainlp_main_lib::tokenizer;
+use nlpo3::tokenizer;
 use std::{error::Error, sync::Mutex};
 lazy_static! {
     static ref  DICT_COLLECTION:Mutex<HashMap<String,Box<Newmm>>> = Mutex::new(HashMap::new());

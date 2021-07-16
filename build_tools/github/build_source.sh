@@ -13,7 +13,7 @@ python -m pip install --upgrade pip
 python -m pip install --upgrade setuptools-rust
 python -m pip install --upgrade twine
 
-cd oxidized-thainlp/oxidized-thainlp
+cd oxidized-thainlp/python_binding
 python setup.py sdist
 
 twine check dist/*.tar.gz

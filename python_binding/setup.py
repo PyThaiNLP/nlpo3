@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 from setuptools_rust import Binding, RustExtension
 
 long_description = """
-Thai Natural Language Processing in Rust, with Python-binding.
+Thai Natural Language Processing in Rust,
 
 ## Features
 
@@ -20,7 +20,7 @@ pip install pythainlp-rust-modules
 
 Use in Python:
 ```python
-from oxidized_thainlp import load_dict, segment
+from nlpo3 import load_dict, segment
 
 load_dict("path/to/dict.file", "dict_name")
 segment("สวัสดีครับ", "dict_name")

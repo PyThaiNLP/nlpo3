@@ -1,16 +1,14 @@
-use oxidized_thainlp_main_lib::tokenizer::newmm_custom::Newmm;
-// use oxidized_newmm_tokenizer::tokenizer::newmm_custom::Newmm;
-use oxidized_thainlp_main_lib::tokenizer;
-// ีuse oxidized_newmm_tokenizer::tokenizer::newmm_custom::Newmm;
 use ahash::AHashMap as HashMap;
 use lazy_static::lazy_static;
+use nlpo3::tokenizer;
+use nlpo3::tokenizer::newmm_custom::Newmm;
 use pyo3::prelude::*;
-use pyo3::types::{PyString};
+use pyo3::types::PyString;
 use pyo3::{exceptions, wrap_pyfunction};
 use std::sync::Mutex;
 use tokenizer::tokenizer_trait::Tokenizer;
 lazy_static! {
-    static ref  DICT_COLLECTION:Mutex<HashMap<String,Box<Newmm>>> = Mutex::new(HashMap::new());
+    static ref DICT_COLLECTION:Mutex<HashMap<String,Box<Newmm>>> = Mutex::new(HashMap::new());
     // static ref DEFAULT_DICT:Newmm = Newmm::new(None);
 }
 
@@ -30,7 +28,6 @@ fn segment(
     safe: Option<bool>,
     parallel: Option<bool>,
 ) -> PyResult<Vec<String>> {
-    // let utf8_text = std::str::from_utf8(text.as_bytes())?; 
     if let Some(loaded_dict) = DICT_COLLECTION.lock().unwrap().get(dict_name) {
         let result = loaded_dict.segment_to_string(text.to_str()?, safe, parallel);
         Ok(result)
@@ -42,7 +39,7 @@ fn segment(
     }
 }
 
-/// load_dict(file_path,dict_name /)
+/// load_dict(file_path, dict_name /)
 /// --
 ///
 /// This function loads a dictionary file and add it to dict collection
@@ -69,8 +66,9 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<String> {
         ))
     }
 }
+
 #[pymodule]
-fn oxidized_thainlp(_py: Python, m: &PyModule) -> PyResult<()> {
+fn nlpo3(_py: Python, m: &PyModule) -> PyResult<()> {
     {
         let mut dict_collect = DICT_COLLECTION.lock().unwrap();
         dict_collect.insert("default".to_string(), Box::from(Newmm::new(None)));

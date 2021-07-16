@@ -1,5 +1,5 @@
 [package]
-name = "oxidized-nodejs-thainlp"
+name = "nlpo3-nodejs"
 version = "0.1.0"
 edition = "2018"
 license = "Apache"
@@ -10,7 +10,7 @@ exclude = ["index.node"]
 crate-type = ["cdylib"]
 
 [dependencies]
-pythainlp-rust-modules = { path = ".." }
+nlpo3 = { path = ".." }
 
 [dependencies.neon]
 version = "0.8"

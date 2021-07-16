@@ -1,5 +1,5 @@
-use oxidized_thainlp_main_lib::tokenizer::tokenizer_trait::Tokenizer;
-use oxidized_thainlp_main_lib::tokenizer::{
+use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
+use nlpo3::tokenizer::{
     //dict_reader_custom::{
     //    create_dict_trie as create_custom_dict_trie, DictSource as CustomDictSource,
     //},
