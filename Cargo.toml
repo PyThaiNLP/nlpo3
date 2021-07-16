@@ -2,12 +2,14 @@
 name = "pythainlp-rust-modules"
 version = "1.1.0"
 edition = "2018"
-include = ["pyproject.toml"]
+license = "Apache"
 authors = ["Thanathip Suntorntip Gorlph"]
+include = ["pyproject.toml"]
 
 [lib]
 name = "oxidized_thainlp_main_lib"
-path = "src/lib.rs"# "cdylib" is necessary to produce a shared library for Python to import from.
+path = "src/lib.rs"
+# "cdylib" is necessary to produce a shared library for Python to import from.
 #
 # Downstream Rust code (including code in `bin/`, `examples/`, and `tests/`) will not be able
 # to `use string_sum;` unless the "rlib" or "lib" crate type is also included, e.g.:
