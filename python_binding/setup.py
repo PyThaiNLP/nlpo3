@@ -32,11 +32,10 @@ Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
 """
 
 setup(
-    name="pythainlp-rust-modules",
+    name="nlpo3",
     version="1.0.0",
     description=(
-        "Thai Natural Language Processing in Rust, "
-        "with Python-binding"
+        "Python binding for NLPO3 Thai language processing library"
     ),
     long_description=long_description,
     long_description_content_type="text/markdown",

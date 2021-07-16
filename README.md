@@ -16,7 +16,7 @@ with Python and Node bindings.
 
 Install:
 ```bash
-pip install pythainlp-rust-modules
+pip install nlpo3
 ```
 
 Use:

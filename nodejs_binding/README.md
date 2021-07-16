@@ -55,10 +55,6 @@ segment("สวัสดีครับ", "dict_name")
 Just that!
 
 
-## Support
-
-Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
-
 # TODO
 
 Find a way to build and publish on npm.

@@ -166,7 +166,7 @@ jobs:
       - name: Store artifacts
         uses: actions/upload-artifact@v2
         with:
-          path: dist/*.tar.gz
+          path: python_binding/dist/*.tar.gz
 
   publish_pypi:
     name: Publish Python package to PyPI
