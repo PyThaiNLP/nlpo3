@@ -69,14 +69,7 @@ setup(
         "repository": "https://github.com/PyThaiNLP/oxidized-thainlp",
     },
     include_package_data=True,
-    packages=find_packages(
-        exclude=[
-            "tests",
-            "tests.*",
-            "notebooks",
-        ]
-    ),
-    test_suite="tests",
+    packages=find_packages(),
     zip_safe=False,
     rust_extensions=[
         RustExtension(
