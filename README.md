@@ -1,6 +1,6 @@
-# nlpo3 (formerly oxidized-thainlp)
+# nlpo3
 
-Thai Natural Language Processing in Rust,
+Thai Natural Language Processing library in Rust,
 with Python and Node bindings.
 
 ## Features
@@ -12,48 +12,18 @@ with Python and Node bindings.
 
 ## Usage
 
-### Python
+In `Cargo.toml`:
 
-Install:
-```bash
-pip install nlpo3
+```toml
+[dependencies]
+# ...
+nlpo3 = "1.1.1"
 ```
-
-Use:
-```python
-from nlpo3 import load_dict, segment
-
-load_dict("path/to/dict.file", "dict_name")
-segment("สวัสดีครับ", "dict_name")
-```
-
-### NodeJS
-
-TODO:
-
-## Build It Yourself
-
-### Build Python binding
-
-#### Requirements
-
-- [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
-- Python 3.6 or newer
-- Python Development Headers
-  - Ubuntu: `sudo apt-get install python3-dev`
-  - macOS: No action needed
-- [PyO3](https://github.com/PyO3/pyo3) - already included in Cargo.toml
-- [setuptools-rust](https://github.com/PyO3/setuptools-rust)
-
-#### Steps
-
-```bash
-python -m pip install --upgrade build
-python -m build
-```
-
-This should generate a wheel file, in `dist/` directory, which can be installed by pip.
 
 ## Issues
 
 Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
+
+## Todo
+
+API document.
