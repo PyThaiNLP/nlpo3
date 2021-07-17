@@ -11,6 +11,7 @@ homepage = "https://github.com/PyThaiNLP/oxidized-thainlp/"
 documentation = "https://github.com/PyThaiNLP/oxidized-thainlp/"
 repository = "https://github.com/PyThaiNLP/oxidized-thainlp/"
 readme = "README.md"
+exclude = [".gitignore", ".github/*", "build_tools/*", "tests/*", "notebooks/*"]
 
 [lib]
 path = "src/lib.rs"
