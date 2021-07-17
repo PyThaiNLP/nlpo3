@@ -2,7 +2,7 @@
 name = "nlpo3-nodejs"
 version = "0.1.0"
 edition = "2018"
-license = "Apache"
+license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
 exclude = ["index.node"]
 

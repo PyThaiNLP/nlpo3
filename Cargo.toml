@@ -2,9 +2,15 @@
 name = "nlpo3"
 version = "1.1.0"
 edition = "2018"
-license = "Apache"
+license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
-include = ["pyproject.toml"]
+description = "Thai Natural Language Processing, with Python and Node bindings"
+keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
+classifiers = ["text-processing"]
+homepage = "https://github.com/PyThaiNLP/oxidized-thainlp/"
+documentation = "https://github.com/PyThaiNLP/oxidized-thainlp/"
+repository = "https://github.com/PyThaiNLP/oxidized-thainlp/"
+readme = "README.md"
 
 [lib]
 path = "src/lib.rs"
@@ -12,9 +18,6 @@ path = "src/lib.rs"
 # Downstream Rust code (including code in `bin/`, `examples/`, and `tests/`) will not be able
 # to `use string_sum;` unless the "rlib" or "lib" crate type is also included.
 crate-type = ["cdylib", "rlib"]
-
-[workspace]
-members = ["nodejs_binding", "python_binding"]
 
 [dependencies]
 ahash = "0.7.2"
