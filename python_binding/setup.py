@@ -15,7 +15,7 @@ Thai Natural Language Processing in Rust,
 
 Install:
 ```bash
-pip install pythainlp-rust-modules
+pip install nlpo3
 ```
 
 Use in Python:
@@ -33,7 +33,7 @@ Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
 
 setup(
     name="nlpo3",
-    version="1.0.0",
+    version="1.1.0",
     description=(
         "Python binding for NLPO3 Thai language processing library"
     ),
@@ -53,6 +53,8 @@ setup(
         "Arthit Suriyawongkul, "
         "Wannaphong Phatthiyaphaibun"
     ),
+    author_email="wannaphong@yahoo.com",
+    url="https://github.com/PyThaiNLP/oxidized-thainlp/",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
@@ -63,16 +65,12 @@ setup(
         "Topic :: Text Processing :: Linguistic",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    project_urls={
-        "homepage": "https://github.com/PyThaiNLP/oxidized-thainlp",
-        "repository": "https://github.com/PyThaiNLP/oxidized-thainlp",
-    },
     include_package_data=True,
     packages=find_packages(),
     zip_safe=False,
     rust_extensions=[
         RustExtension(
-            "pythainlp-rust-modules", "Cargo.toml", binding=Binding.PyO3
+            "nlpo3", "Cargo.toml", binding=Binding.PyO3
         )
     ],
 )

@@ -1,2 +1,3 @@
-include LICENSE README.md setup.py pyproject.toml Cargo.toml words_th.txt
+include LICENSE README.md words_th.txt pyproject.toml Cargo.toml setup.py
 recursive-include src *
+recursive-include ../src *
