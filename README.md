@@ -1,4 +1,4 @@
-# nlpo3
+# nlpO3 (formerly oxidized-thainlp)
 
 Thai Natural Language Processing library in Rust,
 with Python and Node bindings.
@@ -12,6 +12,11 @@ with Python and Node bindings.
 
 ## Usage
 
+### Bindings
+- [Node.js](nlpo3-nodejs/README.md)
+- [Python](nlpo3-python/README.md)
+
+###
 In `Cargo.toml`:
 
 ```toml
@@ -19,6 +24,7 @@ In `Cargo.toml`:
 # ...
 nlpo3 = "1.1.1"
 ```
+
 
 ## Issues
 

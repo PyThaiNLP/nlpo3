@@ -10,7 +10,9 @@ exclude = ["index.node"]
 crate-type = ["cdylib"]
 
 [dependencies]
-nlpo3 = { path = ".." }
+ahash = "0.7.2"
+lazy_static = "1.4.0"
+nlpo3 = "1.1.1"
 
 [dependencies.neon]
 version = "0.8"

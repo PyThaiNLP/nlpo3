@@ -12,7 +12,7 @@ lazy_static! {
     // static ref DEFAULT_DICT:Newmm = Newmm::new(None);
 }
 
-// / segment(text,dict_name, safe, parallel, /)
+// / segment(text, dict_name, safe, parallel, /)
 // / --
 // /
 // / This function is newmm algorithhm.
@@ -68,7 +68,7 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<String> {
 }
 
 #[pymodule]
-fn nlpo3(_py: Python, m: &PyModule) -> PyResult<()> {
+fn _nlpo3_python_backend(_py: Python, m: &PyModule) -> PyResult<()> {
     {
         let mut dict_collect = DICT_COLLECTION.lock().unwrap();
         dict_collect.insert("default".to_string(), Box::from(Newmm::new(None)));

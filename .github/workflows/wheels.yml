@@ -122,7 +122,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v1.12.0
         with:
-          package-dir: python_binding
+#          package-dir: nlpo3-python
           output-dir: wheelhouse
         env:
           CIBW_BUILD_VERBOSITY: 1
@@ -160,13 +160,13 @@ jobs:
 
       - name: Build source distribution
         run: |
-          cd python_binding
+          cd nlpo3-python
           bash ../build_tools/github/build_source.sh
 
       - name: Store artifacts
         uses: actions/upload-artifact@v2
         with:
-          path: python_binding/dist/*.tar.gz
+          path: nlpo3-python/dist/*.tar.gz
 
   publish_pypi:
     name: Publish Python package to PyPI

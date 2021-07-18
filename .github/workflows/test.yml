@@ -47,6 +47,6 @@ name: CI
 #         run: pip install --pre -U maturin
 
 #       - name: Build package   
-#         run: maturin build --release -i python -m python_binding/Cargo.toml
+#         run: maturin build --release -i python -m nlpo3-python/Cargo.toml
 #       - name: Test
 #         run: cargo test

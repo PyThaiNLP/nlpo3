@@ -1,8 +1,8 @@
 from setuptools import find_packages, setup
-from setuptools_rust import Binding, RustExtension
+from setuptools_rust import Binding, RustExtension, Strip
 
 long_description = """
-Thai Natural Language Processing in Rust,
+Python binding for nlpO3, a Thai natural language processing in Rust.
 
 ## Features
 
@@ -11,31 +11,34 @@ Thai Natural Language Processing in Rust,
   - 2x faster than similar pure Python implementation (PyThaiNLP's newmm)
   - support custom dictionary
 
-## Usage
+## Install
 
-Install:
 ```bash
 pip install nlpo3
 ```
 
-Use in Python:
+## Usage
+
+Tokenization using default dictionary:
+```python
+from nlpo3 import segment
+
+segment("สวัสดีครับ")
+```
+
+Load file `path/to/dict.file` to memory and assigned it with name `dict_name`. Then tokenize a text with `dict_name` dictionary:
 ```python
 from nlpo3 import load_dict, segment
 
 load_dict("path/to/dict.file", "dict_name")
 segment("สวัสดีครับ", "dict_name")
-```
-
-## Issues
-
-Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
 """
 
 setup(
     name="nlpo3",
     version="1.1.0",
     description=(
-        "Python binding for NLPO3 Thai language processing library"
+        "Python binding for nlpO3 Thai language processing library"
     ),
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -70,7 +73,10 @@ setup(
     zip_safe=False,
     rust_extensions=[
         RustExtension(
-            "nlpo3", "Cargo.toml", binding=Binding.PyO3
+            "nlpo3._nlpo3_python_backend",
+            path="Cargo.toml",
+            binding=Binding.PyO3,
+            strip=Strip.No,
         )
     ],
 )

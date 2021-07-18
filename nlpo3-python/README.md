@@ -1,7 +1,6 @@
-# nlpo3 (formerly oxidized-thainlp)
+# nlpO3 Python binding
 
-Thai Natural Language Processing in Rust,
-with Python and Node bindings.
+Python binding for nlpO3, a Thai natural language processing in Rust.
 
 ## Features
 
@@ -10,16 +9,22 @@ with Python and Node bindings.
   - 2x faster than similar pure Python implementation (PyThaiNLP's newmm)
   - support custom dictionary
 
-## Usage
+## Install
 
-### Python
-
-Install:
 ```bash
 pip install nlpo3
 ```
 
-Use:
+## Usage
+
+Tokenization using default dictionary:
+```python
+from nlpo3 import segment
+
+segment("สวัสดีครับ")
+```
+
+Load file `path/to/dict.file` to memory and assigned it with name `dict_name`. Then tokenize a text with `dict_name` dictionary:
 ```python
 from nlpo3 import load_dict, segment
 
@@ -27,15 +32,9 @@ load_dict("path/to/dict.file", "dict_name")
 segment("สวัสดีครับ", "dict_name")
 ```
 
-### NodeJS
+## Build
 
-TODO:
-
-## Build It Yourself
-
-### Build Python binding
-
-#### Requirements
+### Requirements
 
 - [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
 - Python 3.6 or newer
@@ -45,7 +44,7 @@ TODO:
 - [PyO3](https://github.com/PyO3/pyo3) - already included in Cargo.toml
 - [setuptools-rust](https://github.com/PyO3/setuptools-rust)
 
-#### Steps
+### Steps
 
 ```bash
 python -m pip install --upgrade build

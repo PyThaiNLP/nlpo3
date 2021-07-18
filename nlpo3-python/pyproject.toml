@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "nlpo3"
 version = "1.1.0"
-description = "Thai Natural Language Processing in Rust, with Python-binding"
-readme = "../README.md"
+description = "Python binding for nlpO3 Thai language processing library"
+readme = "README.md"
 requires-python = ">=3.6"
 license = "Apache-2.0"
 keywords = [

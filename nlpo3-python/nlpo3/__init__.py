@@ -1,4 +1,5 @@
-from .nlpo3 import (
+# import from .so (Rust)
+from ._nlpo3_python_backend import (
     load_dict as rust_load_dict,
     segment as rust_segment,
 )
