@@ -119,13 +119,13 @@ jobs:
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
 
-      - name: Cache Python files
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.pip-path }}
-          key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
+#      - name: Cache Python files
+#        uses: actions/cache@v2
+#        with:
+#          path: ${{ matrix.pip-path }}
+#          key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
+#          restore-keys: |
+#            ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
 
       - name: Build Python wheels
         uses: pypa/cibuildwheel@v1.12.0
