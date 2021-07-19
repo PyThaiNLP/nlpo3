@@ -125,8 +125,6 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
-            ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-
-            ${{ matrix.os }}-${{ matrix.bitness }}-pip-
 
       - name: Build Python wheels
         uses: pypa/cibuildwheel@v1.12.0
