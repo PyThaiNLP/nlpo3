@@ -43,7 +43,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python: [cp36, cp37, cp38, cp39, pp37]
+        #python: [cp36, cp37, cp38, cp39, pp37]
+        python: [pp37]
         bitness: [32, 64]
         manylinux_image: [manylinux2014]
         include:
@@ -75,9 +76,9 @@ jobs:
 #            manylinux_image: manylinux2014
 #          - os: windows-latest
 #            manylinux_image: manylinux2014
-          - python: pp37
-            os: windows-latest
-            bitness: 32
+#          - python: pp37
+#            os: windows-latest
+#            bitness: 32
 
     steps:
       - name: Checkout source code
