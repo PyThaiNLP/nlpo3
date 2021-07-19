@@ -1,7 +1,7 @@
 # Build wheels for many platforms
 # see: https://github.com/pypa/cibuildwheel
 
-name: Build wheels
+name: Build Python wheels
 
 on:
   push:
@@ -42,45 +42,51 @@ jobs:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest,]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         python: [cp36, cp37, cp38, cp39, pp36, pp37]
         bitness: [32, 64]
         manylinux_image: [manylinux2010, manylinux2014]
         include:
-          - os: windows-latest
+          - os: macos-latest
             bitness: 64
-            platform_id: win_amd64
-          - os: windows-latest
-            bitness: 32
-            platform_id: win32
+            platform_id: macosx_x86_64
           - os: ubuntu-latest
             bitness: 64
             platform_id: manylinux_x86_64
           - os: ubuntu-latest
             bitness: 32
             platform_id: manylinux_i686
-          - os: macos-latest
+          - os: windows-latest
             bitness: 64
-            platform_id: macosx_x86_64
+            platform_id: win_amd64
+          - os: windows-latest
+            bitness: 32
+            platform_id: win32
+          - os: macos-latest
+            pip-path: ~/Library/Caches/pip
+          - os: ubuntu-latest
+            pip-path: ~/.cache/pip
+          - os: windows-latest
+            pip-path: ~\AppData\Local\pip\Cache
         exclude:
           - os: macos-latest
             bitness: 32
-          - os: windows-latest
-            manylinux_image: manylinux2010
           - os: macos-latest
             manylinux_image: manylinux2010
+          - os: windows-latest
+            manylinux_image: manylinux2010
+          - python: pp36
+            os: ubuntu-latest
+            bitness: 32
           - python: pp36
             os: windows-latest
             bitness: 64
-          - python: pp36
+          - python: pp37
             os: ubuntu-latest
             bitness: 32
           - python: pp37
             os: windows-latest
             bitness: 64
-          - python: pp37
-            os: ubuntu-latest
-            bitness: 32
 
     steps:
       - name: Checkout source code
@@ -89,6 +95,7 @@ jobs:
       - name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
         with:
+          override: true
           profile: minimal
           toolchain: stable
         if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
@@ -96,6 +103,7 @@ jobs:
       - name: Setup Rust toolchain - win32
         uses: actions-rs/toolchain@v1
         with:
+          override: true
           profile: minimal
           toolchain: stable
           target: i686-pc-windows-msvc
@@ -106,7 +114,7 @@ jobs:
         with:
           command: check
 
-      - name: Cache Rust Cargo
+      - name: Cache Rust files
         uses: actions/cache@v2
         with:
           path: |
@@ -115,9 +123,21 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: cargo-cache-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-      - name: Build wheels
+      - name: Cache Python files
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.pip-path }}
+          key: ${{ runner.os }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
+            ${{ runner.os }}-pip-${{ matrix.python }}-
+            ${{ runner.os }}-pip-
+
+      - name: Build Python wheels
         uses: pypa/cibuildwheel@v1.12.0
         with:
           package-dir: nlpo3-python
