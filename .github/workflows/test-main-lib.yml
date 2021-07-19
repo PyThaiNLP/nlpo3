@@ -1,4 +1,4 @@
-name: Test main lib (nlpo3 crate)
+name: Test main lib (Rust crate)
 on: [push, pull_request]
 
 jobs:
@@ -49,17 +49,9 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.os }}-${{ matrix.bitness }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
-
-      # Install dependencies on ubuntu
-#      - name: Install build dependencies
-#        run: sudo apt-get install -y libxml2-dev libxslt-dev
-#        if: matrix.os == 'ubuntu-latest'
-
-      - name: Build Rust crate
-        run: cargo build --release
+            ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
 
       - name: Test
         run: cargo test
