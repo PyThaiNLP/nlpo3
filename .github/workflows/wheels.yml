@@ -51,6 +51,9 @@ jobs:
           - os: macos-latest
             bitness: 64
             platform_id: macosx_x86_64
+          - os: macos-latest
+            bitness: 64
+            platform_id: macosx_arm64
           - os: ubuntu-latest
             bitness: 64
             platform_id: manylinux_x86_64
@@ -72,13 +75,12 @@ jobs:
         exclude:
           - os: macos-latest
             bitness: 32
+          - python: pp37
+            bitness: 32
 #          - os: macos-latest
 #            manylinux_image: manylinux2014
 #          - os: windows-latest
 #            manylinux_image: manylinux2014
-#          - python: pp37
-#            os: windows-latest
-#            bitness: 32
 
     steps:
       - name: Checkout source code
