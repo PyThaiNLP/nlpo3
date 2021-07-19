@@ -143,9 +143,11 @@ jobs:
                                   CXX=/usr/bin/clang++
           CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
-          CIBW_BEFORE_BUILD_LINUX: >
-            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
-          CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
+          CIBW_MANYLINUX_PYPY_I686_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+#          CIBW_BEFORE_BUILD_LINUX: >
+#            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
+#          CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
 
       - name: Store artifacts
         uses: actions/upload-artifact@v2
