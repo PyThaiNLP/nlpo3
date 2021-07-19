@@ -71,10 +71,10 @@ jobs:
         exclude:
           - os: macos-latest
             bitness: 32
-          - os: macos-latest
-            manylinux_image: manylinux2014
-          - os: windows-latest
-            manylinux_image: manylinux2014
+#          - os: macos-latest
+#            manylinux_image: manylinux2014
+#          - os: windows-latest
+#            manylinux_image: manylinux2014
           - python: pp37
             os: windows-latest
             bitness: 32
