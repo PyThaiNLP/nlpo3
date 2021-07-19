@@ -1,13 +1,13 @@
-# nlpo3
+# nlpO3 Node.js binding
 
-Like the root directory, but with nodejs binding.
+Node.js binding for nlpO3, a Thai natural language processing library in Rust.
 
-## Build/Install
+## Build
 
 ### Requirements
 
 - [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
-- NodeJS V12 ++
+- Node v12
 
 ### Steps
 
@@ -32,11 +32,13 @@ After
     - rust_mode.node
 ```
 
+## Install
+
+For now, copy the whole `nlpo3` directory after build to your project.
+
 ## Usage
 
-For now, copy the whole `nlpo3` directory after build to your project 
-
-In NodeJS:
+In JavaScript:
 ```javascript
 const nlpO3 = require(`${path_to_nlpo3}`)
 
@@ -48,7 +50,7 @@ nlpO3.loadDict("path/to/dict.file", "dict_name")
 nloO3.segment("สวัสดีครับ", "dict_name")
 ```
 
-In TypeScript (run on node)
+In TypeScript:
 ```typescript
 import {segment, loadDict} from `${path_to_nlpo3}/index`
 
@@ -59,9 +61,6 @@ segment("สวัสดีครับ")
 loadDict("path/to/dict.file", "dict_name")
 segment("สวัสดีครับ", "dict_name")
 ```
-
-Just that!
-
 
 # TODO
 

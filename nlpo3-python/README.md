@@ -1,6 +1,6 @@
 # nlpO3 Python binding
 
-Python binding for nlpO3, a Thai natural language processing in Rust.
+Python binding for nlpO3, a Thai natural language processing library in Rust.
 
 ## Features
 

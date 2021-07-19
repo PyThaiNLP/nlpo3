@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 from setuptools_rust import Binding, RustExtension, Strip
 
 long_description = """
-Python binding for nlpO3, a Thai natural language processing in Rust.
+Python binding for nlpO3, a Thai natural language processing library in Rust.
 
 ## Features
 
@@ -26,7 +26,8 @@ from nlpo3 import segment
 segment("สวัสดีครับ")
 ```
 
-Load file `path/to/dict.file` to memory and assigned it with name `dict_name`. Then tokenize a text with `dict_name` dictionary:
+Load file `path/to/dict.file` to memory and assigned it with name `dict_name`.
+Then tokenize a text with `dict_name` dictionary:
 ```python
 from nlpo3 import load_dict, segment
 
