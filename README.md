@@ -16,7 +16,7 @@ with Python and Node bindings.
 - [Node.js](nlpo3-nodejs/README.md)
 - [Python](nlpo3-python/README.md)
 
-###
+### As Rust library
 In `Cargo.toml`:
 
 ```toml
@@ -25,11 +25,10 @@ In `Cargo.toml`:
 nlpo3 = "1.1.1"
 ```
 
-
 ## Issues
 
-Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
+Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp/issues
 
-## Todo
+## TODO
 
-API document.
+- API document.

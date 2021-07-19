@@ -55,4 +55,8 @@ This should generate a wheel file, in `dist/` directory, which can be installed 
 
 ## Issues
 
-Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp
+Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp/issues
+
+# TODO
+
+- Find a way to build and publish on PyPI.

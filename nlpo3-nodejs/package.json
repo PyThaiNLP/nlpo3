@@ -2,6 +2,23 @@
   "name": "nlpo3",
   "version": "0.1.1",
   "description": "Node.js binding for nlpO3 Thai language processing library",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PyThaiNLP/oxidized-thainlp.git"
+  },
+  "keywords": [
+    "thai",
+    "tokenizer",
+    "nlp",
+    "rust",
+    "word-segmentation"
+  ],
+  "author": "Thanathip Suntorntip Gorlph",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/PyThaiNLP/oxidized-thainlp/issues"
+  },
+  "homepage": "https://github.com/PyThaiNLP/oxidized-thainlp",
   "main": "./nlpo3/rust_mod.node",
   "scripts": {
     "build": "cargo-cp-artifact -nc ./nlpo3/rust_mod.node -- cargo build --message-format=json-render-diagnostics",
@@ -9,8 +26,6 @@
     "install": "npm run build",
     "test": "cargo test"
   },
-  "author": "",
-
   "devDependencies": {
     "cargo-cp-artifact": "^0.1",
     "typescript": "^4.3.5"
