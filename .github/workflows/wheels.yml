@@ -43,14 +43,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        #python: [cp36, cp37, cp38, cp39, pp37]
-        python: [pp37]
-        bitness: [64]
+        python: [cp36, cp37, cp38, cp39]
+        #python: [pp37]
+        bitness: [32, 64]
         manylinux_image: [manylinux2014]
         include:
           - os: macos-latest
             bitness: 64
-            platform_id: macosx_arm64
+            platform_id: macosx_x86_64
           - os: ubuntu-latest
             bitness: 64
             platform_id: manylinux_x86_64
@@ -72,8 +72,8 @@ jobs:
         exclude:
           - os: macos-latest
             bitness: 32
-          - python: pp37
-            bitness: 32
+#          - python: pp37
+#            bitness: 32
 #          - os: macos-latest
 #            manylinux_image: manylinux2014
 #          - os: windows-latest
