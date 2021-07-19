@@ -45,12 +45,9 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         #python: [cp36, cp37, cp38, cp39, pp37]
         python: [pp37]
-        bitness: [32, 64]
+        bitness: [64]
         manylinux_image: [manylinux2014]
         include:
-          - os: macos-latest
-            bitness: 64
-            platform_id: macosx_x86_64
           - os: macos-latest
             bitness: 64
             platform_id: macosx_arm64
@@ -66,12 +63,12 @@ jobs:
           - os: windows-latest
             bitness: 32
             platform_id: win32
-          - os: macos-latest
-            pip-path: ~/Library/Caches/pip
-          - os: ubuntu-latest
-            pip-path: ~/.cache/pip
-          - os: windows-latest
-            pip-path: ~\AppData\Local\pip\Cache
+#          - os: macos-latest
+#            pip-path: ~/Library/Caches/pip
+#          - os: ubuntu-latest
+#            pip-path: ~/.cache/pip
+#          - os: windows-latest
+#            pip-path: ~\AppData\Local\pip\Cache
         exclude:
           - os: macos-latest
             bitness: 32
@@ -121,6 +118,11 @@ jobs:
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
 
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
 #      - name: Cache Python files
 #        uses: actions/cache@v2
 #        with:
@@ -128,6 +130,7 @@ jobs:
 #          key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
 #          restore-keys: |
 #            ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
+
 
       - name: Build Python wheels
         uses: pypa/cibuildwheel@v1.12.0
