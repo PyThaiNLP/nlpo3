@@ -1,6 +1,8 @@
 from setuptools import find_packages, setup
 from setuptools_rust import Binding, RustExtension, Strip
 
+VERSION = "1.1.0"
+
 long_description = """
 Python binding for nlpO3, a Thai natural language processing library in Rust.
 
@@ -37,10 +39,8 @@ segment("สวัสดีครับ", "dict_name")
 
 setup(
     name="nlpo3",
-    version="1.1.0",
-    description=(
-        "Python binding for nlpO3 Thai language processing library"
-    ),
+    version=VERSION,
+    description="Python binding for nlpO3 Thai language processing library",
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
@@ -80,4 +80,7 @@ setup(
             strip=Strip.No,
         )
     ],
+    obsoletes=[
+        "pythainlp-rust-modules",
+    ],  # old package name
 )
