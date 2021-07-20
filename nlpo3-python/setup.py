@@ -8,10 +8,12 @@ Python binding for nlpO3, a Thai natural language processing library in Rust.
 
 ## Features
 
-- Word tokenizer
-  - maximal-matching dictionary-based tokenization
+- Thai word tokenizer
+  - use maximal-matching dictionary-based tokenization algorithm and honor Thai Character Cluster boundaries
   - 2x faster than similar pure Python implementation (PyThaiNLP's newmm)
+  - built-in dictionary included (62,000 words, a copy from PyThaiNLP)
   - support custom dictionary
+
 
 ## Install
 
@@ -28,13 +30,15 @@ from nlpo3 import segment
 segment("สวัสดีครับ")
 ```
 
-Load file `path/to/dict.file` to memory and assigned it with name `dict_name`.
-Then tokenize a text with `dict_name` dictionary:
+Load file `path/to/dict.file` to memory and assigned it with name `custom_dict`.
+Then tokenize a text with `custom_dict` dictionary:
 ```python
 from nlpo3 import load_dict, segment
 
-load_dict("path/to/dict.file", "dict_name")
-segment("สวัสดีครับ", "dict_name")
+load_dict("path/to/dict.file", "custom_dict")
+segment("สวัสดีครับ", "custom_dict")
+
+For more documentation, go [https://github.com/PyThaiNLP/nlpo3](https://github.com/PyThaiNLP/nlpo3)
 """
 
 setup(
