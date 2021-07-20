@@ -43,8 +43,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python: [cp36, cp37, cp38, cp39]
-        #python: [pp37]
+        python: [cp36, cp37, cp38, cp39, pp37]
+#        python: [pp37]
         bitness: [32, 64]
         manylinux_image: [manylinux2014]
         include:
@@ -63,17 +63,17 @@ jobs:
           - os: windows-latest
             bitness: 32
             platform_id: win32
-#          - os: macos-latest
-#            pip-path: ~/Library/Caches/pip
-#          - os: ubuntu-latest
-#            pip-path: ~/.cache/pip
-#          - os: windows-latest
-#            pip-path: ~\AppData\Local\pip\Cache
+          - os: macos-latest
+            pip-path: ~/Library/Caches/pip
+          - os: ubuntu-latest
+            pip-path: ~/.cache/pip
+          - os: windows-latest
+            pip-path: ~\AppData\Local\pip\Cache
         exclude:
           - os: macos-latest
             bitness: 32
-#          - python: pp37
-#            bitness: 32
+          - python: pp37
+            bitness: 32
 #          - os: macos-latest
 #            manylinux_image: manylinux2014
 #          - os: windows-latest
@@ -86,7 +86,7 @@ jobs:
       - name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
         with:
-          override: true
+          #override: true
           profile: minimal
           toolchain: stable
         if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
@@ -94,7 +94,7 @@ jobs:
       - name: Setup Rust toolchain - win32
         uses: actions-rs/toolchain@v1
         with:
-          override: true
+          #override: true
           profile: minimal
           toolchain: stable
           target: i686-pc-windows-msvc
@@ -123,13 +123,13 @@ jobs:
         with:
           python-version: "3.8"
 
-#      - name: Cache Python files
-#        uses: actions/cache@v2
-#        with:
-#          path: ${{ matrix.pip-path }}
-#          key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
-#          restore-keys: |
-#            ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
+      - name: Cache Python files
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.pip-path }}
+          key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
 
       - name: Build Python wheels
         uses: pypa/cibuildwheel@v1.12.0
@@ -150,7 +150,7 @@ jobs:
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux_image }}
           CIBW_BEFORE_BUILD_LINUX: >
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
-#          CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
+          CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
 
       - name: Store artifacts
         uses: actions/upload-artifact@v2
@@ -170,7 +170,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.6'
+          python-version: "3.8"
 
       - name: Build source distribution
         run: |
