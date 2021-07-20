@@ -1,0 +1,20 @@
+[package]
+name = "nlpo3-nodejs"
+version = "0.1.1"
+edition = "2018"
+license = "Apache-2.0"
+authors = ["Thanathip Suntorntip Gorlph"]
+exclude = ["index.node"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ahash = "0.7.2"
+lazy_static = "1.4.0"
+nlpo3 = "1.1.1"
+
+[dependencies.neon]
+version = "0.8"
+default-features = false
+features = ["napi-6"]

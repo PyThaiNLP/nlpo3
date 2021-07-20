@@ -1,0 +1,57 @@
+name: Test main lib (Rust crate)
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bitness: [64]  # 32, 64
+        include:
+          - os: windows-latest
+            bitness: 32
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@master
+
+      - name: Setup Rust toolchain - non-win32
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: stable
+        if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
+
+      - name: Setup Rust toolchain - win32
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: stable
+          target: i686-pc-windows-msvc
+        if: startsWith(matrix.os, 'windows') && matrix.bitness == '32'
+
+      - name: Setup Rust dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+      - name: Cache Rust files
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ matrix.os }}-${{ matrix.bitness }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
+
+      - name: Test
+        run: cargo test

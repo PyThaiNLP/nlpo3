@@ -1,49 +1,202 @@
 # Build wheels for many platforms
 # see: https://github.com/pypa/cibuildwheel
 
-name: Build
+name: Build Python wheels
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Manual run
+  workflow_dispatch:
 
 jobs:
+  # Check whether to build the wheels and the source tarball
+  check_build_trigger:
+    name: Check build trigger
+    runs-on: ubuntu-latest
+    if: github.repository == 'pythainlp/oxidized-thainlp'
+    outputs:
+      build: ${{ steps.check_build_trigger.outputs.build }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - id: check_build_trigger
+        name: Check build trigger
+        run: bash build_tools/github/check_build_trigger.sh
+
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build Python wheel for ${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}
     runs-on: ${{ matrix.os }}
-    
+    needs: check_build_trigger
+    if: needs.check_build_trigger.outputs.build
+
     strategy:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python: [cp36, cp37, cp38, cp39]  # pp37
+        bitness: [32, 64]
+        manylinux_image: [manylinux2014]
+        include:
+          - os: macos-latest
+            bitness: 64
+            platform_id: macosx_x86_64
+          - os: ubuntu-latest
+            bitness: 64
+            platform_id: manylinux_x86_64
+          - os: ubuntu-latest
+            bitness: 32
+            platform_id: manylinux_i686
+          - os: windows-latest
+            bitness: 64
+            platform_id: win_amd64
+          - os: windows-latest
+            bitness: 32
+            platform_id: win32
+          - os: macos-latest
+            pip-path: ~/Library/Caches/pip
+          - os: ubuntu-latest
+            pip-path: ~/.cache/pip
+          - os: windows-latest
+            pip-path: ~\AppData\Local\pip\Cache
+        exclude:
+          - os: macos-latest
+            bitness: 32
+#          - python: pp37
+#            bitness: 32
 
     steps:
-      - uses: actions/checkout@v2
-
-      # Used to host cibuildwheel
-      - uses: actions/setup-python@v2
-
-      - uses: actions-rs/toolchain@v1
+      - name: Checkout source code
+        uses: actions/checkout@v2
+          
+      - name: Setup Rust toolchain - non-win32
+        uses: actions-rs/toolchain@v1
         with:
+          override: true
           profile: minimal
           toolchain: stable
+        if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
 
-      - uses: actions-rs/cargo@v1
+      - name: Setup Rust toolchain - win32
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: stable
+          target: i686-pc-windows-msvc
+        if: startsWith(matrix.os, 'windows') && matrix.bitness == '32'
+
+      - name: Setup Rust dependencies
+        uses: actions-rs/cargo@v1
         with:
           command: check
 
-      - name: Setup build enc
-        run: |
-          python -m pip install --upgrade wheel setuptools setuptools-rust
-          
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.0.0a2
+      - name: Cache Rust files
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ matrix.os }}-${{ matrix.bitness }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
 
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
-        # to supply options, put them in 'env', like:
-        # env:
-        #   CIBW_SOME_OPTION: value
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
 
-      - uses: actions/upload-artifact@v2
+      - name: Cache Python files
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.pip-path }}
+          key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
+
+      - name: Build Python wheels
+        uses: pypa/cibuildwheel@v1.12.0
+        with:
+          package-dir: nlpo3-python
+          output-dir: wheelhouse
+        env:
+          CIBW_BUILD_VERBOSITY: 1
+          # See build selector name at:
+          # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
+          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.platform_id }}
+          CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
+          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.13
+                                  PATH="$HOME/.cargo/bin:$PATH"
+                                  CC=/usr/bin/clang
+                                  CXX=/usr/bin/clang++
+          CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_MANYLINUX_PYPY_I686_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_BEFORE_BUILD_LINUX: >
+            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
+          CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build Python source distribution
+    runs-on: ubuntu-latest
+    needs: check_build_trigger
+    if: needs.check_build_trigger.outputs.build
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Build source distribution
+        run: |
+          cd nlpo3-python
+          bash ../build_tools/github/build_source.sh
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: nlpo3-python/dist/*.tar.gz
+
+  publish_pypi:
+    name: Publish Python package to PyPI
+    runs-on: ubuntu-latest
+    needs: [build_wheels, build_sdist]
+    # upload to PyPI on every tag starting with 'v'
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    # alternatively, to publish when a GitHub Release is created, use the following rule:
+    # if: github.event_name == 'release' && github.event.action == 'published'
+
+    steps:
+      - name: Retrieve artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}

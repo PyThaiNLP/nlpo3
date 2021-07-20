@@ -1,4 +1,4 @@
-use oxidized_thainlp_main_lib::fixed_bytes_str::four_bytes::CustomString;
+use nlpo3::fixed_bytes_str::four_bytes::CustomString;
 
 // const short_text_1: &str = "หมอนทองตากลมหูว์MBK39 :.ฉฺ๐๐๓-#™±";
 // const short_text_2: &str = "ทดสอบ";

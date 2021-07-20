@@ -1,33 +1,33 @@
 [package]
-name = "pythainlp-rust-modules"
-version = "1.1.0"
+name = "nlpo3"
+version = "1.1.1"
 edition = "2018"
-include = ["pyproject.toml"]
+license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
+description = "Thai natural language processing library, with Python and Node bindings"
+keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
+categories = ["text-processing"]
+homepage = "https://github.com/PyThaiNLP/oxidized-thainlp/"
+documentation = "https://github.com/PyThaiNLP/oxidized-thainlp/"
+repository = "https://github.com/PyThaiNLP/oxidized-thainlp/"
+readme = "README.md"
+exclude = [".gitignore", ".github/*", "build_tools/*", "tests/*"]
 
 [lib]
-name = "oxidized_thainlp_main_lib"
-path = "src/lib.rs"# "cdylib" is necessary to produce a shared library for Python to import from.
-#
+path = "src/lib.rs"
+# "cdylib" is necessary to produce a shared library for Python to import from.
 # Downstream Rust code (including code in `bin/`, `examples/`, and `tests/`) will not be able
-# to `use string_sum;` unless the "rlib" or "lib" crate type is also included, e.g.:
-# crate-type = ["cdylib", "rlib"]
+# to `use string_sum;` unless the "rlib" or "lib" crate type is also included.
 crate-type = ["cdylib", "rlib"]
 
-[workspace]
-
-members = ["nodejs_binding","python_binding"]
-
-
-
 [dependencies]
-regex = "1.4.6"
-rayon = "1.5"
-binary-heap-plus = "0.4.1"
-lazy_static = "1.4.0"
-bytecount = "0.6.2"
-smol_str = "0.1.17"
 ahash = "0.7.2"
+binary-heap-plus = "0.4.1"
+bytecount = "0.6.2"
+lazy_static = "1.4.0"
+rayon = "1.5"
+regex = "1.4.6"
+smol_str = "0.1.17"
 
 
 [[test]]

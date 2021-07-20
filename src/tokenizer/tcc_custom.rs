@@ -22,7 +22,7 @@ use super::super::fixed_bytes_str::four_bytes::BYTES_PER_CHAR;
 // \x00 is byte value 0, every unicode character in regex is padded with \x00 to 4 bytes length
 // https://www.fileformat.info/info/unicode/
 // Thai characters use 3 bytes per character, so it is padded with \x00 only once.
-// The following regexpressions are translated from pythainlp/tokeniz/tcc.py
+// The following regexpressions are translated from pythainlp/tokenize/tcc.py
 lazy_static! {
     static ref NON_LOOKAHEAD_TCC: Regex = Regex::new(
         &[

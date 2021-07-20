@@ -1,5 +1,6 @@
-from .oxidized_thainlp import (
-    load_dict as load_dict_to_oxidized,
+# import from .so (Rust)
+from ._nlpo3_python_backend import (
+    load_dict as rust_load_dict,
     segment as rust_segment,
 )
 from typing import List
@@ -14,7 +15,7 @@ def load_dict(file_path: str, dict_name: str):
         Can be any valid utf-8 string, except "default" which is reserved.
     :type dict_name: str
     """
-    load_result = load_dict_to_oxidized(file_path, dict_name)
+    load_result = rust_load_dict(file_path, dict_name)
     print(load_result)
 
 
