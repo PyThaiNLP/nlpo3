@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nlpo3"
-version = "1.1.0"
+version = "1.1.1"
 description = "Python binding for nlpO3 Thai language processing library in Rust"
 readme = "README.md"
 requires-python = ">=3.6"
 license = "Apache-2.0"
-keywords = ["thai", "tokenizer", "nlp", "rust", "pythainlp"]
+keywords = ["thai", "tokenizer", "nlp", "word-segmentation", "pythainlp"]
 authors = [
   { name = "Thanathip Suntorntip" },
   { name = "Arthit Suriyawongkul" },
