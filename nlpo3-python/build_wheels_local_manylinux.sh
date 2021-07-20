@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# The main build wheel workflow is on GitHub,
+# The main build wheel workflow is on GitHub Actions,
 # see .github/wheels.yml at the root of main repo.
 # This script is meant to be run local and use for testing purpose only.
 
 # This script has to run through manylinux docker image:
-# docker run --rm -v `pwd`:/io quay.io/pypa/manylinux2014_x86_64 bash /io/build_wheels_manylinux_local.sh
+# docker run --rm -v `pwd`:/io quay.io/pypa/manylinux2014_x86_64 bash /io/build_wheels_local_manylinux.sh
 
 set -ex
 
