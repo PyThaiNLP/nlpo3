@@ -7,9 +7,10 @@ with Python and Node bindings.
 
 - Thai word tokenizer
   - use maximal-matching dictionary-based tokenization algorithm and honor Thai Character Cluster boundaries
-    - with default built-in dictionary (62,000 words, a copy [from PyThaiNLP](https://github.com/PyThaiNLP/pythainlp))
     - [2x faster](https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb) than similar pure Python implementation (PyThaiNLP's newmm)
   - support custom dictionary
+  - default dictionary included (62,000 words, a copy [from PyThaiNLP](https://github.com/PyThaiNLP/pythainlp))
+
 
 ## Usage
 
