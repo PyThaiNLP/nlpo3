@@ -4,10 +4,11 @@ Node.js binding for nlpO3, a Thai natural language processing library in Rust.
 
 ## Features
 
-- Word tokenizer
-  - maximal-matching dictionary-based tokenization
-  - 2x faster than similar pure Python implementation (PyThaiNLP's newmm)
+- Thai word tokenizer
+  - use maximal-matching dictionary-based tokenization algorithm and honor Thai Character Cluster boundaries
+  - fast backend in Rust
   - support custom dictionary
+  - default dictionary included (62,000 words, a copy [from PyThaiNLP](https://github.com/PyThaiNLP/pythainlp))
 
 ## Build
 
@@ -23,14 +24,14 @@ Node.js binding for nlpO3, a Thai natural language processing library in Rust.
 npm run release
 ```
 
-Before build, your `nlpo3` directory should look like this
+Before build, your `nlpo3` directory should look like this:
 ```
 - nlpo3
     - index.ts
     - rust_mod.d.ts
 ```
 
-After
+After build:
 ```
 - nlpo3
     - index.js
