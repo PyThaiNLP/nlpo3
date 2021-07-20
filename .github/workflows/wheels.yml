@@ -43,8 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python: [cp36, cp37, cp38, cp39, pp37]
-#        python: [pp37]
+        python: [cp36, cp37, cp38, cp39]  # pp37
         bitness: [32, 64]
         manylinux_image: [manylinux2014]
         include:
@@ -72,12 +71,8 @@ jobs:
         exclude:
           - os: macos-latest
             bitness: 32
-          - python: pp37
-            bitness: 32
-#          - os: macos-latest
-#            manylinux_image: manylinux2014
-#          - os: windows-latest
-#            manylinux_image: manylinux2014
+#          - python: pp37
+#            bitness: 32
 
     steps:
       - name: Checkout source code
@@ -86,7 +81,7 @@ jobs:
       - name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
         with:
-          #override: true
+          override: true
           profile: minimal
           toolchain: stable
         if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
@@ -94,7 +89,7 @@ jobs:
       - name: Setup Rust toolchain - win32
         uses: actions-rs/toolchain@v1
         with:
-          #override: true
+          override: true
           profile: minimal
           toolchain: stable
           target: i686-pc-windows-msvc
@@ -138,6 +133,8 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_BUILD_VERBOSITY: 1
+          # See build selector name at:
+          # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.platform_id }}
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.13

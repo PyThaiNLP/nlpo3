@@ -16,7 +16,7 @@ set -ex
 SAVE_PYVER=$(pyenv global)
 
 for PYVER in $(ls ~/.pyenv/versions); do
-    PYVER_MINOR=$(echo "${PYVER}" | sed -nre 's/^(([0-9]+\.)?[0-9]+).*/\1/p')
+    PYVER_MINOR=$(echo "${PYVER}" | sed -nre 's/^(pypy)?(([0-9]+\.)?[0-9]+).*/\1\2/p')
     echo "Build for Python ${PYVER_MINOR}"
     pyenv global "${PYVER}"
     $(pyenv which pip) install -U pip
