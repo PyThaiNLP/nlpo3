@@ -25,12 +25,27 @@ from nlpo3 import segment
 segment("สวัสดีครับ")
 ```
 
-Load file `path/to/dict.file` to memory and assigned it with name `dict_name`. Then tokenize a text with `dict_name` dictionary:
+will retuns:
+```python
+['สวัสดี', 'ครับ']
+```
+
+Load file `path/to/dict.file` to memory and assigned it with name `custom_dict`. Then tokenize a text with `custom_dict` dictionary:
 ```python
 from nlpo3 import load_dict, segment
 
-load_dict("path/to/dict.file", "dict_name")
-segment("สวัสดีครับ", "dict_name")
+load_dict("path/to/dict.file", "custom_dict")
+segment("สวัสดีครับ", "custom_dict")
+```
+
+Use multithread mode, also use the `custom_dict` dictionary:
+```python
+segment("สวัสดีครับ", parallel=True, dict_name="custom_dict")
+```
+
+Use safe mode to avoid long waiting time in some edge cases for text with lots of ambiguous word boundaries:
+```python
+segment("สวัสดีครับ", safe=True)
 ```
 
 ## Build
