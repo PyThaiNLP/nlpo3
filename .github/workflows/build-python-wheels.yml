@@ -15,7 +15,7 @@ on:
     paths:
       - 'nlpo3-python/**'
   # Manual run
-  #workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   # Check whether to build the wheels and the source tarball
