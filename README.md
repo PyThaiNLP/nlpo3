@@ -27,7 +27,7 @@ nlpo3 = "1.1.1"
 
 ## Issues
 
-Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp/issues
+Please report issues at https://github.com/PyThaiNLP/nlpo3/issues
 
 ## TODO
 

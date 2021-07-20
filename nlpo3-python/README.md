@@ -55,4 +55,4 @@ This should generate a wheel file, in `dist/` directory, which can be installed 
 
 ## Issues
 
-Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp/issues
+Please report issues at https://github.com/PyThaiNLP/nlpo3/issues
