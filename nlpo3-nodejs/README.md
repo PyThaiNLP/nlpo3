@@ -71,7 +71,7 @@ segment("สวัสดีครับ", "dict_name")
 
 ## Issues
 
-Please report issues at https://github.com/PyThaiNLP/oxidized-thainlp/issues
+Please report issues at https://github.com/PyThaiNLP/nlpo3/issues
 
 # TODO
 

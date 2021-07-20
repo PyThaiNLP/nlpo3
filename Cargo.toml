@@ -7,9 +7,9 @@ authors = ["Thanathip Suntorntip Gorlph"]
 description = "Thai natural language processing library, with Python and Node bindings"
 keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
 categories = ["text-processing"]
-homepage = "https://github.com/PyThaiNLP/oxidized-thainlp/"
-documentation = "https://github.com/PyThaiNLP/oxidized-thainlp/"
-repository = "https://github.com/PyThaiNLP/oxidized-thainlp/"
+homepage = "https://github.com/PyThaiNLP/nlpo3/"
+documentation = "https://github.com/PyThaiNLP/nlpo3/"
+repository = "https://github.com/PyThaiNLP/nlpo3/"
 readme = "README.md"
 exclude = [".gitignore", ".github/*", "build_tools/*", "tests/*"]
 

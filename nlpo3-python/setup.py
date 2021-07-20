@@ -58,7 +58,7 @@ setup(
         "Wannaphong Phatthiyaphaibun"
     ),
     author_email="wannaphong@yahoo.com",
-    url="https://github.com/PyThaiNLP/oxidized-thainlp/",
+    url="https://github.com/PyThaiNLP/nlpo3/",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
