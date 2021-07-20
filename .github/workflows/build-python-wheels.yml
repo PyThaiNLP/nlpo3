@@ -7,11 +7,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'nlpo3-python/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'nlpo3-python/**'
   # Manual run
-  workflow_dispatch:
+  #workflow_dispatch:
 
 jobs:
   # Check whether to build the wheels and the source tarball
@@ -184,9 +188,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build_wheels, build_sdist]
     # upload to PyPI on every tag starting with 'v'
-    #if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     # alternatively, to publish when a GitHub Release is created, use the following rule:
-    if: github.event_name == 'release' && github.event.action == 'published'
+    #if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
       - name: Retrieve artifacts
