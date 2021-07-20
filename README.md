@@ -24,8 +24,34 @@ In `Cargo.toml`:
 ```toml
 [dependencies]
 # ...
-nlpo3 = "1.1.1"
+nlpo3 = "1.1.2"
 ```
+
+## Build
+
+### Requirements
+
+- [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
+
+### Steps
+
+Generic test:
+```bash
+cargo test
+```
+
+Build (remove `--release` to keep debug information):
+```bash
+cargo build --release
+```
+
+Build and open API document:
+```bash
+cargo doc --open
+```
+
+Check `target/` for build artifacts.
+
 
 ## Issues
 

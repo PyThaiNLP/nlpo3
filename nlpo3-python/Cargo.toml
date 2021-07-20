@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 ahash = "0.7.2"
 lazy_static = "1.4.0"
-nlpo3 = "1.1.1"
+nlpo3 = "1.1.2"
 
 [dependencies.pyo3]
 version = "0.13.2"
