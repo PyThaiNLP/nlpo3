@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# The main build wheel workflow is on GitHub,
+# The main build wheel workflow is on GitHub Actions,
 # see .github/wheels.yml at the root of main repo.
 # This script is meant to be run local and use for testing purpose only.
 
