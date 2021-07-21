@@ -40,14 +40,14 @@ Generic test:
 cargo test
 ```
 
+Build API document and open it to check:
+```bash
+cargo doc --open
+```
+
 Build (remove `--release` to keep debug information):
 ```bash
 cargo build --release
-```
-
-Build and open API document:
-```bash
-cargo doc --open
 ```
 
 Check `target/` for build artifacts.
@@ -56,7 +56,3 @@ Check `target/` for build artifacts.
 ## Issues
 
 Please report issues at https://github.com/PyThaiNLP/nlpo3/issues
-
-## TODO
-
-- API document.
