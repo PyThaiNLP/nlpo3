@@ -14,9 +14,19 @@ name: "CodeQL"
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'nlpo3-python/**'
+    paths-ignore:
+      - '**.md'
+      - '**notebooks**'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ main ]
+    paths:
+      - 'nlpo3-python/**'
+    paths-ignore:
+      - '**.md'
+      - '**notebooks**'
   schedule:
     - cron: '26 8 * * 4'
 
