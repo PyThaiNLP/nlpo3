@@ -15,7 +15,7 @@ on:
     paths:
       - 'nlpo3-python/**'
   release:
-    types: [published, created, edited]
+    types: [published]
   # Manual run
   workflow_dispatch:
 
