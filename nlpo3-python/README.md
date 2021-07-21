@@ -1,3 +1,5 @@
+<a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
+
 # nlpO3 Python binding
 
 Python binding for nlpO3, a Thai natural language processing library in Rust.
