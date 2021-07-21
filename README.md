@@ -1,7 +1,7 @@
-# nlpO3 (formerly oxidized-thainlp)
+# nlpO3
 
 Thai Natural Language Processing library in Rust,
-with Python and Node bindings.
+with Python and Node bindings. Formerly oxidized-thainlp.
 
 ## Features
 
