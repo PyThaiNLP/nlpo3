@@ -1,6 +1,7 @@
 <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
 <a href="https://www.python.org/downloads/release/python-360/"><img alt="Python 3.6" src="https://img.shields.io/badge/python-3.6-blue.svg"/></a>
 <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
+<a href="https://pepy.tech/project/nlpo3"><img alt="Downloads" src="https://pepy.tech/badge/nlpo3/month"/></a>
 
 # nlpO3 Python binding
 
