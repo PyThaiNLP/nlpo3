@@ -1,3 +1,5 @@
+<a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
+
 # nlpO3 Node.js binding
 
 Node.js binding for nlpO3, a Thai natural language processing library in Rust.
