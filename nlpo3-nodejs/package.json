@@ -1,6 +1,6 @@
 {
   "name": "nlpo3",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Node.js binding for nlpO3 Thai language processing library",
   "repository": {
     "type": "git",

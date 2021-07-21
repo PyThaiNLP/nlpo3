@@ -69,4 +69,4 @@ Please report issues at https://github.com/PyThaiNLP/nlpo3/issues
 
 # TODO
 
-- Find a way to build and publish on npm.
+- Find a way to build binaries and publish on npm.
