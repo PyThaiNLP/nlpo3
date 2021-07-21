@@ -8,7 +8,6 @@ Node.js binding for nlpO3, a Thai natural language processing library in Rust.
   - use maximal-matching dictionary-based tokenization algorithm and honor Thai Character Cluster boundaries
   - fast backend in Rust
   - support custom dictionary
-  - default dictionary included (62,000 words, a copy [from PyThaiNLP](https://github.com/PyThaiNLP/pythainlp))
 
 ## Build
 
@@ -50,10 +49,7 @@ In JavaScript:
 ```javascript
 const nlpO3 = require(`${path_to_nlpo3}`)
 
-// tokenize a text with default dictionary
-nloO3.segment("สวัสดีครับ")
-
-// load custom dictionary and tokenize with it
+// load dictionary and tokenize a text with it
 nlpO3.loadDict("path/to/dict.file", "dict_name")
 nloO3.segment("สวัสดีครับ", "dict_name")
 ```
@@ -62,10 +58,7 @@ In TypeScript:
 ```typescript
 import {segment, loadDict} from `${path_to_nlpo3}/index`
 
-// tokenize a text with default dictionary
-segment("สวัสดีครับ")
-
-// load custom dictionary and tokenize with it
+// load custom dictionary and tokenize a text with it
 loadDict("path/to/dict.file", "dict_name")
 segment("สวัสดีครับ", "dict_name")
 ```

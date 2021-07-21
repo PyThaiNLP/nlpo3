@@ -1,6 +1,6 @@
 {
   "name": "nlpo3",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Node.js binding for nlpO3 Thai language processing library",
   "repository": {
     "type": "git",
@@ -13,7 +13,16 @@
     "rust",
     "word-segmentation"
   ],
-  "author": "Thanathip Suntorntip Gorlph",
+  "author": {
+    "name": "Thanathip Suntorntip Gorlph",
+    "url": "https://github.com/Gorlph/"
+  },
+  "contributors": [
+    {
+      "name": "Arthit Suriiyawongkul",
+      "url": "https://github.com/bact"
+    }
+  ],
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/PyThaiNLP/nlpo3/issues"
@@ -29,5 +38,11 @@
   "devDependencies": {
     "cargo-cp-artifact": "^0.1",
     "typescript": "^4.3.5"
-  }
+  },
+  "engines": {
+    "node": ">= 12.0.0"
+  },
+  "files": [
+    "nlpo3"
+  ]
 }
