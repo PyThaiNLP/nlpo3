@@ -1,3 +1,5 @@
+<a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
+
 # nlpO3 (formerly oxidized-thainlp)
 
 Thai Natural Language Processing library in Rust,
@@ -16,9 +18,11 @@ with Python and Node bindings.
 
 ### Bindings
 - [Node.js](nlpo3-nodejs/README.md)
-- [Python](nlpo3-python/README.md)
+- [Python](nlpo3-python/README.md) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
 
 ### As Rust library
+<a href="https://crates.io/crates/nlpo3/"><img alt="crates.io" src="https://img.shields.io/crates/v/nlpo3.svg"/></a>
+
 In `Cargo.toml`:
 
 ```toml
