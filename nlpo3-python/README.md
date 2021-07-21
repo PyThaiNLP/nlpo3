@@ -25,7 +25,7 @@ from nlpo3 import segment
 segment("สวัสดีครับ")
 ```
 
-will retuns:
+will return a list of strings:
 ```python
 ['สวัสดี', 'ครับ']
 ```
