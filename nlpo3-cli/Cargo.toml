@@ -1,0 +1,20 @@
+[package]
+name = "nlpo3_cli"
+version = "0.3.1" 
+edition = "2018"
+authors = ["Thanathip Suntorntip Gorlph", "Vee Satayamas <5ssgdxltv@relay.firefox.com>"]
+description = "Thai natural language processing command line interface"
+documentation = "https://github.com/veer66/chamkho/blob/master/README.md"
+homepage = "https://github.com/PyThaiNLP/nlpo3/"
+repository = "https://github.com/PyThaiNLP/nlpo3/"
+readme = "README.md"
+keywords = ["text", "nlp", "lao", "thai", "library"]
+license = "LGPL-3.0"
+
+[[bin]]
+name = "nlpo3"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "1", features = ["yaml"] }
+nlpo3 = { version = "1.1.2", path = ".." }
