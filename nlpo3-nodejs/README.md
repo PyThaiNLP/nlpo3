@@ -23,16 +23,16 @@ Node.js binding for nlpO3, a Thai natural language processing library in Rust.
 npm run release
 ```
 
-Before build, your `nlpo3` directory should look like this:
+Before build, your `nlpo3/` directory should look like this:
 ```
-- nlpo3
+- nlpo3/
     - index.ts
     - rust_mod.d.ts
 ```
 
 After build:
 ```
-- nlpo3
+- nlpo3/
     - index.js
     - index.ts
     - rust_mod.d.ts
@@ -41,7 +41,15 @@ After build:
 
 ## Install
 
-For now, copy the whole `nlpo3` directory after build to your project.
+For now, copy the whole `nlpo3/` directory after build to your project.
+
+### npm (experitmental)
+
+npm is still experimental and may not work on all platforms. Please report issues at https://github.com/PyThaiNLP/nlpo3/issues
+
+```bash
+npm i nlpo3
+```
 
 ## Usage
 
