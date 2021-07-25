@@ -14,9 +14,8 @@ const VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10
 const VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
 const VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
 const SPACE_BYTE: &[u8] = &[0, 0, 0, 32];
-use lazy_static::__Deref;
 use smol_str::SmolStr;
-use std::{borrow::Borrow, str::from_utf8_unchecked};
+use std::{borrow::Borrow, error::{self, Error}, fmt::Display, str::from_utf8_unchecked};
 
 pub type ValidUTF8BytesVec = Vec<u8>;
 pub type CustomStringBytesVec = Vec<u8>;
@@ -25,6 +24,17 @@ pub type CustomStringBytesSlice = [u8];
 
 fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
     value >= range.0 && value <= range.1
+}
+
+#[derive(Debug, Clone)]
+struct InvalidCustomStringByteError;
+impl Display for InvalidCustomStringByteError{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "invalid custom bytes.")
+    }
+}
+impl Error for InvalidCustomStringByteError {
+    
 }
 
 /** returns bytes index */
@@ -136,24 +146,24 @@ pub fn encode_utf8(input: &CustomStringBytesSlice) -> SmolStr {
     }
 }
 
-pub fn trim_to_std_utf8(input: &CustomStringBytesSlice) -> Box<[u8]> {
+pub fn trim_to_std_utf8(input: &CustomStringBytesSlice) -> Result<Box<[u8]>,Box<dyn error::Error>> {
     assert_eq!(input.len(), 4);
     match input {
         [0, 0, 0, one_byte_char] if one_byte_char <= &VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE => {
-            Box::from([*one_byte_char])
+            Ok(Box::from([*one_byte_char]))
         }
         [0, 0, first_byte, second_byte]
             if is_in_range(*first_byte, VALID_TWO_BYTE_UTF8_FIRST_BYTE_RANGE)
                 && is_in_range(*second_byte, VALID_TWO_BYTE_UTF8_SECOND_BYTE_RANGE) =>
         {
-            Box::from([*first_byte, *second_byte])
+            Ok(Box::from([*first_byte, *second_byte]))
         }
         [0, first_byte, second_byte, third_byte]
             if is_in_range(*first_byte, VALID_THREE_BYTE_UTF8_FIRST_BYTE_RANGE)
                 && is_in_range(*second_byte, VALID_THREE_BYTE_UTF8_SECOND_BYTE_RANGE)
                 && is_in_range(*third_byte, VALID_THREE_BYTE_UTF8_THIRD_BYTE_RANGE) =>
         {
-            Box::from([*first_byte, *second_byte, *third_byte])
+            Ok(Box::from([*first_byte, *second_byte, *third_byte]))
         }
         [first_byte, second_byte, third_byte, fourth_byte]
             if is_in_range(*first_byte, VALID_FOUR_BYTE_UTF8_FIRST_BYTE_RANGE)
@@ -161,10 +171,10 @@ pub fn trim_to_std_utf8(input: &CustomStringBytesSlice) -> Box<[u8]> {
                 && is_in_range(*third_byte, VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE)
                 && is_in_range(*fourth_byte, VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE) =>
         {
-            Box::from(input)
+            Ok(Box::from(input))
         }
         _ => {
-            panic!("not in 4 bytes range")
+            Err(InvalidCustomStringByteError.into())
         }
     }
 }
@@ -172,9 +182,8 @@ pub fn trim_to_std_utf8(input: &CustomStringBytesSlice) -> Box<[u8]> {
 pub fn to_std_string(input: &CustomStringBytesSlice) -> String {
     assert_eq!(input.len() % 4, 0);
     let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 10);
-    for index in (0..input.len()).step_by(BYTES_PER_CHAR) {
-        let end_offset = index + BYTES_PER_CHAR;
-        for byte in trim_to_std_utf8(&input[index..end_offset]).deref() {
+    for index in 0..input.chars_len() {
+        for byte in trim_to_std_utf8(&input.slice_by_char_indice(index, index + 1)).unwrap().into_iter() {
             output_content.push(*byte);
         }
     }
@@ -264,13 +273,12 @@ impl CustomString {
     }
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
-        for index in (0..input.len()).step_by(BYTES_PER_CHAR) {
-            let end_offset = index + BYTES_PER_CHAR;
-            for byte in trim_to_std_utf8(&input[index..end_offset]).deref() {
+        for index in 0..input.chars_len() {
+            for byte in trim_to_std_utf8(&input.slice_by_char_indice(index, index + 1)).unwrap().into_iter() {
                 output_content.push(*byte);
             }
         }
-        let mut output = String::from(std::str::from_utf8(output_content.as_slice()).unwrap());
+        let mut output = unsafe {String::from(std::str::from_utf8_unchecked(output_content.as_slice()))};
         output.shrink_to_fit();
         output
     }
@@ -278,7 +286,7 @@ impl CustomString {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in (0..input.len()).step_by(BYTES_PER_CHAR) {
             let end_offset = index + BYTES_PER_CHAR;
-            for byte in trim_to_std_utf8(&input[index..end_offset]).deref() {
+            for byte in trim_to_std_utf8(&input[index..end_offset]).unwrap().into_iter() {
                 output_content.push(*byte);
             }
         }
@@ -295,7 +303,7 @@ pub trait FixedCharsLengthByteSlice {
 
 impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
     fn slice_by_char_indice(&self, start: usize, end: usize) -> Self {
-        &self[(start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR)]
+        unsafe { &self.get_unchecked((start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR)) }
     }
     fn chars_len(&self) -> usize {
         self.len() / BYTES_PER_CHAR
@@ -328,4 +336,10 @@ impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
         }
         true
     }
+}
+#[test]
+fn check_slice() {
+    let ex: &[u8] = &[255, 255, 255, 255, 0, 255, 111, 0];
+    assert_eq!(ex.slice_by_char_indice(0, 1), &[255, 255, 255, 255]);
+    assert_eq!(ex.slice_by_char_indice(1, 2), &[0, 255, 111, 0]);
 }
