@@ -50,7 +50,7 @@ impl TrieNode {
         self.children
             .entry((&input_word[0..BYTES_PER_CHAR]).into())
             .or_insert(TrieNode::new())
-            .add_word(&input_word[BYTES_PER_CHAR..]);
+            .add_word(input_word.slice_by_char_indice(1, input_word.chars_len()));
     }
     fn remove_word_from_node(&mut self, input_word: &CustomStringBytesSlice) {
         let mut word = input_word.clone();
@@ -77,14 +77,13 @@ impl TrieNode {
         let prefix_cpy = prefix;
         let mut current_index = 0;
         let mut current_node_wrap = Some(self);
-        while (current_index) * BYTES_PER_CHAR < prefix_cpy.len() {
-            let character = &prefix_cpy
-                [(current_index * BYTES_PER_CHAR)..((current_index + 1) * BYTES_PER_CHAR)];
+        while current_index  < prefix_cpy.chars_len() {
+            let character = prefix_cpy.slice_by_char_indice(current_index, current_index + 1);
             if let Some(current_node) = current_node_wrap {
                 if let Some(child) = current_node.find_child(character) {
                     if child.end {
                         let substring_of_prefix =
-                            &prefix_cpy[0..(current_index + 1) * BYTES_PER_CHAR];
+                            prefix_cpy.slice_by_char_indice(0, current_index + 1);
                         result.push(substring_of_prefix.to_owned());
                     }
                     current_node_wrap = Some(child);
@@ -94,7 +93,6 @@ impl TrieNode {
             }
             current_index = current_index + 1;
         }
-        result.shrink_to_fit();
         result
     }
 }
