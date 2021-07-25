@@ -15,8 +15,8 @@ with Python and Node bindings. Formerly oxidized-thainlp.
 ## Usage
 
 ### Bindings
-- [Node.js](nlpo3-nodejs/README.md)
-- [Python](nlpo3-python/README.md) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
+- [Node.js](nlpo3-nodejs/)
+- [Python](nlpo3-python/) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
 
 ### As Rust library
 <a href="https://crates.io/crates/nlpo3/"><img alt="crates.io" src="https://img.shields.io/crates/v/nlpo3.svg"/></a>
