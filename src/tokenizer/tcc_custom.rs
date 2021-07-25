@@ -14,7 +14,7 @@ use ahash::AHashSet as HashSet;
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
 
-use crate::fixed_bytes_str::four_bytes::CustomStringBytesSlice;
+use crate::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
 
 use super::super::fixed_bytes_str::four_bytes::BYTES_PER_CHAR;
 
@@ -67,19 +67,17 @@ lazy_static! {
 }
 
 pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
-    let mut set: HashSet<usize> =
-        HashSet::with_capacity(custom_text_type.len() / BYTES_PER_CHAR / 2);
+    let mut set: HashSet<usize> = HashSet::with_capacity(custom_text_type.chars_len() / 10);
     if custom_text_type.len() == 0 {
         set
     } else {
         let mut position: usize = 0;
         let four_bytes_chars_segment = segment(custom_text_type);
         for segment in four_bytes_chars_segment.into_iter() {
-            let segment_size = segment.len() / BYTES_PER_CHAR;
+            let segment_size = segment.chars_len();
             position += segment_size;
             set.insert(position);
         }
-        set.shrink_to_fit();
         set
     }
 }
@@ -89,25 +87,28 @@ pub fn segment(custom_text_type: &CustomStringBytesSlice) -> Vec<&CustomStringBy
     let mut tcc_result: Vec<&[u8]> = Vec::with_capacity(txt.len() / 10);
     while txt.len() > 0 {
         if let Some(result) = NON_LOOKAHEAD_TCC.find(&txt) {
-            let mut matched = &txt[result.start()..result.end()];
-            let match_length = matched.len();
+            let mut matched = txt.slice_by_char_indice(
+                result.start() / BYTES_PER_CHAR,
+                result.end() / BYTES_PER_CHAR,
+            );
+            let match_length = matched.chars_len();
             if LOOKAHEAD_TCC.is_match(matched) {
                 // trim one more char to the right.
-                let end_bytes_index = match_length - (1 * BYTES_PER_CHAR);
-                matched = &matched[0..end_bytes_index];
+                let end_char_index = match_length;
+                matched = matched.slice_by_char_indice(0, end_char_index);
                 tcc_result.push(matched);
-                txt = &txt[end_bytes_index..];
+                txt = txt.slice_by_char_indice(end_char_index, txt.chars_len());
             } else {
                 tcc_result.push(matched);
 
-                let end_bytes_index = match_length;
-                txt = &txt[end_bytes_index..];
+                let end_char_index = match_length;
+                txt = txt.slice_by_char_indice(end_char_index, txt.chars_len());
             }
         } else {
             // not thai
-            let first_char = &txt[0..BYTES_PER_CHAR];
+            let first_char = txt.slice_by_char_indice(0, 1);
             tcc_result.push(first_char);
-            txt = &txt[BYTES_PER_CHAR..];
+            txt = txt.slice_by_char_indice(1, txt.chars_len());
         }
     }
     tcc_result

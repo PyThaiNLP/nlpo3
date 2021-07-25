@@ -32,7 +32,7 @@ use rayon::prelude::*;
 use regex::bytes::Regex;
 use std::{collections::VecDeque, path::PathBuf};
 const MAX_GRAPH_SIZE: usize = 50;
-const USE_MULTITHREAD_THRESHOLD: usize = 100;
+const USE_MULTITHREAD_THRESHOLD: usize = 1000000;
 
 // Window size for safe mode
 const TEXT_SCAN_POINT: usize = 120;
@@ -88,8 +88,10 @@ impl Newmm {
         goal: CharacterIndex,
         current_queue:&mut VecDeque<(usize, Vec<usize>)>
     ) -> Vec<CharacterIndex> {
-     
+        
         current_queue.clear();
+
+        
         // let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
         
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
@@ -104,7 +106,7 @@ impl Newmm {
                         appended_path.push(*position);
                         current_queue.push_back((*position, appended_path));
                     } else {
-                        let mut appended_path = path.clone();
+                        let mut appended_path = path;
                         appended_path.push(*position);
 
                         return appended_path;
@@ -189,7 +191,7 @@ impl Newmm {
                         Some(match_point) => {
                             let matched_start_char_index = match_point.start() / BYTES_PER_CHAR;
                             let matched_end_char_index = match_point.end() / BYTES_PER_CHAR;
-                            //  non thai -> skip to the end of match - this is byte index not char index...
+                            //  non thai -> skip to the end of match  
                             end_position = begin_position
                                 + sub_text_prefix
                                     .slice_by_char_indice(
@@ -203,8 +205,7 @@ impl Newmm {
                             let mut finish_without_break = true;
                             for position in begin_position + 1..text_length {
                                 if valid_position.contains(&position) {
-                                    // let (prefix_byte_index,_) = text.char_indices().nth(position).unwrap();
-                                    // let prefix = text.substring(position, text_length);
+                                  
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
                                     let list_of_prefixes = custom_dict.prefix(&prefix);
