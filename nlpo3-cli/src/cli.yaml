@@ -1,24 +1,27 @@
 name: nlpo3
 version: 0.0.1
-about: nlpo3 command line interface
-args:
-  - dict_path:
-      help: Dictionary path
-      multiple: false
-      short: d
-      takes_value: true
-  - word_delimiter:
-      help: Word delimiter e.g. white space
-      multiple: false
-      short: s
-      takes_value: true
-  - safe:
-      help: Run in safe mode to avoid long running edge cases
-      multiple: false
-      short: z
-      takes_value: false
-  - parallel:
-      help: Run in multithread mode
-      multiple: false
-      short: p
-      takes_value: false
+about: nlpO3 command line interface
+subcommands:
+  - segment:
+      about: tokenize a string to words
+      args:
+        - dict_path:
+            help: Dictionary path. If not given, use a built-in dictionary.
+            multiple: false
+            short: d
+            takes_value: true
+        - word_delimiter:
+            help: Word delimiter. If not given, use |
+            multiple: false
+            short: s
+            takes_value: true
+        - safe:
+            help: Run in safe mode to avoid long running edge cases
+            multiple: false
+            short: z
+            takes_value: false
+        - parallel:
+            help: Run in multithread mode
+            multiple: false
+            short: p
+            takes_value: false
