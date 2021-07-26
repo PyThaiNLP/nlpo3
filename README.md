@@ -16,8 +16,8 @@ with Python and Node bindings. Formerly oxidized-thainlp.
 
 ### Command line
 
-- [nlpo3-cli](nlpo3-nodejs/)
- 
+- [nlpo3-cli](nlpo3-nodejs/) <a href="https://crates.io/crates/nlpo3-cli/"><img alt="crates.io" src="https://img.shields.io/crates/v/nlpo3-cli.svg"/></a>
+
 ### Bindings
 - [Node.js](nlpo3-nodejs/)
 - [Python](nlpo3-python/) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
