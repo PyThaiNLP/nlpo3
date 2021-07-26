@@ -11,7 +11,7 @@ cargo install nlpo3-cli
 ## Usage
 
 ```bash
-nlpo3 --help
+nlpo3 help
 ```
 
 ## Example
