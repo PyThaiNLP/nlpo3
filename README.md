@@ -14,6 +14,10 @@ with Python and Node bindings. Formerly oxidized-thainlp.
 
 ## Usage
 
+### Command line
+
+- [nlpo3-cli](nlpo3-nodejs/)
+ 
 ### Bindings
 - [Node.js](nlpo3-nodejs/)
 - [Python](nlpo3-python/) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
