@@ -14,8 +14,6 @@ readme = "README.md"
 exclude = [".gitignore", ".github/*", "build_tools/*", "tests/*"]
 
 
-[profile.release]
-debug = true
 
 [lib]
 path = "src/lib.rs"
