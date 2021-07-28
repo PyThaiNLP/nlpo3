@@ -52,11 +52,20 @@ lazy_static! {
         r"(?x)
         ^(\x00\x00\x00[-a-zA-Z])+| # Latin characters
         ^(\x00\x00\x00\d)+(\x00\x00\x00[,\.](\x00\x00\x00\d)+)*| # number
+        ^((\x00[๐๑๒๓๔๕๖๗๘๙]))+(\x00\x00\x00[,\.]((\x00[๐๑๒๓๔๕๖๗๘๙])+))*| #  are you serious, Thai number?
         ^(\x00\x00\x00[\ \t])+| # space
         ^(\x00\x00\x00\r)?\x00\x00\x00\n  # newline" 
     )
     .unwrap();
 }
+// _PAT_NONTHAI = re.compile(
+//     r"""(?x)
+// [-a-zA-Z]+|        # Latin characters
+// \d+([,\.]\d+)*|    # number
+// [ \t]+|            # space
+// \r?\n              # newline
+// """
+// )
 
 lazy_static! {
     static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(r"^(\x00[ก-ฮ]){0,2}$").unwrap();
@@ -102,7 +111,7 @@ impl Newmm {
                         appended_path.push(*position);
                         current_queue.push_back((*position, appended_path));
                     } else {
-                        let mut appended_path = path;
+                        let mut appended_path = path.clone();
                         appended_path.push(*position);
 
                         return appended_path;
