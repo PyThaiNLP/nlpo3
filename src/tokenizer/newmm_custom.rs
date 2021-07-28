@@ -58,14 +58,6 @@ lazy_static! {
     )
     .unwrap();
 }
-// _PAT_NONTHAI = re.compile(
-//     r"""(?x)
-// [-a-zA-Z]+|        # Latin characters
-// \d+([,\.]\d+)*|    # number
-// [ \t]+|            # space
-// \r?\n              # newline
-// """
-// )
 
 lazy_static! {
     static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(r"^(\x00[ก-ฮ]){0,2}$").unwrap();
