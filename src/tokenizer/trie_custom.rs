@@ -72,6 +72,7 @@ impl TrieNode {
             };
         }
     }
+    
     pub fn list_prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<CustomStringBytesVec> {
         let mut result: Vec<CustomStringBytesVec> = Vec::with_capacity(100);
         let prefix_cpy = prefix;
@@ -84,7 +85,7 @@ impl TrieNode {
                     if child.end {
                         let substring_of_prefix =
                             prefix_cpy.slice_by_char_indice(0, current_index + 1);
-                        result.push(substring_of_prefix.to_owned());
+                        result.push(substring_of_prefix.to_vec());
                     }
                     current_node_wrap = Some(child);
                 } else {
@@ -130,9 +131,11 @@ impl Trie {
             self.root.remove_word_from_node(stripped_word_raw);
         }
     }
+    
     pub fn prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<Vec<u8>> {
         self.root.list_prefix(prefix)
     }
+    
     pub fn contain(&self, word: &CustomStringBytesVec) -> bool {
         self.words.contains(word)
     }

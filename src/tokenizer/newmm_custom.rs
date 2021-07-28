@@ -16,9 +16,7 @@ use crate::fixed_bytes_str::four_bytes::{
     rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
 
-use super::super::fixed_bytes_str::four_bytes::{
-    CustomStringBytesSlice, CustomStringBytesVec,
-};
+use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
 use super::{
     dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
     tcc_custom,
@@ -81,19 +79,17 @@ impl Newmm {
             },
         }
     }
-  
+
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
         goal: CharacterIndex,
-        current_queue:&mut VecDeque<(usize, Vec<usize>)>
+        current_queue: &mut VecDeque<(usize, Vec<usize>)>,
     ) -> Vec<CharacterIndex> {
-        
         current_queue.clear();
 
-        
         // let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
-        
+
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
         init_path.push(start);
         current_queue.push_back((start, init_path));
@@ -116,11 +112,11 @@ impl Newmm {
         }
         panic!("something wrong");
     }
-   
+
     fn one_cut(input: &CustomStringBytesSlice, custom_dict: &Trie) -> Vec<CustomStringBytesVec> {
         let text = input;
         let input_char_len = text.chars_len();
-        let mut reused_queue : VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10); 
+        let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
         let mut graph_size: usize = 0;
         let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> =
             HashMap::with_capacity(input_char_len / 100);
@@ -172,8 +168,12 @@ impl Newmm {
                 if position_list_length == 1 {
                     //only one candidate!
                     if let Some(first_position_list) = position_list.peek() {
-                        let group_of_end_position_candidate =
-                            Self::bfs_paths_graph(&graph, end_position, *first_position_list, &mut reused_queue);
+                        let group_of_end_position_candidate = Self::bfs_paths_graph(
+                            &graph,
+                            end_position,
+                            *first_position_list,
+                            &mut reused_queue,
+                        );
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
@@ -191,7 +191,7 @@ impl Newmm {
                         Some(match_point) => {
                             let matched_start_char_index = match_point.start() / BYTES_PER_CHAR;
                             let matched_end_char_index = match_point.end() / BYTES_PER_CHAR;
-                            //  non thai -> skip to the end of match  
+                            //  non thai -> skip to the end of match
                             end_position = begin_position
                                 + sub_text_prefix
                                     .slice_by_char_indice(
@@ -205,7 +205,6 @@ impl Newmm {
                             let mut finish_without_break = true;
                             for position in begin_position + 1..text_length {
                                 if valid_position.contains(&position) {
-                                  
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
                                     let list_of_prefixes = custom_dict.prefix(&prefix);
@@ -352,10 +351,7 @@ impl Newmm {
                     .flat_map(|part| {
                         Self::one_cut(&part, &custom_dict)
                             .iter()
-                            .map(|word| {
-
-                                CustomString::convert_raw_bytes_to_std_string(&word)
-                            })
+                            .map(|word| CustomString::convert_raw_bytes_to_std_string(&word))
                             .collect::<Vec<String>>()
                     })
                     .collect::<Vec<String>>()
@@ -365,12 +361,7 @@ impl Newmm {
 }
 
 impl Tokenizer for Newmm {
-    fn segment(
-        &self,
-        text: &str,
-        safe: Option<bool>,
-        parallel: Option<bool>,
-    ) -> Vec<String> {
+    fn segment(&self, text: &str, safe: Option<bool>, parallel: Option<bool>) -> Vec<String> {
         let safe_flag = match safe {
             Some(val) => val,
             None => false,
@@ -391,7 +382,5 @@ impl Tokenizer for Newmm {
         parallel: Option<bool>,
     ) -> Vec<String> {
         self.segment(text, safe, parallel)
-       
     }
-   
 }
