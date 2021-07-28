@@ -30,7 +30,7 @@ use rayon::prelude::*;
 use regex::bytes::Regex;
 use std::{collections::VecDeque, path::PathBuf};
 const MAX_GRAPH_SIZE: usize = 50;
-const USE_MULTITHREAD_THRESHOLD: usize = 1000000;
+const USE_MULTITHREAD_THRESHOLD: usize = 10000;
 
 // Window size for safe mode
 const TEXT_SCAN_POINT: usize = 120;
