@@ -1,4 +1,3 @@
-<a href="https://www.npmjs.com/package/nlpo3"><img alt="npmjs" src="https://img.shields.io/npm/v/nlpo3.svg"/></a>
 <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
 
 # nlpO3 Node.js binding
