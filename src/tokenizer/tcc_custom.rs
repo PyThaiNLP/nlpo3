@@ -87,22 +87,19 @@ pub fn segment(custom_text_type: &CustomStringBytesSlice) -> Vec<&CustomStringBy
     let mut tcc_result: Vec<&[u8]> = Vec::with_capacity(txt.len() / 10);
     while txt.len() > 0 {
         if let Some(result) = NON_LOOKAHEAD_TCC.find(&txt) {
-            let mut matched = txt.slice_by_char_indice(
-                result.start() / BYTES_PER_CHAR,
-                result.end() / BYTES_PER_CHAR,
-            );
-            let match_length = matched.chars_len();
+            let mut matched = &txt[result.start()..result.end()];
+            let match_length = matched.len();
             if LOOKAHEAD_TCC.is_match(matched) {
                 // trim one more char to the right.
-                let end_char_index = match_length;
-                matched = matched.slice_by_char_indice(0, end_char_index);
+                let end_bytes_index = match_length - (1 * BYTES_PER_CHAR);
+                matched = &matched[0..end_bytes_index];
                 tcc_result.push(matched);
-                txt = txt.slice_by_char_indice(end_char_index, txt.chars_len());
+                txt = &txt[end_bytes_index..];
             } else {
                 tcc_result.push(matched);
 
-                let end_char_index = match_length;
-                txt = txt.slice_by_char_indice(end_char_index, txt.chars_len());
+                let end_bytes_index = match_length;
+                txt = &txt[end_bytes_index..];
             }
         } else {
             // not thai

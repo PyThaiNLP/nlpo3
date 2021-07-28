@@ -5,6 +5,7 @@ use nlpo3::tokenizer::{
     //},
     newmm_custom::Newmm as NewmmCustom,
 };
+const FIRST_TEXT:&str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 
 #[test]
 fn test_long_text_byte_tokenizer() {
@@ -186,4 +187,9 @@ fn test_standard_short_word() {
         newmm_default_dict.segment_to_string("USD1,984.42", None, None),
         ["USD", "1,984.42"]
     );
+}
+#[test]
+fn test_with_some_real_data(){
+    let newmm_default_dict = NewmmCustom::new(None);
+   assert_eq!(newmm_default_dict.segment_to_string(FIRST_TEXT, None, None),["นิสสัน", "ผ่อน", "จน", "เพลีย", "นาวา", "ร่า", ".."])
 }
