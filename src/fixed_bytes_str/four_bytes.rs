@@ -1,18 +1,18 @@
 use bytecount::num_chars;
 pub const BYTES_PER_CHAR: usize = 4;
-const VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE: u8 = 0b01111111 as u8;
+const VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE: u8 = 0b01111111_u8;
 
-const VALID_TWO_BYTE_UTF8_FIRST_BYTE_RANGE: (u8, u8) = (0b11000000 as u8, 0b11011111 as u8);
-const VALID_TWO_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
+const VALID_TWO_BYTE_UTF8_FIRST_BYTE_RANGE: (u8, u8) = (0b11000000_u8, 0b11011111_u8);
+const VALID_TWO_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
 
-const VALID_THREE_BYTE_UTF8_FIRST_BYTE_RANGE: (u8, u8) = (0b11100000 as u8, 0b11110111 as u8);
-const VALID_THREE_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
-const VALID_THREE_BYTE_UTF8_THIRD_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
+const VALID_THREE_BYTE_UTF8_FIRST_BYTE_RANGE: (u8, u8) = (0b11100000_u8, 0b11110111_u8);
+const VALID_THREE_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
+const VALID_THREE_BYTE_UTF8_THIRD_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
 
-const VALID_FOUR_BYTE_UTF8_FIRST_BYTE_RANGE: (u8, u8) = (0b11110000 as u8, 0b11110111 as u8);
-const VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
-const VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
-const VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE: (u8, u8) = (0b10000000 as u8, 0b10111111 as u8);
+const VALID_FOUR_BYTE_UTF8_FIRST_BYTE_RANGE: (u8, u8) = (0b11110000_u8, 0b11110111_u8);
+const VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
+const VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
+const VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
 const SPACE_BYTE: &[u8] = &[0, 0, 0, 32];
 type PreparedCustomBytes = (Option<u8>, Option<u8>, Option<u8>, Option<u8>);
 use std::{
@@ -76,11 +76,8 @@ pub fn rfind_space(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     assert_eq!(custom_text.len() % 4, 0);
 
     for index in (0..(custom_text.len() / BYTES_PER_CHAR)).rev() {
-        match &custom_text[(index) * BYTES_PER_CHAR..(index + 1) * BYTES_PER_CHAR] {
-            SPACE_BYTE => {
-                return Some((index) * BYTES_PER_CHAR);
-            }
-            _ => {}
+        if let SPACE_BYTE = &custom_text[(index) * BYTES_PER_CHAR..(index + 1) * BYTES_PER_CHAR] {
+            return Some((index) * BYTES_PER_CHAR);
         }
     }
     None
@@ -91,11 +88,8 @@ pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<us
     assert_eq!(custom_text.len() % 4, 0);
 
     for index in (0..(custom_text.len() / BYTES_PER_CHAR)).rev() {
-        match &custom_text[(index) * BYTES_PER_CHAR..(index + 1) * BYTES_PER_CHAR] {
-            SPACE_BYTE => {
-                return Some(index);
-            }
-            _ => {}
+        if let SPACE_BYTE = &custom_text[(index) * BYTES_PER_CHAR..(index + 1) * BYTES_PER_CHAR] {
+            return Some(index);
         }
     }
     None
@@ -108,8 +102,7 @@ pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<us
  28 ..
 */
 fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
-    match custom_bytes {
-        [0, 0, 0, 9]
+    matches!(custom_bytes, [0, 0, 0, 9]
         | [0, 0, 0, 10]
         | [0, 0, 0, 11]
         | [0, 0, 0, 12]
@@ -119,9 +112,7 @@ fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
         | [0, 0xe2, 0x80, 0x8e]
         | [0, 0xe2, 0x80, 0x8f]
         | [0, 0xe2, 0x80, 0xa8]
-        | [0, 0xe2, 0x80, 0xa9] => true,
-        _ => false,
-    }
+        | [0, 0xe2, 0x80, 0xa9])
 }
 
 fn to_four_bytes(input: &str) -> CustomStringBytesVec {
@@ -222,7 +213,7 @@ impl CustomString {
         Self { content, length }
     }
     pub fn new(base_string: &str) -> Self {
-        let content = Vec::from(to_four_bytes(base_string));
+        let content = to_four_bytes(base_string);
         let length = content.len() / BYTES_PER_CHAR;
         Self { content, length }
     }
@@ -235,6 +226,9 @@ impl CustomString {
     /** Returns characters length */
     pub fn chars_len(&self) -> usize {
         self.length
+    }
+    pub fn is_empty(&self) -> bool {
+        self.content.len() == 0
     }
     pub fn len(&self) -> usize {
         self.content.len()

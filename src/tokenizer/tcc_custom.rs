@@ -68,7 +68,7 @@ lazy_static! {
 
 pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
     let mut set: HashSet<usize> = HashSet::with_capacity(custom_text_type.chars_len() / 10);
-    if custom_text_type.len() == 0 {
+    if custom_text_type.is_empty() {
         set
     } else {
         let mut position: usize = 0;
@@ -83,9 +83,9 @@ pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
 }
 
 pub fn segment(custom_text_type: &CustomStringBytesSlice) -> Vec<&CustomStringBytesSlice> {
-    let mut txt = custom_text_type.clone();
+    let mut txt = custom_text_type;
     let mut tcc_result: Vec<&[u8]> = Vec::with_capacity(txt.len() / 10);
-    while txt.len() > 0 {
+    while !txt.is_empty() {
         if let Some(result) = NON_LOOKAHEAD_TCC.find(&txt) {
             let mut matched = &txt[result.start()..result.end()];
             let match_length = matched.len();

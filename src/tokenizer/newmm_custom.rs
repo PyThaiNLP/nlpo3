@@ -13,7 +13,7 @@ Rust implementation: ["Thanathip Suntorntip"]
 */
 // TODO: use slice_by_chars_indice on &[u8]
 use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
+     rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
 
 use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
@@ -52,7 +52,7 @@ lazy_static! {
         r"(?x)
         ^(\x00\x00\x00[-a-zA-Z])+| # Latin characters
         ^(\x00\x00\x00\d)+(\x00\x00\x00[,\.](\x00\x00\x00\d)+)*| # number
-        ^((\x00[๐๑๒๓๔๕๖๗๘๙]))+(\x00\x00\x00[,\.]((\x00[๐๑๒๓๔๕๖๗๘๙])+))*| #  are you serious, Thai number?
+        ^(\x00[๐-๙])+(\x00\x00\x00[,\.](\x00[๐-๙])+)*| #  are you serious, Thai number?
         ^(\x00\x00\x00[\ \t])+| # space
         ^(\x00\x00\x00\r)?\x00\x00\x00\n  # newline" 
     )
@@ -94,7 +94,7 @@ impl Newmm {
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
         init_path.push(start);
         current_queue.push_back((start, init_path));
-        while current_queue.len() > 0 {
+        while !current_queue.is_empty() {
             let (vertex, path) = current_queue.pop_front().unwrap();
             if let Some(idk) = graph.get(&vertex) {
                 for position in idk {
@@ -103,7 +103,7 @@ impl Newmm {
                         appended_path.push(*position);
                         current_queue.push_back((*position, appended_path));
                     } else {
-                        let mut appended_path = path.clone();
+                        let mut appended_path = path;
                         appended_path.push(*position);
 
                         return appended_path;
@@ -229,7 +229,7 @@ impl Newmm {
                                                 .collect()
                                         };
 
-                                    if valid_words.len() > 0 {
+                                    if !valid_words.is_empty() {
                                         end_position = position;
                                         finish_without_break = false;
                                         break;
@@ -286,7 +286,7 @@ impl Newmm {
         }
         if !safe || input.chars_len() < TEXT_SCAN_END {
             let result = Self::one_cut(input.raw_content(), custom_dict);
-            return if parallel {
+            if parallel {
                 result
                     .into_par_iter()
                     .map(|custom_string_bytes| {
@@ -300,7 +300,7 @@ impl Newmm {
                         CustomString::convert_raw_bytes_to_std_string(&custom_string_bytes)
                     })
                     .collect()
-            };
+            }
         } else {
             let mut txt = input.raw_content();
             let mut txt_parts: Vec<CustomStringBytesVec> = Vec::with_capacity(txt.len() / 10);
@@ -332,7 +332,7 @@ impl Newmm {
                 txt_parts.push(txt.slice_by_char_indice(0, cut_pos).to_owned());
                 txt = txt.slice_by_char_indice(cut_pos, txt.chars_len());
             }
-            if txt.len() > 0 {
+            if !txt.is_empty() {
                 txt_parts.push(txt.to_owned());
             }
 
@@ -363,17 +363,14 @@ impl Newmm {
 
 impl Tokenizer for Newmm {
     fn segment(&self, text: &str, safe: Option<bool>, parallel: Option<bool>) -> Vec<String> {
-        let safe_flag = match safe {
-            Some(val) => val,
-            None => false,
-        };
+        let safe_flag = safe.unwrap_or(false);
         let parallel_flag = match parallel {
             Some(val) => val,
             _ => false,
         };
         let custom_string = CustomString::new(text);
-        let tokens = Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag);
-        tokens
+        Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag)
+       
     }
 
     fn segment_to_string(
