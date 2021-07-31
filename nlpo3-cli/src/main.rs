@@ -23,22 +23,16 @@ fn main() {
         };
         let is_parallel = Some(matches.occurrences_of("p") > 0);
         let is_safe = Some(matches.occurrences_of("z") > 0);
-    
+
         let newmm = Newmm::new(dict_path);
-    
+
         for line_opt in io::BufReader::new(io::stdin()).lines() {
             let cleaned_line = match line_opt {
-                Ok(line) => {
-                    if line.len() > 0 {
-                        line.trim_end_matches('\n').to_string()
-                    } else {
-                        line
-                    }
-                }
+                Ok(line) => line.trim_end_matches('\n').to_string(),
                 Err(e) => panic!("Cannot read line {}", e),
             };
             let toks = newmm.segment(&cleaned_line, is_safe, is_parallel);
             println!("{}", toks.join(word_delim));
-        }    
+        }
     }
 }
