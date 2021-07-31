@@ -1,5 +1,5 @@
 {
-  "name": "nlpo3",
+  "name": "nlpo3-nodejs",
   "version": "0.2.0",
   "description": "Node.js binding for nlpO3 Thai language processing library",
   "repository": {

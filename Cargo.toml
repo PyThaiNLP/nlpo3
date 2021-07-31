@@ -13,6 +13,8 @@ repository = "https://github.com/PyThaiNLP/nlpo3/"
 readme = "README.md"
 exclude = [".gitignore", ".github/*", "build_tools/*", "tests/*"]
 
+
+
 [lib]
 path = "src/lib.rs"
 # "cdylib" is necessary to produce a shared library for Python to import from.

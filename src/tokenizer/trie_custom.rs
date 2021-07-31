@@ -21,6 +21,12 @@ pub struct TrieNode {
 }
 
 /** FOR CUSTOM 4-BYTE TEXT ONLY */
+impl Default for TrieNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TrieNode {
     pub fn new() -> Self {
         Self {
@@ -43,17 +49,17 @@ impl TrieNode {
     }
     fn add_word(&mut self, input_word: &CustomStringBytesSlice) {
         // thanks to https://stackoverflow.com/questions/36957286/how-do-you-implement-this-simple-trie-node-in-rust
-        if input_word.len() == 0 {
+        if input_word.is_empty() {
             self.end = true;
             return;
         }
         self.children
             .entry((&input_word[0..BYTES_PER_CHAR]).into())
-            .or_insert(TrieNode::new())
-            .add_word(&input_word[BYTES_PER_CHAR..]);
+            .or_insert_with(TrieNode::new)
+            .add_word(input_word.slice_by_char_indice(1, input_word.chars_len()));
     }
     fn remove_word_from_node(&mut self, input_word: &CustomStringBytesSlice) {
-        let mut word = input_word.clone();
+        let mut word = input_word;
         let char_count = word.len() / BYTES_PER_CHAR;
         // if has atleast 1 char
         if word.len() >= BYTES_PER_CHAR {
@@ -72,20 +78,20 @@ impl TrieNode {
             };
         }
     }
+
     pub fn list_prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<CustomStringBytesVec> {
         let mut result: Vec<CustomStringBytesVec> = Vec::with_capacity(100);
         let prefix_cpy = prefix;
         let mut current_index = 0;
         let mut current_node_wrap = Some(self);
-        while (current_index) * BYTES_PER_CHAR < prefix_cpy.len() {
-            let character = &prefix_cpy
-                [(current_index * BYTES_PER_CHAR)..((current_index + 1) * BYTES_PER_CHAR)];
+        while current_index < prefix_cpy.chars_len() {
+            let character = prefix_cpy.slice_by_char_indice(current_index, current_index + 1);
             if let Some(current_node) = current_node_wrap {
                 if let Some(child) = current_node.find_child(character) {
                     if child.end {
                         let substring_of_prefix =
-                            &prefix_cpy[0..(current_index + 1) * BYTES_PER_CHAR];
-                        result.push(substring_of_prefix.to_owned());
+                            prefix_cpy.slice_by_char_indice(0, current_index + 1);
+                        result.push(substring_of_prefix.to_vec());
                     }
                     current_node_wrap = Some(child);
                 } else {
@@ -94,7 +100,6 @@ impl TrieNode {
             }
             current_index = current_index + 1;
         }
-        result.shrink_to_fit();
         result
     }
 }
@@ -105,17 +110,17 @@ pub struct Trie {
     root: TrieNode,
 }
 impl Trie {
-    pub fn new(words: &Vec<CustomString>) -> Self {
+    pub fn new(words: &[CustomString]) -> Self {
         let mut instance = Self {
             words: HashSet::with_capacity(words.len() / 10),
             root: TrieNode::new(),
         };
-        for word in words.into_iter() {
+        for word in words.iter() {
             instance.add(&word);
         }
         instance
     }
-    fn remove_word_from_set(&mut self, word: &CustomStringBytesVec) {
+    fn remove_word_from_set(&mut self, word: &CustomStringBytesSlice) {
         self.words.remove(word);
     }
     pub fn add(&mut self, word: &CustomString) {
@@ -126,16 +131,18 @@ impl Trie {
     }
     pub fn remove(&mut self, word: &CustomString) {
         let stripped_word = word.trim();
-        let stripped_word_raw = &stripped_word.raw_content().into();
+        let stripped_word_raw = stripped_word.raw_content();
         if self.words.contains(stripped_word_raw) {
             self.remove_word_from_set(stripped_word_raw);
             self.root.remove_word_from_node(stripped_word_raw);
         }
     }
+
     pub fn prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<Vec<u8>> {
         self.root.list_prefix(prefix)
     }
-    pub fn contain(&self, word: &CustomStringBytesVec) -> bool {
+
+    pub fn contain(&self, word: &CustomStringBytesSlice) -> bool {
         self.words.contains(word)
     }
     pub fn iterate(&self) -> std::collections::hash_set::Iter<'_, Vec<u8>> {

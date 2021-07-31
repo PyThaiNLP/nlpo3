@@ -13,12 +13,10 @@ Rust implementation: ["Thanathip Suntorntip"]
 */
 // TODO: use slice_by_chars_indice on &[u8]
 use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
+     rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
 
-use super::super::fixed_bytes_str::four_bytes::{
-    CustomStringBytesSlice, CustomStringBytesVec,
-};
+use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
 use super::{
     dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
     tcc_custom,
@@ -32,7 +30,7 @@ use rayon::prelude::*;
 use regex::bytes::Regex;
 use std::{collections::VecDeque, path::PathBuf};
 const MAX_GRAPH_SIZE: usize = 50;
-const USE_MULTITHREAD_THRESHOLD: usize = 100;
+const USE_MULTITHREAD_THRESHOLD: usize = 10000;
 
 // Window size for safe mode
 const TEXT_SCAN_POINT: usize = 120;
@@ -54,6 +52,7 @@ lazy_static! {
         r"(?x)
         ^(\x00\x00\x00[-a-zA-Z])+| # Latin characters
         ^(\x00\x00\x00\d)+(\x00\x00\x00[,\.](\x00\x00\x00\d)+)*| # number
+        ^(\x00[๐-๙])+(\x00\x00\x00[,\.](\x00[๐-๙])+)*| #  are you serious, Thai number?
         ^(\x00\x00\x00[\ \t])+| # space
         ^(\x00\x00\x00\r)?\x00\x00\x00\n  # newline" 
     )
@@ -81,21 +80,21 @@ impl Newmm {
             },
         }
     }
-  
+
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
         goal: CharacterIndex,
-        current_queue:&mut VecDeque<(usize, Vec<usize>)>
+        current_queue: &mut VecDeque<(usize, Vec<usize>)>,
     ) -> Vec<CharacterIndex> {
-     
         current_queue.clear();
+
         // let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
-        
+
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
         init_path.push(start);
         current_queue.push_back((start, init_path));
-        while current_queue.len() > 0 {
+        while !current_queue.is_empty() {
             let (vertex, path) = current_queue.pop_front().unwrap();
             if let Some(idk) = graph.get(&vertex) {
                 for position in idk {
@@ -104,7 +103,7 @@ impl Newmm {
                         appended_path.push(*position);
                         current_queue.push_back((*position, appended_path));
                     } else {
-                        let mut appended_path = path.clone();
+                        let mut appended_path = path;
                         appended_path.push(*position);
 
                         return appended_path;
@@ -114,11 +113,11 @@ impl Newmm {
         }
         panic!("something wrong");
     }
-   
+
     fn one_cut(input: &CustomStringBytesSlice, custom_dict: &Trie) -> Vec<CustomStringBytesVec> {
         let text = input;
         let input_char_len = text.chars_len();
-        let mut reused_queue : VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10); 
+        let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
         let mut graph_size: usize = 0;
         let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> =
             HashMap::with_capacity(input_char_len / 100);
@@ -170,8 +169,12 @@ impl Newmm {
                 if position_list_length == 1 {
                     //only one candidate!
                     if let Some(first_position_list) = position_list.peek() {
-                        let group_of_end_position_candidate =
-                            Self::bfs_paths_graph(&graph, end_position, *first_position_list, &mut reused_queue);
+                        let group_of_end_position_candidate = Self::bfs_paths_graph(
+                            &graph,
+                            end_position,
+                            *first_position_list,
+                            &mut reused_queue,
+                        );
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
@@ -189,7 +192,7 @@ impl Newmm {
                         Some(match_point) => {
                             let matched_start_char_index = match_point.start() / BYTES_PER_CHAR;
                             let matched_end_char_index = match_point.end() / BYTES_PER_CHAR;
-                            //  non thai -> skip to the end of match - this is byte index not char index...
+                            //  non thai -> skip to the end of match
                             end_position = begin_position
                                 + sub_text_prefix
                                     .slice_by_char_indice(
@@ -203,8 +206,6 @@ impl Newmm {
                             let mut finish_without_break = true;
                             for position in begin_position + 1..text_length {
                                 if valid_position.contains(&position) {
-                                    // let (prefix_byte_index,_) = text.char_indices().nth(position).unwrap();
-                                    // let prefix = text.substring(position, text_length);
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
                                     let list_of_prefixes = custom_dict.prefix(&prefix);
@@ -228,7 +229,7 @@ impl Newmm {
                                                 .collect()
                                         };
 
-                                    if valid_words.len() > 0 {
+                                    if !valid_words.is_empty() {
                                         end_position = position;
                                         finish_without_break = false;
                                         break;
@@ -285,7 +286,7 @@ impl Newmm {
         }
         if !safe || input.chars_len() < TEXT_SCAN_END {
             let result = Self::one_cut(input.raw_content(), custom_dict);
-            return if parallel {
+            if parallel {
                 result
                     .into_par_iter()
                     .map(|custom_string_bytes| {
@@ -299,7 +300,7 @@ impl Newmm {
                         CustomString::convert_raw_bytes_to_std_string(&custom_string_bytes)
                     })
                     .collect()
-            };
+            }
         } else {
             let mut txt = input.raw_content();
             let mut txt_parts: Vec<CustomStringBytesVec> = Vec::with_capacity(txt.len() / 10);
@@ -331,7 +332,7 @@ impl Newmm {
                 txt_parts.push(txt.slice_by_char_indice(0, cut_pos).to_owned());
                 txt = txt.slice_by_char_indice(cut_pos, txt.chars_len());
             }
-            if txt.len() > 0 {
+            if !txt.is_empty() {
                 txt_parts.push(txt.to_owned());
             }
 
@@ -351,10 +352,7 @@ impl Newmm {
                     .flat_map(|part| {
                         Self::one_cut(&part, &custom_dict)
                             .iter()
-                            .map(|word| {
-
-                                CustomString::convert_raw_bytes_to_std_string(&word)
-                            })
+                            .map(|word| CustomString::convert_raw_bytes_to_std_string(&word))
                             .collect::<Vec<String>>()
                     })
                     .collect::<Vec<String>>()
@@ -364,23 +362,15 @@ impl Newmm {
 }
 
 impl Tokenizer for Newmm {
-    fn segment(
-        &self,
-        text: &str,
-        safe: Option<bool>,
-        parallel: Option<bool>,
-    ) -> Vec<String> {
-        let safe_flag = match safe {
-            Some(val) => val,
-            None => false,
-        };
+    fn segment(&self, text: &str, safe: Option<bool>, parallel: Option<bool>) -> Vec<String> {
+        let safe_flag = safe.unwrap_or(false);
         let parallel_flag = match parallel {
             Some(val) => val,
             _ => false,
         };
         let custom_string = CustomString::new(text);
-        let tokens = Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag);
-        tokens
+        Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag)
+       
     }
 
     fn segment_to_string(
@@ -390,7 +380,5 @@ impl Tokenizer for Newmm {
         parallel: Option<bool>,
     ) -> Vec<String> {
         self.segment(text, safe, parallel)
-       
     }
-   
 }
