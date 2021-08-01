@@ -36,8 +36,3 @@ smol_str = "0.1.17"
 name = "basic"
 path = "tests/test_tokenizer.rs"
 test = true
-
-[[test]]
-name = "basic2"
-path = "tests/test_custom_string.rs"
-test = true
