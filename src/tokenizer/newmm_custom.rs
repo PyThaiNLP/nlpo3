@@ -16,12 +16,13 @@ use crate::fixed_bytes_str::four_bytes::{
      rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
 
+
 use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
 use super::{
     dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
     tcc_custom,
     tokenizer_trait::Tokenizer,
-    trie_custom::Trie,
+    trie_custom::{Trie,ListPrefix},
 };
 use ahash::{AHashMap as HashMap, AHashSet as HashSet};
 use binary_heap_plus::{BinaryHeap, MinComparator};
@@ -140,9 +141,9 @@ impl Newmm {
         } {
             if let Some(begin_position) = position_list.pop() {
                 let sub_text_prefix = text.slice_by_char_indice(begin_position, text.chars_len());
-                let prefixes = custom_dict.prefix(sub_text_prefix);
+                let prefixes = sub_text_prefix.prefix_from_trie(&custom_dict);
                 for word in prefixes {
-                    let word_length = word.as_slice().chars_len();
+                    let word_length = word.chars_len();
                     let end_position_candidate = begin_position + word_length;
                     if valid_position.contains(&end_position_candidate) {
                         let target_graph = graph.get_mut(&begin_position);
@@ -208,15 +209,15 @@ impl Newmm {
                                 if valid_position.contains(&position) {
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
-                                    let list_of_prefixes = custom_dict.prefix(&prefix);
-                                    let valid_word_filter = |word: &Vec<u8>| {
-                                        let new_position = position + word.as_slice().chars_len();
+                                    let list_of_prefixes = prefix.prefix_from_trie(&custom_dict);
+                                    let valid_word_filter = |word: &&[u8]| {
+                                        let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
                                         let is_two_thai_chars =
                                             THAI_TWOCHARS_PATTERN.is_match(&word);
                                         is_valid && !is_two_thai_chars
                                     };
-                                    let valid_words: Vec<Vec<u8>> =
+                                    let valid_words: Vec<&[u8]> =
                                         if list_of_prefixes.len() >= USE_MULTITHREAD_THRESHOLD {
                                             list_of_prefixes
                                                 .into_par_iter()
