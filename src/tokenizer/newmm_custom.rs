@@ -22,7 +22,7 @@ use super::{
     dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
     tcc_custom,
     tokenizer_trait::Tokenizer,
-    trie_custom::{Trie,ListPrefix},
+    trie_custom::{Trie},
 };
 use ahash::{AHashMap as HashMap, AHashSet as HashSet};
 use binary_heap_plus::{BinaryHeap, MinComparator};
@@ -141,7 +141,7 @@ impl Newmm {
         } {
             if let Some(begin_position) = position_list.pop() {
                 let sub_text_prefix = text.slice_by_char_indice(begin_position, text.chars_len());
-                let prefixes = sub_text_prefix.prefix_from_trie(&custom_dict);
+                let prefixes = Trie::prefix_ref(sub_text_prefix, &custom_dict);
                 for word in prefixes {
                     let word_length = word.chars_len();
                     let end_position_candidate = begin_position + word_length;
@@ -209,7 +209,7 @@ impl Newmm {
                                 if valid_position.contains(&position) {
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
-                                    let list_of_prefixes = prefix.prefix_from_trie(&custom_dict);
+                                    let list_of_prefixes =Trie::prefix_ref(prefix, &custom_dict);
                                     let valid_word_filter = |word: &&[u8]| {
                                         let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
