@@ -116,7 +116,9 @@ impl Trie {
             root: TrieNode::new(),
         };
         for word in words.iter() {
-            instance.add(&word);
+            if !word.is_empty() {
+                instance.add(&word);
+            }
         }
         instance
     }

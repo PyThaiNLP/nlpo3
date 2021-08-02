@@ -16,6 +16,7 @@ pub fn create_default_dict() -> Trie {
     let default_dict = DEFAULT_DICT_FILE
         .par_lines()
         .map(|word| CustomString::new(word))
+        .filter(|word| !word.is_empty())
         .collect::<Vec<CustomString>>();
     Trie::new(&default_dict)
 }
@@ -30,7 +31,9 @@ pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
                     let mut line = String::with_capacity(50);
                     let mut dict: Vec<CustomString> = Vec::with_capacity(600);
                     while reader.read_line(&mut line).unwrap() != 0 {
-                        dict.push(CustomString::new(&line));
+                        if !line.is_empty() {
+                            dict.push(CustomString::new(&line));
+                        }
                         line.clear();
                     }
                     dict.shrink_to_fit();
