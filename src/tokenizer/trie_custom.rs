@@ -35,18 +35,23 @@ impl TrieNode {
             end: false,
         }
     }
+
     fn find_child(&self, word: &CustomStringBytesSlice) -> Option<&Self> {
         self.children.get(word)
     }
+
     fn remove_child(&mut self, word: &CustomStringBytesSlice) {
         self.children.remove(word);
     }
+
     fn find_mut_child(&mut self, word: &CustomStringBytesSlice) -> Option<&mut Self> {
         self.children.get_mut(word)
     }
+
     fn set_not_end(&mut self) {
         self.end = false;
     }
+
     fn add_word(&mut self, input_word: &CustomStringBytesSlice) {
         // thanks to https://stackoverflow.com/questions/36957286/how-do-you-implement-this-simple-trie-node-in-rust
         if input_word.is_empty() {
@@ -58,6 +63,7 @@ impl TrieNode {
             .or_insert_with(TrieNode::new)
             .add_word(input_word.slice_by_char_indice(1, input_word.chars_len()));
     }
+
     fn remove_word_from_node(&mut self, input_word: &CustomStringBytesSlice) {
         let mut word = input_word;
         let char_count = word.len() / BYTES_PER_CHAR;
@@ -122,15 +128,18 @@ impl Trie {
         }
         instance
     }
+
     fn remove_word_from_set(&mut self, word: &CustomStringBytesSlice) {
         self.words.remove(word);
     }
+
     pub fn add(&mut self, word: &CustomString) {
         let stripped_word = word.trim();
         self.words.insert(stripped_word.raw_content().into());
         let current_cursor = self.root.borrow_mut();
         current_cursor.add_word(&stripped_word.raw_content());
     }
+
     pub fn remove(&mut self, word: &CustomString) {
         let stripped_word = word.trim();
         let stripped_word_raw = stripped_word.raw_content();
@@ -143,6 +152,7 @@ impl Trie {
     pub fn prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<Vec<u8>> {
         self.root.list_prefix(prefix)
     }
+
     /**
        This function differs from prefix(&self) mainly about return type
 
@@ -180,9 +190,11 @@ impl Trie {
     pub fn contain(&self, word: &CustomStringBytesSlice) -> bool {
         self.words.contains(word)
     }
+
     pub fn iterate(&self) -> std::collections::hash_set::Iter<'_, Vec<u8>> {
         self.words.iter()
     }
+
     pub fn amount_of_words(&self) -> usize {
         self.words.iter().count()
     }

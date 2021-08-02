@@ -13,9 +13,8 @@ Rust implementation: ["Thanathip Suntorntip"]
 */
 // TODO: use slice_by_chars_indice on &[u8]
 use crate::fixed_bytes_str::four_bytes::{
-     rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
+    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
-
 
 use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
 use super::{
@@ -115,7 +114,10 @@ impl Newmm {
         panic!("something wrong");
     }
 
-    fn one_cut<'a,'b>(input: &'a CustomStringBytesSlice, custom_dict: &'b Trie) -> Vec<&'a CustomStringBytesSlice> {
+    fn one_cut<'a, 'b>(
+        input: &'a CustomStringBytesSlice,
+        custom_dict: &'b Trie,
+    ) -> Vec<&'a CustomStringBytesSlice> {
         let text = input;
         let input_char_len = text.chars_len();
         let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
@@ -209,7 +211,7 @@ impl Newmm {
                                 if valid_position.contains(&position) {
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
-                                    let list_of_prefixes =Trie::prefix_ref(prefix, &custom_dict);
+                                    let list_of_prefixes = Trie::prefix_ref(prefix, &custom_dict);
                                     let valid_word_filter = |word: &&[u8]| {
                                         let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
@@ -274,6 +276,7 @@ impl Newmm {
         }
         result_str
     }
+
     pub fn internal_segment(
         input: &CustomString,
         custom_dict: &Trie,
@@ -369,7 +372,6 @@ impl Tokenizer for Newmm {
         };
         let custom_string = CustomString::new(text);
         Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag)
-       
     }
 
     fn segment_to_string(

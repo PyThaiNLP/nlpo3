@@ -1,5 +1,5 @@
 name: nlpo3
-version: 0.0.1
+version: 0.1.0
 about: nlpO3 command line interface
 subcommands:
   - segment:
