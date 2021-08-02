@@ -16,12 +16,13 @@ use crate::fixed_bytes_str::four_bytes::{
      rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
 
+
 use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
 use super::{
     dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
     tcc_custom,
     tokenizer_trait::Tokenizer,
-    trie_custom::Trie,
+    trie_custom::{Trie},
 };
 use ahash::{AHashMap as HashMap, AHashSet as HashSet};
 use binary_heap_plus::{BinaryHeap, MinComparator};
@@ -114,14 +115,14 @@ impl Newmm {
         panic!("something wrong");
     }
 
-    fn one_cut(input: &CustomStringBytesSlice, custom_dict: &Trie) -> Vec<CustomStringBytesVec> {
+    fn one_cut<'a,'b>(input: &'a CustomStringBytesSlice, custom_dict: &'b Trie) -> Vec<&'a CustomStringBytesSlice> {
         let text = input;
         let input_char_len = text.chars_len();
         let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
         let mut graph_size: usize = 0;
         let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> =
             HashMap::with_capacity(input_char_len / 100);
-        let mut result_str: Vec<CustomStringBytesVec> = Vec::with_capacity(input_char_len / 100);
+        let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 100);
 
         // all position should be refered as character index
         let valid_position = tcc_custom::tcc_pos(input);
@@ -140,9 +141,9 @@ impl Newmm {
         } {
             if let Some(begin_position) = position_list.pop() {
                 let sub_text_prefix = text.slice_by_char_indice(begin_position, text.chars_len());
-                let prefixes = custom_dict.prefix(sub_text_prefix);
+                let prefixes = Trie::prefix_ref(sub_text_prefix, &custom_dict);
                 for word in prefixes {
-                    let word_length = word.as_slice().chars_len();
+                    let word_length = word.chars_len();
                     let end_position_candidate = begin_position + word_length;
                     if valid_position.contains(&end_position_candidate) {
                         let target_graph = graph.get_mut(&begin_position);
@@ -180,7 +181,7 @@ impl Newmm {
                         for position in group_of_end_position_candidate.iter().skip(1) {
                             let token = text.slice_by_char_indice(end_position, *position);
 
-                            result_str.push(Vec::from(token));
+                            result_str.push(token);
                             end_position = *position;
                         }
                     } else {
@@ -208,15 +209,15 @@ impl Newmm {
                                 if valid_position.contains(&position) {
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
-                                    let list_of_prefixes = custom_dict.prefix(&prefix);
-                                    let valid_word_filter = |word: &Vec<u8>| {
-                                        let new_position = position + word.as_slice().chars_len();
+                                    let list_of_prefixes =Trie::prefix_ref(prefix, &custom_dict);
+                                    let valid_word_filter = |word: &&[u8]| {
+                                        let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
                                         let is_two_thai_chars =
                                             THAI_TWOCHARS_PATTERN.is_match(&word);
                                         is_valid && !is_two_thai_chars
                                     };
-                                    let valid_words: Vec<Vec<u8>> =
+                                    let valid_words: Vec<&[u8]> =
                                         if list_of_prefixes.len() >= USE_MULTITHREAD_THRESHOLD {
                                             list_of_prefixes
                                                 .into_par_iter()
@@ -253,7 +254,7 @@ impl Newmm {
                             graph_size += 1;
                             let token = text.slice_by_char_indice(begin_position, end_position);
 
-                            result_str.push(Vec::from(token));
+                            result_str.push(token);
                             position_list.push(end_position);
                             existing_candidate.insert(end_position);
                         }
@@ -263,7 +264,7 @@ impl Newmm {
                             graph.insert(begin_position, graph_elem);
                             graph_size += 1;
                             let token = text.slice_by_char_indice(begin_position, end_position);
-                            result_str.push(Vec::from(token));
+                            result_str.push(token);
                             position_list.push(end_position);
                             existing_candidate.insert(end_position);
                         }
@@ -271,8 +272,6 @@ impl Newmm {
                 }
             }
         }
-
-        result_str.shrink_to_fit();
         result_str
     }
     pub fn internal_segment(
@@ -318,15 +317,15 @@ impl Newmm {
                     let mut token_max_index = 0;
                     let mut token_max_length = 0;
                     for (idx, token) in word_tokens.iter().enumerate() {
-                        if token.as_slice().chars_len() >= token_max_length {
-                            token_max_length = token.as_slice().chars_len();
+                        if token.chars_len() >= token_max_length {
+                            token_max_length = token.chars_len();
                             token_max_index = idx;
                         }
                     }
                     // choose the position that covers longest token
                     cut_pos = TEXT_SCAN_BEGIN;
                     for i in 0..token_max_index {
-                        cut_pos = cut_pos + word_tokens.get(i).unwrap().as_slice().chars_len();
+                        cut_pos = cut_pos + word_tokens.get(i).unwrap().chars_len();
                     }
                 }
                 txt_parts.push(txt.slice_by_char_indice(0, cut_pos).to_owned());

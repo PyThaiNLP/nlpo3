@@ -143,6 +143,39 @@ impl Trie {
     pub fn prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<Vec<u8>> {
         self.root.list_prefix(prefix)
     }
+    /**
+       This function differs from prefix(&self) mainly about return type
+
+       prefix_ref is more efficient than prefix(&self) because it performs less allocation.
+
+       The only downside I can think about this function is its non-descriptive name..
+    */
+    pub fn prefix_ref<'p, 't>(
+        prefix: &'p CustomStringBytesSlice,
+        dict_trie: &'t Self,
+    ) -> Vec<&'p CustomStringBytesSlice> {
+        let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
+        let prefix_cpy = prefix;
+        let mut current_index = 0;
+        let mut current_node_wrap = Some(&dict_trie.root);
+        while current_index < prefix_cpy.chars_len() {
+            let character = prefix_cpy.slice_by_char_indice(current_index, current_index + 1);
+            if let Some(current_node) = current_node_wrap {
+                if let Some(child) = current_node.find_child(character) {
+                    if child.end {
+                        let substring_of_prefix =
+                            prefix_cpy.slice_by_char_indice(0, current_index + 1);
+                        result.push(substring_of_prefix);
+                    }
+                    current_node_wrap = Some(child);
+                } else {
+                    break;
+                }
+            }
+            current_index = current_index + 1;
+        }
+        result
+    }
 
     pub fn contain(&self, word: &CustomStringBytesSlice) -> bool {
         self.words.contains(word)
