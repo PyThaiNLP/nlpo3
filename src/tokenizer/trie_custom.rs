@@ -13,9 +13,7 @@ Rust Borrow Checker and this author's (Thanathip) little experience.
 
 Rust Code: Thanathip Suntorntip (Gorlph)
 */
-pub trait ListPrefix {
-    fn prefix_from_trie(&self, dict_trie: &Trie) -> Vec<&[u8]>;
-}
+
 #[derive(Debug)]
 pub struct TrieNode {
     children: HashMap<CustomStringBytesVec, Self>,
@@ -185,30 +183,5 @@ impl Trie {
     }
     pub fn amount_of_words(&self) -> usize {
         self.words.iter().count()
-    }
-}
-impl ListPrefix for &[u8] {
-    fn prefix_from_trie(&self, dict_trie: &Trie) -> Vec<&CustomStringBytesSlice> {
-        let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
-        let prefix_cpy = self;
-        let mut current_index = 0;
-        let mut current_node_wrap = Some(&dict_trie.root);
-        while current_index < prefix_cpy.chars_len() {
-            let character = prefix_cpy.slice_by_char_indice(current_index, current_index + 1);
-            if let Some(current_node) = current_node_wrap {
-                if let Some(child) = current_node.find_child(character) {
-                    if child.end {
-                        let substring_of_prefix =
-                            prefix_cpy.slice_by_char_indice(0, current_index + 1);
-                        result.push(substring_of_prefix);
-                    }
-                    current_node_wrap = Some(child);
-                } else {
-                    break;
-                }
-            }
-            current_index = current_index + 1;
-        }
-        result
     }
 }
