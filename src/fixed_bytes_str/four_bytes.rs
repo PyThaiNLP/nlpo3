@@ -23,7 +23,7 @@ use std::{
 
 pub type ValidUTF8BytesVec = Vec<u8>;
 pub type CustomStringBytesVec = Vec<u8>;
-pub type ValidUTF8BytesSlice = [u8];
+//pub type ValidUTF8BytesSlice = [u8];
 pub type CustomStringBytesSlice = [u8];
 
 fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
@@ -72,6 +72,7 @@ impl InvalidCustomStringByteError {
 impl Error for InvalidCustomStringByteError {}
 
 /** returns bytes index */
+/*
 pub fn rfind_space(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     assert_eq!(custom_text.len() % 4, 0);
 
@@ -82,6 +83,7 @@ pub fn rfind_space(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     }
     None
 }
+*/
 
 /** return char index */
 pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<usize> {
@@ -102,17 +104,20 @@ pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<us
  28 ..
 */
 fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
-    matches!(custom_bytes, [0, 0, 0, 9]
-        | [0, 0, 0, 10]
-        | [0, 0, 0, 11]
-        | [0, 0, 0, 12]
-        | [0, 0, 0, 13]
-        | [0, 0, 0, 32]
-        | [0, 0, 194, 133]
-        | [0, 0xe2, 0x80, 0x8e]
-        | [0, 0xe2, 0x80, 0x8f]
-        | [0, 0xe2, 0x80, 0xa8]
-        | [0, 0xe2, 0x80, 0xa9])
+    matches!(
+        custom_bytes,
+        [0, 0, 0, 9]
+            | [0, 0, 0, 10]
+            | [0, 0, 0, 11]
+            | [0, 0, 0, 12]
+            | [0, 0, 0, 13]
+            | [0, 0, 0, 32]
+            | [0, 0, 194, 133]
+            | [0, 0xe2, 0x80, 0x8e]
+            | [0, 0xe2, 0x80, 0x8f]
+            | [0, 0xe2, 0x80, 0xa8]
+            | [0, 0xe2, 0x80, 0xa9]
+    )
 }
 
 fn to_four_bytes(input: &str) -> CustomStringBytesVec {
@@ -363,7 +368,7 @@ fn check_slice() {
     let ex: &[u8] = &[255, 255, 255, 255, 0, 255, 111, 0];
     assert_eq!(ex.slice_by_char_indice(0, 1), &[255, 255, 255, 255]);
     assert_eq!(ex.slice_by_char_indice(1, 2), &[0, 255, 111, 0]);
-    assert_eq!("".is_empty(),true);
+    assert_eq!("".is_empty(), true);
 }
 
 #[test]
@@ -514,4 +519,3 @@ fn test_byte() {
     let custom_string = CustomString::new(&long_text);
     assert_eq!(custom_string.len() % 4, 0);
 }
-
