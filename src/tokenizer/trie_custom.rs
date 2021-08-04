@@ -76,7 +76,7 @@ impl TrieNode {
                 if char_count == 1 {
                     child.set_not_end();
                 }
-                child.remove_word_from_node(&word);
+                child.remove_word_from_node(word);
 
                 if !child.end && child.children.is_empty() {
                     self.remove_child(character);
@@ -123,7 +123,7 @@ impl Trie {
         };
         for word in words.iter() {
             if !word.is_empty() {
-                instance.add(&word);
+                instance.add(word);
             }
         }
         instance
@@ -137,7 +137,7 @@ impl Trie {
         let stripped_word = word.trim();
         self.words.insert(stripped_word.raw_content().into());
         let current_cursor = self.root.borrow_mut();
-        current_cursor.add_word(&stripped_word.raw_content());
+        current_cursor.add_word(stripped_word.raw_content());
     }
 
     pub fn remove(&mut self, word: &CustomString) {

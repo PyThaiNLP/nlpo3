@@ -69,7 +69,7 @@ lazy_static! {
 pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
     let mut set: HashSet<usize> = HashSet::with_capacity(custom_text_type.chars_len() / 10);
     if custom_text_type.is_empty() {
-        set
+        return set;
     } else {
         let mut position: usize = 0;
         let four_bytes_chars_segment = segment(custom_text_type);
@@ -78,8 +78,8 @@ pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
             position += segment_size;
             set.insert(position);
         }
-        set
     }
+    set
 }
 
 pub fn segment(custom_text_type: &CustomStringBytesSlice) -> Vec<&CustomStringBytesSlice> {

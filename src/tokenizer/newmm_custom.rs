@@ -1,3 +1,10 @@
+use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
+use super::{
+    dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
+    tcc_custom,
+    tokenizer_trait::Tokenizer,
+    trie_custom::Trie,
+};
 /**
 Dictionary-based maximal matching word segmentation, constrained with
 Thai Character Cluster (TCC) boundaries.
@@ -15,19 +22,14 @@ Rust implementation: ["Thanathip Suntorntip"]
 use crate::fixed_bytes_str::four_bytes::{
     rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
-
-use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
-use super::{
-    dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
-    tcc_custom,
-    tokenizer_trait::Tokenizer,
-    trie_custom::{Trie},
-};
 use ahash::{AHashMap as HashMap, AHashSet as HashSet};
+use anyhow::Result as AnyResult;
 use binary_heap_plus::{BinaryHeap, MinComparator};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::bytes::Regex;
+use std::error::Error;
+use std::fmt::Display;
 use std::{collections::VecDeque, path::PathBuf};
 const MAX_GRAPH_SIZE: usize = 50;
 const USE_MULTITHREAD_THRESHOLD: usize = 10000;
@@ -66,6 +68,35 @@ lazy_static! {
 pub struct Newmm {
     dict: Box<Trie>,
 }
+#[derive(Clone, Debug)]
+struct BFSSearchError {
+    graph: HashMap<CharacterIndex, Vec<CharacterIndex>>,
+    start: CharacterIndex,
+    goal: CharacterIndex,
+}
+impl BFSSearchError {
+    pub fn new(
+        graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
+        start: CharacterIndex,
+        goal: CharacterIndex,
+    ) -> Self {
+        Self {
+            graph: graph.clone(),
+            start,
+            goal,
+        }
+    }
+}
+impl Display for BFSSearchError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Cannot find goal position {} with start position {} with graph {:?}",
+            self.goal, self.start, self.goal
+        )
+    }
+}
+impl Error for BFSSearchError {}
 
 impl Newmm {
     pub fn new(dict_path: Option<&str>) -> Self {
@@ -86,7 +117,7 @@ impl Newmm {
         start: CharacterIndex,
         goal: CharacterIndex,
         current_queue: &mut VecDeque<(usize, Vec<usize>)>,
-    ) -> Vec<CharacterIndex> {
+    ) -> AnyResult<Vec<CharacterIndex>> {
         current_queue.clear();
 
         // let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
@@ -94,8 +125,8 @@ impl Newmm {
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
         init_path.push(start);
         current_queue.push_back((start, init_path));
-        while !current_queue.is_empty() {
-            let (vertex, path) = current_queue.pop_front().unwrap();
+
+        while let Some((vertex, path)) = current_queue.pop_front() {
             if let Some(idk) = graph.get(&vertex) {
                 for position in idk {
                     if *position != goal {
@@ -106,18 +137,19 @@ impl Newmm {
                         let mut appended_path = path;
                         appended_path.push(*position);
 
-                        return appended_path;
+                        return Ok(appended_path);
                     };
                 }
             };
         }
-        panic!("something wrong");
+
+        Err(BFSSearchError::new(graph, start, goal).into())
     }
 
     fn one_cut<'a, 'b>(
         input: &'a CustomStringBytesSlice,
         custom_dict: &'b Trie,
-    ) -> Vec<&'a CustomStringBytesSlice> {
+    ) -> AnyResult<Vec<&'a CustomStringBytesSlice>> {
         let text = input;
         let input_char_len = text.chars_len();
         let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
@@ -143,7 +175,7 @@ impl Newmm {
         } {
             if let Some(begin_position) = position_list.pop() {
                 let sub_text_prefix = text.slice_by_char_indice(begin_position, text.chars_len());
-                let prefixes = Trie::prefix_ref(sub_text_prefix, &custom_dict);
+                let prefixes = Trie::prefix_ref(sub_text_prefix, custom_dict);
                 for word in prefixes {
                     let word_length = word.chars_len();
                     let end_position_candidate = begin_position + word_length;
@@ -177,7 +209,7 @@ impl Newmm {
                             end_position,
                             *first_position_list,
                             &mut reused_queue,
-                        );
+                        )?;
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
@@ -211,12 +243,12 @@ impl Newmm {
                                 if valid_position.contains(&position) {
                                     let prefix = &text.slice_by_char_indice(position, text_length);
 
-                                    let list_of_prefixes = Trie::prefix_ref(prefix, &custom_dict);
+                                    let list_of_prefixes = Trie::prefix_ref(prefix, custom_dict);
                                     let valid_word_filter = |word: &&[u8]| {
                                         let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
                                         let is_two_thai_chars =
-                                            THAI_TWOCHARS_PATTERN.is_match(&word);
+                                            THAI_TWOCHARS_PATTERN.is_match(word);
                                         is_valid && !is_two_thai_chars
                                     };
                                     let valid_words: Vec<&[u8]> =
@@ -237,7 +269,7 @@ impl Newmm {
                                         finish_without_break = false;
                                         break;
                                     };
-                                    if NON_THAI_PATTERN.is_match(&prefix) {
+                                    if NON_THAI_PATTERN.is_match(prefix) {
                                         end_position = position;
                                         finish_without_break = false;
                                         break;
@@ -274,7 +306,7 @@ impl Newmm {
                 }
             }
         }
-        result_str
+        Ok(result_str)
     }
 
     pub fn internal_segment(
@@ -282,27 +314,27 @@ impl Newmm {
         custom_dict: &Trie,
         safe: bool,
         parallel: bool,
-    ) -> Vec<String> {
-        if input.len() == 0 {
-            return vec![];
+    ) -> AnyResult<Vec<String>> {
+        if input.is_empty() {
+            return Ok(vec![]);
         }
         if !safe || input.chars_len() < TEXT_SCAN_END {
-            let result = Self::one_cut(input.raw_content(), custom_dict);
-            if parallel {
+            let result = Self::one_cut(input.raw_content(), custom_dict)?;
+            Ok(if parallel {
                 result
                     .into_par_iter()
                     .map(|custom_string_bytes| {
-                        CustomString::convert_raw_bytes_to_std_string(&custom_string_bytes)
+                        CustomString::convert_raw_bytes_to_std_string(custom_string_bytes)
                     })
                     .collect()
             } else {
                 result
                     .into_iter()
                     .map(|custom_string_bytes| {
-                        CustomString::convert_raw_bytes_to_std_string(&custom_string_bytes)
+                        CustomString::convert_raw_bytes_to_std_string(custom_string_bytes)
                     })
                     .collect()
-            }
+            })
         } else {
             let mut txt = input.raw_content();
             let mut txt_parts: Vec<CustomStringBytesVec> = Vec::with_capacity(txt.len() / 10);
@@ -316,7 +348,7 @@ impl Newmm {
                 if let Some(space_char_index) = space_char_index {
                     cut_pos = space_char_index + 1;
                 } else {
-                    let word_tokens = Self::one_cut(sample, &custom_dict);
+                    let word_tokens = Self::one_cut(sample, custom_dict)?;
                     let mut token_max_index = 0;
                     let mut token_max_length = 0;
                     for (idx, token) in word_tokens.iter().enumerate() {
@@ -338,33 +370,41 @@ impl Newmm {
                 txt_parts.push(txt.to_owned());
             }
 
-            if parallel {
+            Ok(if parallel {
                 txt_parts
-                    .into_par_iter()
-                    .flat_map(|part| {
-                        Self::one_cut(&part, &custom_dict)
+                    .par_iter()
+                    .flat_map(|part| -> AnyResult<_> {
+                        let words = Self::one_cut(part, custom_dict)?;
+                        Ok(words
                             .into_par_iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_std_string(&word))
-                            .collect::<Vec<String>>()
+                            .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
+                            .collect::<Vec<String>>())
                     })
-                    .collect::<Vec<String>>()
+                    .flatten()
+                    .collect()
             } else {
                 txt_parts
                     .iter()
-                    .flat_map(|part| {
-                        Self::one_cut(&part, &custom_dict)
+                    .flat_map(|part| -> AnyResult<_> {
+                        Ok(Self::one_cut(part, custom_dict)?
                             .iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_std_string(&word))
-                            .collect::<Vec<String>>()
+                            .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
+                            .collect::<Vec<String>>())
                     })
-                    .collect::<Vec<String>>()
-            }
+                    .flatten()
+                    .collect()
+            })
         }
     }
 }
 
 impl Tokenizer for Newmm {
-    fn segment(&self, text: &str, safe: Option<bool>, parallel: Option<bool>) -> Vec<String> {
+    fn segment(
+        &self,
+        text: &str,
+        safe: Option<bool>,
+        parallel: Option<bool>,
+    ) -> AnyResult<Vec<String>> {
         let safe_flag = safe.unwrap_or(false);
         let parallel_flag = match parallel {
             Some(val) => val,
@@ -380,6 +420,6 @@ impl Tokenizer for Newmm {
         safe: Option<bool>,
         parallel: Option<bool>,
     ) -> Vec<String> {
-        self.segment(text, safe, parallel)
+        self.segment(text, safe, parallel).unwrap()
     }
 }
