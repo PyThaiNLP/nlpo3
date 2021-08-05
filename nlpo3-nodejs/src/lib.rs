@@ -43,7 +43,7 @@ fn segment(mut cx: FunctionContext) -> JsResult<JsArray> {
         }
         Ok(js_result_array)
     } else {
-        panic!("Dictinary {} does not exist.", dict_name)
+        panic!("Dictionary {} does not exist.", dict_name)
     }
 }
 
