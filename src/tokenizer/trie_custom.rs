@@ -85,8 +85,8 @@ impl TrieNode {
         }
     }
 
-    pub fn list_prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<CustomStringBytesVec> {
-        let mut result: Vec<CustomStringBytesVec> = Vec::with_capacity(100);
+    pub fn list_prefix<'d,'p>(&'d self, prefix: &'p CustomStringBytesSlice) -> Vec<&'p CustomStringBytesSlice> {
+        let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
         let prefix_cpy = prefix;
         let mut current_index = 0;
         let mut current_node_wrap = Some(self);
@@ -97,7 +97,7 @@ impl TrieNode {
                     if child.end {
                         let substring_of_prefix =
                             prefix_cpy.slice_by_char_indice(0, current_index + 1);
-                        result.push(substring_of_prefix.to_vec());
+                        result.push(substring_of_prefix);
                     }
                     current_node_wrap = Some(child);
                 } else {
@@ -149,7 +149,7 @@ impl Trie {
         }
     }
 
-    pub fn prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<Vec<u8>> {
+    pub fn prefix<'d,'p>(&'d self, prefix: &'p CustomStringBytesSlice) -> Vec<&'p CustomStringBytesSlice> {
         self.root.list_prefix(prefix)
     }
 
