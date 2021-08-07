@@ -1,5 +1,19 @@
 name: Test main lib (Rust crate)
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
 
 jobs:
   test:
