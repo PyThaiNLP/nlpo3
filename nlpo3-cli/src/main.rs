@@ -1,38 +1,60 @@
-#[macro_use]
-extern crate clap;
-
-use clap::App;
+use clap::Clap;
 use nlpo3::tokenizer::newmm_custom::Newmm;
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 use std::io;
 use std::io::BufRead;
 
+#[derive(Clap, Debug)]
+#[clap(name = "nlpo3")]
+struct App {
+    #[clap(subcommand)]
+    subcommand: SubCommand,
+}
+
+#[derive(Clap, Debug)]
+enum SubCommand {
+    /// Tokenize a string into words.
+    #[clap()]
+    Segment(SegmentOpts),
+}
+
+#[derive(Clap, Debug)]
+struct SegmentOpts {
+    #[clap(short = 'd', long, default_value = "default")]
+    dict_path: String,
+
+    #[clap(short = 's', long, default_value = "|")]
+    word_delimiter: String,
+
+    /// Run in safe mode to avoid long running edge cases
+    #[clap(short = 'z', long)]
+    safe: bool,
+
+    /// Run in multithread mode
+    #[clap(short = 'p', long)]
+    parallel: bool,
+}
+
 fn main() {
-    let yaml = load_yaml!("cli.yaml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let opt = App::parse();
 
-    if let Some(ref matches) = matches.subcommand_matches("segment") {
-        let dict_path = match matches.value_of("dict_path") {
-            Some("default") => None,
-            Some(dict_name) => Some(dict_name),
-            None => None,
+    let SubCommand::Segment(segment_opts) = opt.subcommand;
+    let dict_path = match segment_opts.dict_path.as_str() {
+        "default" => None,
+        dict_name => Some(dict_name),
+    };
+
+    let newmm = Newmm::new(dict_path);
+    for line_opt in io::stdin().lock().lines() {
+        let cleaned_line = match line_opt {
+            Ok(line) => line.trim_end_matches('\n').to_string(),
+            Err(e) => panic!("Cannot read line {}", e),
         };
-        let word_delim = match matches.value_of("word_delimiter") {
-            Some(word_delim) => word_delim,
-            None => "|",
-        };
-        let is_parallel = Some(matches.occurrences_of("p") > 0);
-        let is_safe = Some(matches.occurrences_of("z") > 0);
-
-        let newmm = Newmm::new(dict_path);
-
-        for line_opt in io::stdin().lock().lines() {
-            let cleaned_line = match line_opt {
-                Ok(line) => line.trim_end_matches('\n').to_string(),
-                Err(e) => panic!("Cannot read line {}", e),
-            };
-            let toks = newmm.segment(&cleaned_line, is_safe, is_parallel);
-            println!("{}", toks.join(word_delim));
-        }
+        let toks = newmm.segment(
+            &cleaned_line,
+            Some(segment_opts.safe),
+            Some(segment_opts.parallel),
+        );
+        println!("{}", toks.join(segment_opts.word_delimiter.as_str()));
     }
 }
