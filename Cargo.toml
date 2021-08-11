@@ -13,24 +13,25 @@ repository = "https://github.com/PyThaiNLP/nlpo3/"
 readme = "README.md"
 exclude = [".gitignore", ".github/*", "build_tools/*", "tests/*"]
 
-
+[profile.release]
+lto = true
+codegen-units = 1
 
 [lib]
 path = "src/lib.rs"
 # "cdylib" is necessary to produce a shared library for Python to import from.
 # Downstream Rust code (including code in `bin/`, `examples/`, and `tests/`) will not be able
 # to `use string_sum;` unless the "rlib" or "lib" crate type is also included.
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib","rlib"]
 
 [dependencies]
-ahash = "0.7.2"
 binary-heap-plus = "0.4.1"
 bytecount = "0.6.2"
 lazy_static = "1.4.0"
 rayon = "1.5"
 regex = "1.4.6"
 anyhow = "1.0.42"
-
+rustc-hash = "1.1.0"
 [[test]]
 name = "basic"
 path = "tests/test_tokenizer.rs"

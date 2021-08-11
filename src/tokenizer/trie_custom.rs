@@ -2,7 +2,7 @@ use crate::fixed_bytes_str::four_bytes::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
     BYTES_PER_CHAR,
 };
-use ahash::{AHashMap as HashMap, AHashSet as HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::borrow::BorrowMut;
 use std::iter::Iterator;
 /**
@@ -31,7 +31,7 @@ impl TrieNode {
     pub fn new() -> Self {
         Self {
             // text: None,
-            children: HashMap::with_capacity(100),
+            children: HashMap::default(),
             end: false,
         }
     }
@@ -118,7 +118,7 @@ pub struct Trie {
 impl Trie {
     pub fn new(words: &[CustomString]) -> Self {
         let mut instance = Self {
-            words: HashSet::with_capacity(words.len() / 10),
+            words: HashSet::default(),
             root: TrieNode::new(),
         };
         for word in words.iter() {
@@ -160,6 +160,7 @@ impl Trie {
 
        The only downside I can think about this function is its non-descriptive name..
     */
+
     pub fn prefix_ref<'p, 't>(
         prefix: &'p CustomStringBytesSlice,
         dict_trie: &'t Self,

@@ -22,12 +22,12 @@ Rust implementation: ["Thanathip Suntorntip"]
 use crate::fixed_bytes_str::four_bytes::{
     rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
-use ahash::{AHashMap as HashMap, AHashSet as HashSet};
 use anyhow::Result as AnyResult;
 use binary_heap_plus::{BinaryHeap, MinComparator};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::bytes::Regex;
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::error::Error;
 use std::fmt::Display;
 use std::{collections::VecDeque, path::PathBuf};
@@ -154,15 +154,16 @@ impl Newmm {
         let input_char_len = text.chars_len();
         let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
         let mut graph_size: usize = 0;
-        let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> =
-            HashMap::with_capacity(input_char_len / 100);
-        let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 100);
+        let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> = HashMap::default();
+        graph.reserve(input_char_len / 10);
+        let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
-        let valid_position = tcc_custom::tcc_pos(input);
+        let valid_position = tcc_custom::tcc_pos_quick(input);
         let text_length = input_char_len;
         let mut position_list: BinaryHeap<CharacterIndex, MinComparator> = BinaryHeap::new_min();
-        let mut existing_candidate: HashSet<CharacterIndex> = HashSet::with_capacity(50);
+        let mut existing_candidate: HashSet<CharacterIndex> = HashSet::default();
+        existing_candidate.reserve(input_char_len / 10);
         position_list.push(0);
         existing_candidate.insert(0);
         let mut end_position: CharacterIndex = 0;
@@ -281,27 +282,23 @@ impl Newmm {
                             }
                         }
                     }
-                    let current_graph_opt = graph.get_mut(&begin_position);
-                    match current_graph_opt {
-                        Some(existing_path) => {
-                            existing_path.push(end_position);
-                            graph_size += 1;
-                            let token = text.slice_by_char_indice(begin_position, end_position);
+                    if let Some(existing_path) = graph.get_mut(&begin_position) {
+                        existing_path.push(end_position);
+                        graph_size += 1;
+                        let token = text.slice_by_char_indice(begin_position, end_position);
 
-                            result_str.push(token);
-                            position_list.push(end_position);
-                            existing_candidate.insert(end_position);
-                        }
-                        None => {
-                            let mut graph_elem: Vec<usize> = Vec::with_capacity(10);
-                            graph_elem.push(end_position);
-                            graph.insert(begin_position, graph_elem);
-                            graph_size += 1;
-                            let token = text.slice_by_char_indice(begin_position, end_position);
-                            result_str.push(token);
-                            position_list.push(end_position);
-                            existing_candidate.insert(end_position);
-                        }
+                        result_str.push(token);
+                        position_list.push(end_position);
+                        existing_candidate.insert(end_position);
+                    } else {
+                        let mut graph_elem: Vec<usize> = Vec::with_capacity(10);
+                        graph_elem.push(end_position);
+                        graph.insert(begin_position, graph_elem);
+                        graph_size += 1;
+                        let token = text.slice_by_char_indice(begin_position, end_position);
+                        result_str.push(token);
+                        position_list.push(end_position);
+                        existing_candidate.insert(end_position);
                     }
                 }
             }
