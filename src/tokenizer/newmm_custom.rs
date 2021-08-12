@@ -18,7 +18,6 @@ with heuristic graph size limit added to avoid exponential wait time.
 
 Rust implementation: ["Thanathip Suntorntip"]
 */
-// TODO: use slice_by_chars_indice on &[u8]
 use crate::fixed_bytes_str::four_bytes::{
     rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
@@ -159,7 +158,7 @@ impl Newmm {
         let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
-        let valid_position = tcc_custom::tcc_pos_quick(input);
+        let valid_position = tcc_custom::tcc_pos(input);
         let text_length = input_char_len;
         let mut position_list: BinaryHeap<CharacterIndex, MinComparator> = BinaryHeap::new_min();
         let mut existing_candidate: HashSet<CharacterIndex> = HashSet::default();

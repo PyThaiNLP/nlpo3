@@ -4,7 +4,6 @@ use crate::fixed_bytes_str::four_bytes::{
 };
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::borrow::BorrowMut;
-use std::iter::Iterator;
 /**
 This module is meant to be a direct implementation of Dict Trie in PythaiNLP.
 
@@ -197,6 +196,6 @@ impl Trie {
     }
 
     pub fn amount_of_words(&self) -> usize {
-        self.words.iter().count()
+        self.words.len()
     }
 }
