@@ -150,9 +150,9 @@ fn test_long_text_byte_tokenizer() {
     .join("");
 
     let newmm_default_dict = NewmmCustom::new(None);
-    let result = newmm_default_dict.segment(&long_text, None, Some(true));
+    let result = newmm_default_dict.segment(&long_text, None, Some(true)).unwrap();
 
-    let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true));
+    let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true)).unwrap();
     assert_eq!(result.len(), 1889);
     assert_eq!(safe_result.len(), 1991);
 }

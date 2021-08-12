@@ -10,7 +10,7 @@ Credits:
     * Python code: Korakot Chaovavanich
     * Rust Code Translation: Thanathip Suntorntip
 */
-use ahash::AHashSet as HashSet;
+use rustc_hash::FxHashSet as HashSet;
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
 
@@ -65,28 +65,48 @@ lazy_static! {
     )
     .unwrap();
 }
-
-pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
-    let mut set: HashSet<usize> = HashSet::with_capacity(custom_text_type.chars_len() / 10);
-    if custom_text_type.is_empty() {
-        set
-    } else {
-        let mut position: usize = 0;
-        let four_bytes_chars_segment = segment(custom_text_type);
-        for segment in four_bytes_chars_segment.into_iter() {
-            let segment_size = segment.chars_len();
+pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize>{
+    let mut set: HashSet<usize> = HashSet::default();
+    set.reserve(custom_text_type.chars_len() / 10);
+    let mut txt = custom_text_type;
+    let mut position: usize = 0;
+    while !txt.is_empty() {
+        if let Some(result) = NON_LOOKAHEAD_TCC.find(txt) {
+            let mut matched = &txt[result.start()..result.end()];
+            let match_length = matched.len();
+            if LOOKAHEAD_TCC.is_match(matched) {
+                // trim one more char to the right.
+                let end_bytes_index = match_length - (1 * BYTES_PER_CHAR);
+                matched = &matched[0..end_bytes_index];
+                let segment_size = matched.chars_len();
+                position += segment_size;
+                set.insert(position);
+                txt = &txt[end_bytes_index..];
+            } else {
+                let segment_size = matched.chars_len();
+                position += segment_size;
+                set.insert(position);
+                let end_bytes_index = match_length;
+                txt = &txt[end_bytes_index..];
+            }
+        } else {
+            // not thai
+            let first_char = txt.slice_by_char_indice(0, 1);
+            let segment_size = first_char.chars_len();
             position += segment_size;
             set.insert(position);
+            txt = txt.slice_by_char_indice(1, txt.chars_len());
         }
-        set
     }
+    set
 }
 
-pub fn segment(custom_text_type: &CustomStringBytesSlice) -> Vec<&CustomStringBytesSlice> {
+#[allow(dead_code)]
+pub fn tcc_segment(custom_text_type: &CustomStringBytesSlice) -> Vec<&CustomStringBytesSlice> {
     let mut txt = custom_text_type;
     let mut tcc_result: Vec<&[u8]> = Vec::with_capacity(txt.len() / 10);
     while !txt.is_empty() {
-        if let Some(result) = NON_LOOKAHEAD_TCC.find(&txt) {
+        if let Some(result) = NON_LOOKAHEAD_TCC.find(txt) {
             let mut matched = &txt[result.start()..result.end()];
             let match_length = matched.len();
             if LOOKAHEAD_TCC.is_match(matched) {

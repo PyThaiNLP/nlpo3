@@ -262,7 +262,7 @@ impl CustomString {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in 0..input.chars_len() {
             let extracted_bytes =
-                trim_to_std_utf8(&input.slice_by_char_indice(index, index + 1)).unwrap();
+                trim_to_std_utf8(input.slice_by_char_indice(index, index + 1)).unwrap();
             match extracted_bytes {
                 (None, None, None, Some(first_byte)) => {
                     output_content.push(first_byte);
@@ -293,7 +293,7 @@ impl CustomString {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in 0..input.chars_len() {
             let extracted_bytes =
-                trim_to_std_utf8(&input.slice_by_char_indice(index, index + 1)).unwrap();
+                trim_to_std_utf8(input.slice_by_char_indice(index, index + 1)).unwrap();
             match extracted_bytes {
                 (None, None, None, Some(first_byte)) => {
                     output_content.push(first_byte);
@@ -329,7 +329,7 @@ pub trait FixedCharsLengthByteSlice {
 
 impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
     fn slice_by_char_indice(&self, start: usize, end: usize) -> Self {
-        unsafe { &self.get_unchecked((start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR)) }
+        unsafe { self.get_unchecked((start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR)) }
     }
     fn chars_len(&self) -> usize {
         self.len() / BYTES_PER_CHAR
@@ -368,7 +368,7 @@ fn check_slice() {
     let ex: &[u8] = &[255, 255, 255, 255, 0, 255, 111, 0];
     assert_eq!(ex.slice_by_char_indice(0, 1), &[255, 255, 255, 255]);
     assert_eq!(ex.slice_by_char_indice(1, 2), &[0, 255, 111, 0]);
-    assert_eq!("".is_empty(), true);
+    assert!("".is_empty());
 }
 
 #[test]

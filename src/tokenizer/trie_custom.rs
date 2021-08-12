@@ -2,9 +2,8 @@ use crate::fixed_bytes_str::four_bytes::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
     BYTES_PER_CHAR,
 };
-use ahash::{AHashMap as HashMap, AHashSet as HashSet};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::borrow::BorrowMut;
-use std::iter::Iterator;
 /**
 This module is meant to be a direct implementation of Dict Trie in PythaiNLP.
 
@@ -31,7 +30,7 @@ impl TrieNode {
     pub fn new() -> Self {
         Self {
             // text: None,
-            children: HashMap::with_capacity(100),
+            children: HashMap::default(),
             end: false,
         }
     }
@@ -76,7 +75,7 @@ impl TrieNode {
                 if char_count == 1 {
                     child.set_not_end();
                 }
-                child.remove_word_from_node(&word);
+                child.remove_word_from_node(word);
 
                 if !child.end && child.children.is_empty() {
                     self.remove_child(character);
@@ -85,8 +84,8 @@ impl TrieNode {
         }
     }
 
-    pub fn list_prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<CustomStringBytesVec> {
-        let mut result: Vec<CustomStringBytesVec> = Vec::with_capacity(100);
+    pub fn list_prefix<'d,'p>(&'d self, prefix: &'p CustomStringBytesSlice) -> Vec<&'p CustomStringBytesSlice> {
+        let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
         let prefix_cpy = prefix;
         let mut current_index = 0;
         let mut current_node_wrap = Some(self);
@@ -97,7 +96,7 @@ impl TrieNode {
                     if child.end {
                         let substring_of_prefix =
                             prefix_cpy.slice_by_char_indice(0, current_index + 1);
-                        result.push(substring_of_prefix.to_vec());
+                        result.push(substring_of_prefix);
                     }
                     current_node_wrap = Some(child);
                 } else {
@@ -118,12 +117,12 @@ pub struct Trie {
 impl Trie {
     pub fn new(words: &[CustomString]) -> Self {
         let mut instance = Self {
-            words: HashSet::with_capacity(words.len() / 10),
+            words: HashSet::default(),
             root: TrieNode::new(),
         };
         for word in words.iter() {
             if !word.is_empty() {
-                instance.add(&word);
+                instance.add(word);
             }
         }
         instance
@@ -137,7 +136,7 @@ impl Trie {
         let stripped_word = word.trim();
         self.words.insert(stripped_word.raw_content().into());
         let current_cursor = self.root.borrow_mut();
-        current_cursor.add_word(&stripped_word.raw_content());
+        current_cursor.add_word(stripped_word.raw_content());
     }
 
     pub fn remove(&mut self, word: &CustomString) {
@@ -149,7 +148,7 @@ impl Trie {
         }
     }
 
-    pub fn prefix(&self, prefix: &CustomStringBytesSlice) -> Vec<Vec<u8>> {
+    pub fn prefix<'d,'p>(&'d self, prefix: &'p CustomStringBytesSlice) -> Vec<&'p CustomStringBytesSlice> {
         self.root.list_prefix(prefix)
     }
 
@@ -160,6 +159,7 @@ impl Trie {
 
        The only downside I can think about this function is its non-descriptive name..
     */
+
     pub fn prefix_ref<'p, 't>(
         prefix: &'p CustomStringBytesSlice,
         dict_trie: &'t Self,
@@ -196,6 +196,6 @@ impl Trie {
     }
 
     pub fn amount_of_words(&self) -> usize {
-        self.words.iter().count()
+        self.words.len()
     }
 }

@@ -1,5 +1,5 @@
-pub mod dict_reader_custom;
+mod dict_reader_custom;
 pub mod newmm_custom;
-pub mod tcc_custom;
+mod tcc_custom;
 pub mod tokenizer_trait;
-pub mod trie_custom;
+mod trie_custom;
