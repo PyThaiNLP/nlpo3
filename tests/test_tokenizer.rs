@@ -150,9 +150,9 @@ fn test_long_text_byte_tokenizer() {
     .join("");
 
     let newmm_default_dict = NewmmCustom::new(None);
-    let result = newmm_default_dict.segment(&long_text, None, Some(true)).unwrap();
+    let result = newmm_default_dict.segment(&long_text, false, true).unwrap();
 
-    let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true)).unwrap();
+    let safe_result = newmm_default_dict.segment(&long_text, true, true).unwrap();
     assert_eq!(result.len(), 1889);
     assert_eq!(safe_result.len(), 1991);
 }
@@ -160,27 +160,27 @@ fn test_long_text_byte_tokenizer() {
 fn test_standard_short_word() {
     let newmm_default_dict = NewmmCustom::new(None);
     assert_eq!(
-        newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", None, None),
+        newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
         ["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("19...", None, None),
+        newmm_default_dict.segment_to_string("19...", false, false),
         ["19", "..."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("19.", None, None),
+        newmm_default_dict.segment_to_string("19.", false, false),
         ["19", "."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("19.84", None, None),
+        newmm_default_dict.segment_to_string("19.84", false, false),
         ["19.84"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("127.0.0.1", None, None),
+        newmm_default_dict.segment_to_string("127.0.0.1", false, false),
         ["127.0.0.1"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("USD1,984.42", None, None),
+        newmm_default_dict.segment_to_string("USD1,984.42", false, false),
         ["USD", "1,984.42"]
     );
 }
@@ -188,11 +188,11 @@ fn test_standard_short_word() {
 fn test_with_some_real_data() {
     let newmm_default_dict = NewmmCustom::new(None);
     assert_eq!(
-        newmm_default_dict.segment_to_string(FIRST_TEXT, None, None),
+        newmm_default_dict.segment_to_string(FIRST_TEXT, false, false),
         ["นิสสัน", "ผ่อน", "จน", "เพลีย", "นาวา", "ร่า", ".."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string(SECOND_TEXT, None, None),
+        newmm_default_dict.segment_to_string(SECOND_TEXT, false, false),
         [
             "อาชญากรรม",
             "ทางการแพทย์",
@@ -226,23 +226,23 @@ fn test_with_some_real_data() {
 fn test_thai_number() {
     let newmm_default_dict = NewmmCustom::new(None);
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๙...", None, None),
+        newmm_default_dict.segment_to_string("๑๙...", false, false),
         ["๑๙", "..."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๙.", None, None),
+        newmm_default_dict.segment_to_string("๑๙.", false, false),
         ["๑๙", "."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๙.๘๔", None, None),
+        newmm_default_dict.segment_to_string("๑๙.๘๔", false, false),
         ["๑๙.๘๔"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๒๗.๐.๐.๑", None, None),
+        newmm_default_dict.segment_to_string("๑๒๗.๐.๐.๑", false, false),
         ["๑๒๗.๐.๐.๑"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("USD๑,๙๘๔.๔๒", None, None),
+        newmm_default_dict.segment_to_string("USD๑,๙๘๔.๔๒", false, false),
         ["USD", "๑,๙๘๔.๔๒"]
     );
 }
