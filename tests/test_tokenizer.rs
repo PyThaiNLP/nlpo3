@@ -149,7 +149,7 @@ fn test_long_text_byte_tokenizer() {
     ]
     .join("");
 
-    let newmm_default_dict = NewmmCustom::new(None);
+    let newmm_default_dict = NewmmCustom::new("default",None);
     let result = newmm_default_dict.segment(&long_text, None, Some(true)).unwrap();
 
     let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true)).unwrap();
@@ -158,7 +158,7 @@ fn test_long_text_byte_tokenizer() {
 }
 #[test]
 fn test_standard_short_word() {
-    let newmm_default_dict = NewmmCustom::new(None);
+    let newmm_default_dict = NewmmCustom::new("default",None);
     assert_eq!(
         newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", None, None),
         ["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
@@ -186,7 +186,7 @@ fn test_standard_short_word() {
 }
 #[test]
 fn test_with_some_real_data() {
-    let newmm_default_dict = NewmmCustom::new(None);
+    let newmm_default_dict = NewmmCustom::new("default",None);
     assert_eq!(
         newmm_default_dict.segment_to_string(FIRST_TEXT, None, None),
         ["นิสสัน", "ผ่อน", "จน", "เพลีย", "นาวา", "ร่า", ".."]
@@ -224,7 +224,7 @@ fn test_with_some_real_data() {
 }
 #[test]
 fn test_thai_number() {
-    let newmm_default_dict = NewmmCustom::new(None);
+    let newmm_default_dict = NewmmCustom::new("default",None);
     assert_eq!(
         newmm_default_dict.segment_to_string("๑๙...", None, None),
         ["๑๙", "..."]

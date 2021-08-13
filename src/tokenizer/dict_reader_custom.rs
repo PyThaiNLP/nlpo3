@@ -18,10 +18,10 @@ pub fn create_default_dict() -> Trie {
         .map(|word| CustomString::new(word))
         .filter(|word| !word.is_empty())
         .collect::<Vec<CustomString>>();
-    Trie::new(&default_dict)
+    Trie::new("default",&default_dict,)
 }
 
-pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
+pub fn create_dict_trie(name:&str,source: DictSource) -> Result<Trie, Box<dyn Error>> {
     match source {
         DictSource::FilePath(single_source) => {
             let file_reader = File::open(single_source.as_path());
@@ -37,7 +37,7 @@ pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
                         line.clear();
                     }
                     dict.shrink_to_fit();
-                    Ok(Trie::new(&dict))
+                    Ok(Trie::new(name,&dict))
                 }
                 Err(error) => Err(Box::from(error)),
             }
@@ -47,7 +47,7 @@ pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
                 .into_iter()
                 .map(|word| CustomString::new(&word))
                 .collect();
-            Ok(Trie::new(&custom_word_list))
+            Ok(Trie::new(name,&custom_word_list))
         }
     }
 }

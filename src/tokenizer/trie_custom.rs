@@ -111,12 +111,14 @@ impl TrieNode {
 
 #[derive(Debug)]
 pub struct Trie {
+    name:String,
     words: HashSet<CustomStringBytesVec>,
     root: TrieNode,
 }
 impl Trie {
-    pub fn new(words: &[CustomString]) -> Self {
+    pub fn new(name:&str,words: &[CustomString]) -> Self {
         let mut instance = Self {
+            name:name.to_string(),
             words: HashSet::default(),
             root: TrieNode::new(),
         };
@@ -198,4 +200,31 @@ impl Trie {
     pub fn amount_of_words(&self) -> usize {
         self.words.len()
     }
+}
+
+pub fn prefix_ref_cache(
+    prefix:& CustomStringBytesSlice,
+    dict_trie:&Trie,
+) -> Vec<CustomStringBytesVec> {
+    let mut result: Vec<CustomStringBytesVec> = Vec::with_capacity(100);
+    let prefix_cpy = prefix;
+    let mut current_index = 0;
+    let mut current_node_wrap = Some(&dict_trie.root);
+    while current_index < prefix_cpy.chars_len() {
+        let character = prefix_cpy.slice_by_char_indice(current_index, current_index + 1);
+        if let Some(current_node) = current_node_wrap {
+            if let Some(child) = current_node.find_child(character) {
+                if child.end {
+                    let substring_of_prefix =
+                        prefix_cpy.slice_by_char_indice(0, current_index + 1);
+                    result.push(substring_of_prefix.to_vec());
+                }
+                current_node_wrap = Some(child);
+            } else {
+                break;
+            }
+        }
+        current_index = current_index + 1;
+    }
+    result
 }
