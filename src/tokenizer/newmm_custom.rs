@@ -584,4 +584,19 @@ impl Tokenizer for Newmm {
     ) -> Vec<String> {
         self.segment(text, safe, parallel).unwrap()
     }
+
+    fn segment_with_cache(
+        &self,
+        text: &str,
+        safe: Option<bool>,
+        parallel: Option<bool>,
+    ) -> AnyResult<Vec<String>> {
+        let safe_flag = safe.unwrap_or(false);
+        let parallel_flag = match parallel {
+            Some(val) => val,
+            _ => false,
+        };
+        let custom_string = CustomString::new(text);
+        Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag, true)
+    }
 }

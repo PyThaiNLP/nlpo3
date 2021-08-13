@@ -13,4 +13,12 @@ pub trait Tokenizer {
         safe: Option<bool>,
         parallel: Option<bool>,
     ) -> Vec<String>;
+
+    fn segment_with_cache(
+        &self,
+        text: &str,
+        safe: Option<bool>,
+        parallel: Option<bool>,
+    ) -> AnyResult<Vec<String>>;
+
 }
