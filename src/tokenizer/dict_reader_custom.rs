@@ -21,7 +21,7 @@ pub fn create_default_dict() -> Trie {
     Trie::new(&default_dict)
 }
 
-pub fn create_dict_trie(name:&str,source: DictSource) -> Result<Trie, Box<dyn Error>> {
+pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
     match source {
         DictSource::FilePath(single_source) => {
             let file_reader = File::open(single_source.as_path());

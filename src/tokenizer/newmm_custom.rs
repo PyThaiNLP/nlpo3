@@ -98,14 +98,14 @@ impl Display for BFSSearchError {
 impl Error for BFSSearchError {}
 
 impl Newmm {
-    pub fn new(name:&str,dict_path: Option<&str>) -> Self {
+    pub fn new(dict_path: Option<&str>) -> Self {
         match dict_path {
             None => Self {
                 dict: Box::from(create_default_dict()),
             },
             Some(path) => Self {
                 dict: Box::from(
-                    create_dict_trie(name,DictSource::FilePath(PathBuf::from(path))).unwrap(),
+                    create_dict_trie(DictSource::FilePath(PathBuf::from(path))).unwrap(),
                 ),
             },
         }
