@@ -16,7 +16,7 @@ use regex::bytes::Regex;
 
 use crate::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
 use cached::proc_macro::cached;
-use cached::{UnboundCache,SizedCache};
+use cached::{SizedCache};
 
 use super::super::fixed_bytes_str::four_bytes::BYTES_PER_CHAR;
 
