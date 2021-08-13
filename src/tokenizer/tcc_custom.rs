@@ -1,5 +1,5 @@
 /**
-The implementation of tokenizer accorinding to Thai Character Clusters (TCCs)
+The implementation of tokenizer according to Thai Character Clusters (TCCs)
 rules purposed by `Theeramunkong et al. 2000. \
     <http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.59.2548>`_
 
@@ -24,7 +24,7 @@ use super::super::fixed_bytes_str::four_bytes::BYTES_PER_CHAR;
 // \x00 is byte value 0, every unicode character in regex is padded with \x00 to 4 bytes length
 // https://www.fileformat.info/info/unicode/
 // Thai characters use 3 bytes per character, so it is padded with \x00 only once.
-// The following regexpressions are translated from pythainlp/tokenize/tcc.py
+// The following regular expressions are translated from pythainlp/tokenize/tcc.py
 lazy_static! {
     static ref NON_LOOKAHEAD_TCC: Regex = Regex::new(
         &[

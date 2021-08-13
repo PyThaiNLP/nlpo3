@@ -1,19 +1,19 @@
-name: Test main lib (Rust crate)
+name: Test nlpo3-cli (command line)
 on:
   push:
     branches:
       - main
     paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'Cargo.toml'
+      - 'nlpo3-cli/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'Cargo.toml'
+      - 'nlpo3-cli/**'
+
+defaults:
+  run:
+    working-directory: nlpo3-cli
 
 jobs:
   test:
@@ -54,18 +54,7 @@ jobs:
         with:
           command: check
 
-      - name: Cache Rust files
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ matrix.os }}-${{ matrix.bitness }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
-
       - name: Test
-        run: cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test

@@ -33,7 +33,7 @@ fn segment(
         Ok(result)
     } else {
         Err(exceptions::PyRuntimeError::new_err(format!(
-            "Dictinary {} does not exist.",
+            "Dictionary {} does not exist.",
             dict_name
         )))
     }
