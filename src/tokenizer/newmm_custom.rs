@@ -305,7 +305,7 @@ impl Newmm {
         Ok(result_str)
     }
 
-    pub fn internal_segment(
+    fn internal_segment(
         input: &CustomString,
         custom_dict: &Trie,
         safe: bool,
