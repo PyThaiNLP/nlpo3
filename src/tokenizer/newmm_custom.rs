@@ -510,7 +510,7 @@ impl Newmm {
                 if let Some(space_char_index) = space_char_index {
                     cut_pos = space_char_index + 1;
                 } else {
-                    let word_tokens = Self::one_cut(sample, custom_dict)?;
+                    let word_tokens = one_cut_func(sample, custom_dict)?;
                     let mut token_max_index = 0;
                     let mut token_max_length = 0;
                     for (idx, token) in word_tokens.iter().enumerate() {

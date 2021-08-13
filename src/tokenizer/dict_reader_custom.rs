@@ -18,7 +18,7 @@ pub fn create_default_dict() -> Trie {
         .map(|word| CustomString::new(word))
         .filter(|word| !word.is_empty())
         .collect::<Vec<CustomString>>();
-    Trie::new("default",&default_dict,)
+    Trie::new(&default_dict)
 }
 
 pub fn create_dict_trie(name:&str,source: DictSource) -> Result<Trie, Box<dyn Error>> {
@@ -37,7 +37,7 @@ pub fn create_dict_trie(name:&str,source: DictSource) -> Result<Trie, Box<dyn Er
                         line.clear();
                     }
                     dict.shrink_to_fit();
-                    Ok(Trie::new(name,&dict))
+                    Ok(Trie::new(&dict))
                 }
                 Err(error) => Err(Box::from(error)),
             }
@@ -47,7 +47,7 @@ pub fn create_dict_trie(name:&str,source: DictSource) -> Result<Trie, Box<dyn Er
                 .into_iter()
                 .map(|word| CustomString::new(&word))
                 .collect();
-            Ok(Trie::new(name,&custom_word_list))
+            Ok(Trie::new(&custom_word_list))
         }
     }
 }
