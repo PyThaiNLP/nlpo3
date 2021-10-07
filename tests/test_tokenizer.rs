@@ -3,8 +3,11 @@ use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
     "อาชญากรรมทางการแพทย์.. หลอกลวงคนไข้ผ่าตัด ตัดหมอนรองข้อเข่าอำพราง รพ.กรุงเทพภูเก็ตปลอมเวชระเบียน ตอนที่๑.";
+const DEFAULT_DICT_PATH: &str =  "./words_th.txt"; // relative to cargo
 #[test]
 fn test_long_text_byte_tokenizer() {
+    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
     let long_text = [
         "ไต้หวัน (แป่ะเอ๋ยี้: Tâi-oân; ไต่อวัน) หรือ ไถวาน ",
         "(อักษรโรมัน: Taiwan; จีนตัวย่อ: 台湾; จีนตัวเต็ม: 臺灣/台灣; พินอิน: ",
@@ -149,16 +152,20 @@ fn test_long_text_byte_tokenizer() {
     ]
     .join("");
 
-    let newmm_default_dict = NewmmCustom::new(None);
-    let result = newmm_default_dict.segment(&long_text, None, Some(true)).unwrap();
+    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
+    let result = newmm_default_dict
+        .segment(&long_text, None, Some(true))
+        .unwrap();
 
-    let safe_result = newmm_default_dict.segment(&long_text, Some(true), Some(true)).unwrap();
+    let safe_result = newmm_default_dict
+        .segment(&long_text, Some(true), Some(true))
+        .unwrap();
     assert_eq!(result.len(), 1889);
     assert_eq!(safe_result.len(), 1991);
 }
 #[test]
 fn test_standard_short_word() {
-    let newmm_default_dict = NewmmCustom::new(None);
+    let newmm_default_dict = NewmmCustom::new(DEFAULT_DICT_PATH);
     assert_eq!(
         newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", None, None),
         ["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
@@ -186,7 +193,9 @@ fn test_standard_short_word() {
 }
 #[test]
 fn test_with_some_real_data() {
-    let newmm_default_dict = NewmmCustom::new(None);
+    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
+    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
     assert_eq!(
         newmm_default_dict.segment_to_string(FIRST_TEXT, None, None),
         ["นิสสัน", "ผ่อน", "จน", "เพลีย", "นาวา", "ร่า", ".."]
@@ -224,7 +233,9 @@ fn test_with_some_real_data() {
 }
 #[test]
 fn test_thai_number() {
-    let newmm_default_dict = NewmmCustom::new(None);
+    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
+    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
     assert_eq!(
         newmm_default_dict.segment_to_string("๑๙...", None, None),
         ["๑๙", "..."]

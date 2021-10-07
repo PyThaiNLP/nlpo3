@@ -12,9 +12,7 @@ fn load_dict(mut cx: FunctionContext) -> JsResult<JsString> {
     let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
     let file_path = cx.argument::<JsString>(0)?.value(&mut cx);
     let dict_name = cx.argument::<JsString>(1)?.value(&mut cx);
-    if dict_name == "default" {
-        Ok(cx.string(format!("Failed: 'default' dictionary name is reserved")))
-    } else if let Some(_) = dict_col_lock.get(&dict_name) {
+    if let Some(_) = dict_col_lock.get(&dict_name) {
         Ok(cx.string(format!(
             "Failed: dictionary {} exists, please use another name.",
             dict_name
@@ -49,10 +47,6 @@ fn segment(mut cx: FunctionContext) -> JsResult<JsArray> {
 
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
-    {
-        let mut dict_collect = DICT_COLLECTION.lock().unwrap();
-        dict_collect.insert("default".to_string(), Box::from(Newmm::new(None)));
-    }
     cx.export_function("loadDict", load_dict)?;
     cx.export_function("segment", segment)?;
     Ok(())
