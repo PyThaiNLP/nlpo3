@@ -300,7 +300,7 @@ impl Newmm {
         Ok(result_str)
     }
 
-    pub fn internal_segment(
+    fn internal_segment(
         input: &CustomString,
         custom_dict: &Trie,
         safe: bool,
@@ -390,27 +390,11 @@ impl Newmm {
 }
 
 impl Tokenizer for Newmm {
-    fn segment(
-        &self,
-        text: &str,
-        safe: Option<bool>,
-        parallel: Option<bool>,
-    ) -> AnyResult<Vec<String>> {
-        let safe_flag = safe.unwrap_or(false);
-        let parallel_flag = match parallel {
-            Some(val) => val,
-            _ => false,
-        };
-        let custom_string = CustomString::new(text);
-        Self::internal_segment(&custom_string, &self.dict, safe_flag, parallel_flag)
+    fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>> {
+        Self::internal_segment(&CustomString::new(text), &self.dict, safe, parallel)
     }
 
-    fn segment_to_string(
-        &self,
-        text: &str,
-        safe: Option<bool>,
-        parallel: Option<bool>,
-    ) -> Vec<String> {
+    fn segment_to_string(&self, text: &str, safe: bool, parallel: bool) -> Vec<String> {
         self.segment(text, safe, parallel).unwrap()
     }
 }
