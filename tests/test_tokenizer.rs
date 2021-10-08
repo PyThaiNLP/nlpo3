@@ -151,12 +151,10 @@ fn test_long_text_byte_tokenizer() {
         " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]",
     ]
     .join("");
-
     let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
     let result = newmm_default_dict
         .segment(&long_text, false, true)
         .unwrap();
-
     let safe_result = newmm_default_dict
         .segment(&long_text, true, true)
         .unwrap();
