@@ -3,7 +3,7 @@ use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
     "อาชญากรรมทางการแพทย์.. หลอกลวงคนไข้ผ่าตัด ตัดหมอนรองข้อเข่าอำพราง รพ.กรุงเทพภูเก็ตปลอมเวชระเบียน ตอนที่๑.";
-const DEFAULT_DICT_PATH: &str =  "./words_th.txt"; // relative to cargo
+const DEFAULT_DICT_PATH: &str =  "/words_th.txt"; // relative to cargo
 #[test]
 fn test_long_text_byte_tokenizer() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
@@ -163,7 +163,9 @@ fn test_long_text_byte_tokenizer() {
 }
 #[test]
 fn test_standard_short_word() {
-    let newmm_default_dict = NewmmCustom::new(DEFAULT_DICT_PATH);
+    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
+    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
     assert_eq!(
         newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
         ["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
