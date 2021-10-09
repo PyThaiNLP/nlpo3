@@ -2,7 +2,7 @@ use super::super::fixed_bytes_str::four_bytes::{
     CustomStringBytesSlice, CustomStringBytesVec, FixedLengthCustomString,
 };
 use super::{
-    dict_reader_custom::{create_default_dict, create_dict_trie, DictSource},
+    dict_reader_custom::{create_dict_trie, DictSource},
     tcc_custom,
     tokenizer_trait::Tokenizer,
     trie_custom::Trie,
@@ -101,16 +101,11 @@ impl Display for BFSSearchError {
 impl Error for BFSSearchError {}
 
 impl Newmm {
-    pub fn new(dict_path: Option<&str>) -> Self {
-        match dict_path {
-            None => Self {
-                dict: Box::from(create_default_dict()),
-            },
-            Some(path) => Self {
-                dict: Box::from(
-                    create_dict_trie(DictSource::FilePath(PathBuf::from(path))).unwrap(),
-                ),
-            },
+    pub fn new(dict_path: &str) -> Self {
+        Self {
+            dict: Box::from(
+                create_dict_trie(DictSource::FilePath(PathBuf::from(dict_path))).unwrap(),
+            ),
         }
     }
 
