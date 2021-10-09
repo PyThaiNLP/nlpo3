@@ -16,9 +16,9 @@ const VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111
 const SPACE_BYTE: &[u8] = &[0, 0, 0, 32];
 type PreparedCustomBytes = (Option<u8>, Option<u8>, Option<u8>, Option<u8>);
 use std::{
-    borrow::Borrow,
     error::{self, Error},
     fmt::Display,
+    sync::Arc,
 };
 
 pub type ValidUTF8BytesVec = Vec<u8>;
@@ -207,26 +207,29 @@ fn trim_to_std_utf8(
 
 #[derive(Clone)]
 pub struct CustomString {
-    content: Vec<u8>,
+    content: Arc<Vec<u8>>,
     length: usize,
 }
 
 impl CustomString {
     pub fn from(four_byte_vec: ValidUTF8BytesVec) -> Self {
-        let content = four_byte_vec;
+        let content = Arc::new(four_byte_vec);
         let length = content.len() / BYTES_PER_CHAR;
         Self { content, length }
     }
     pub fn new(base_string: &str) -> Self {
         let content = to_four_bytes(base_string);
         let length = content.len() / BYTES_PER_CHAR;
-        Self { content, length }
+        Self {
+            content: Arc::new(content),
+            length,
+        }
     }
     pub fn substring_as_custom_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
         &self.content[(char_start * BYTES_PER_CHAR)..(char_end * BYTES_PER_CHAR)]
     }
     pub fn raw_content(&self) -> &[u8] {
-        self.content.borrow()
+        self.content.as_slice()
     }
     /** Returns characters length */
     pub fn chars_len(&self) -> usize {
@@ -253,9 +256,18 @@ impl CustomString {
         let length = new_content.len() / BYTES_PER_CHAR;
 
         Self {
-            content: Vec::from(new_content),
+            content: Arc::new(Vec::from(new_content)),
             length,
         }
+    }
+
+    ///
+    /// start and end are character indices.
+    ///
+    pub fn substring(&self, start: usize, end: usize) -> CustomSubstring {
+        /// no problemo
+        let full_content = self.content.clone();
+        CustomSubstring::new(full_content, start, end)
     }
 
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {
@@ -361,6 +373,27 @@ impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
             }
         }
         true
+    }
+}
+pub struct CustomSubstring {
+    content: Arc<CustomStringBytesVec>,
+    start: usize,
+    end: usize,
+}
+impl CustomSubstring {
+    pub fn new(full_content: Arc<CustomStringBytesVec>, start: usize, end: usize) -> Self {
+        Self {
+            content: full_content,
+            start,
+            end,
+        }
+    }
+    pub fn raw_content(&self) -> &[u8] {
+        let underlying = self
+            .content
+            .as_slice()
+            .slice_by_char_indice(self.start, self.end);
+        underlying
     }
 }
 #[test]
