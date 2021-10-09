@@ -71,21 +71,50 @@ impl InvalidCustomStringByteError {
 }
 impl Error for InvalidCustomStringByteError {}
 
-/** returns bytes index */
-/*
-pub fn rfind_space(custom_text: &CustomStringBytesSlice) -> Option<usize> {
-    assert_eq!(custom_text.len() % 4, 0);
-
-    for index in (0..(custom_text.len() / BYTES_PER_CHAR)).rev() {
-        if let SPACE_BYTE = &custom_text[(index) * BYTES_PER_CHAR..(index + 1) * BYTES_PER_CHAR] {
-            return Some((index) * BYTES_PER_CHAR);
-        }
-    }
-    None
+pub trait FixedCharsLengthByteSlice {
+    fn slice_by_char_indice(&self, start: usize, end: usize) -> Self;
+    fn chars_len(&self) -> usize;
+    fn is_valid_custom_str_bytes(&self) -> bool;
 }
-*/
+impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
+    fn slice_by_char_indice(&self, start: usize, end: usize) -> Self {
+        self.get((start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR))
+            .unwrap()
+    }
+    fn chars_len(&self) -> usize {
+        self.len() / BYTES_PER_CHAR
+    }
+    fn is_valid_custom_str_bytes(&self) -> bool {
+        if self.len() % 4 != 0 {
+            return false;
+        }
+        for index in 0..self.chars_len() {
+            let current_slice = self.slice_by_char_indice(index, index + 1);
+            match current_slice {
+                [0, 0, 0, one_byte_char]
+                    if one_byte_char <= &VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE => {}
+                [0, 0, first_byte, second_byte]
+                    if is_in_range(*first_byte, VALID_TWO_BYTE_UTF8_FIRST_BYTE_RANGE)
+                        && is_in_range(*second_byte, VALID_TWO_BYTE_UTF8_SECOND_BYTE_RANGE) => {}
+                [0, first_byte, second_byte, third_byte]
+                    if is_in_range(*first_byte, VALID_THREE_BYTE_UTF8_FIRST_BYTE_RANGE)
+                        && is_in_range(*second_byte, VALID_THREE_BYTE_UTF8_SECOND_BYTE_RANGE)
+                        && is_in_range(*third_byte, VALID_THREE_BYTE_UTF8_THIRD_BYTE_RANGE) => {}
+                [first_byte, second_byte, third_byte, fourth_byte]
+                    if is_in_range(*first_byte, VALID_FOUR_BYTE_UTF8_FIRST_BYTE_RANGE)
+                        && is_in_range(*second_byte, VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE)
+                        && is_in_range(*third_byte, VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE)
+                        && is_in_range(*fourth_byte, VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE) => {}
+                _ => {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+}
 
-/** return char index */
+/// Returns character index.
 pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<usize> {
     assert_eq!(custom_text.len() % 4, 0);
 
@@ -97,12 +126,6 @@ pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<us
     None
 }
 
-/**
- bytes length = 32, char len = 8
- index 0..8 reverse
- 7..=0
- 28 ..
-*/
 fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
     matches!(
         custom_bytes,
@@ -190,20 +213,27 @@ fn trim_to_std_utf8(
     }
 }
 
-/** The content inside this string is a vector of bytes - ALWAYS with length % 4 == 0
+/// This name is WIP
 
-    Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes.
-
-    For example, Thai characters which use 3 bytes are represented by
-    [0, valid_first_byte, valid_second_byte, valid_third_byte].
-
-    ***Comparison***
-    String "กข " is represented by
-    \[224, 184, 129, 224, 184, 130, 32\]
-
-    CustomString "กข " is represented by
-    \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\]
-*/
+pub trait FixedLengthCustomString {
+    /// start and end are character index.
+    fn substring(&self, start: usize, end: usize) -> CustomSubstring;
+}
+///     The content inside this string is a vector of bytes - ALWAYS with length % 4 == 0
+///
+///     Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes.
+///
+///     For example, Thai characters which use 3 bytes are represented by
+///     [0, valid_first_byte, valid_second_byte, valid_third_byte].
+///
+///     ***Comparison***
+///
+///     String "กข " is represented by
+///     \[224, 184, 129, 224, 184, 130, 32\]
+///
+///     CustomString "กข " is represented by
+///     \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\]
+///
 
 #[derive(Clone)]
 pub struct CustomString {
@@ -225,19 +255,21 @@ impl CustomString {
             length,
         }
     }
+    #[deprecated()]
     pub fn substring_as_custom_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
         &self.content[(char_start * BYTES_PER_CHAR)..(char_end * BYTES_PER_CHAR)]
     }
     pub fn raw_content(&self) -> &[u8] {
         self.content.as_slice()
     }
-    /** Returns characters length */
+    /// Returns characters length
     pub fn chars_len(&self) -> usize {
         self.length
     }
     pub fn is_empty(&self) -> bool {
         self.content.len() == 0
     }
+    /// Returns underlying bytes length.
     pub fn len(&self) -> usize {
         self.content.len()
     }
@@ -260,16 +292,7 @@ impl CustomString {
             length,
         }
     }
-
-    ///
     /// start and end are character indices.
-    ///
-    pub fn substring(&self, start: usize, end: usize) -> CustomSubstring {
-        /// no problemo
-        let full_content = self.content.clone();
-        CustomSubstring::new(full_content, start, end)
-    }
-
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in 0..input.chars_len() {
@@ -332,56 +355,28 @@ impl CustomString {
         output_content
     }
 }
-
-pub trait FixedCharsLengthByteSlice {
-    fn slice_by_char_indice(&self, start: usize, end: usize) -> Self;
-    fn chars_len(&self) -> usize;
-    fn is_valid_custom_str_bytes(&self) -> bool;
-}
-
-impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
-    fn slice_by_char_indice(&self, start: usize, end: usize) -> Self {
-        unsafe { self.get_unchecked((start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR)) }
-    }
-    fn chars_len(&self) -> usize {
-        self.len() / BYTES_PER_CHAR
-    }
-    fn is_valid_custom_str_bytes(&self) -> bool {
-        if self.len() % 4 != 0 {
-            return false;
-        }
-        for index in 0..self.chars_len() {
-            let current_slice = self.slice_by_char_indice(index, index + 1);
-            match current_slice {
-                [0, 0, 0, one_byte_char]
-                    if one_byte_char <= &VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE => {}
-                [0, 0, first_byte, second_byte]
-                    if is_in_range(*first_byte, VALID_TWO_BYTE_UTF8_FIRST_BYTE_RANGE)
-                        && is_in_range(*second_byte, VALID_TWO_BYTE_UTF8_SECOND_BYTE_RANGE) => {}
-                [0, first_byte, second_byte, third_byte]
-                    if is_in_range(*first_byte, VALID_THREE_BYTE_UTF8_FIRST_BYTE_RANGE)
-                        && is_in_range(*second_byte, VALID_THREE_BYTE_UTF8_SECOND_BYTE_RANGE)
-                        && is_in_range(*third_byte, VALID_THREE_BYTE_UTF8_THIRD_BYTE_RANGE) => {}
-                [first_byte, second_byte, third_byte, fourth_byte]
-                    if is_in_range(*first_byte, VALID_FOUR_BYTE_UTF8_FIRST_BYTE_RANGE)
-                        && is_in_range(*second_byte, VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE)
-                        && is_in_range(*third_byte, VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE)
-                        && is_in_range(*fourth_byte, VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE) => {}
-                _ => {
-                    return false;
-                }
-            }
-        }
-        true
+impl FixedLengthCustomString for CustomString {
+    fn substring(&self, start: usize, end: usize) -> CustomSubstring {
+        let full_content = self.content.clone();
+        CustomSubstring::new(full_content, start, end)
     }
 }
+
+/// This struct contains an Arc of full length Vec<u8>.
+/// start and end are character index.
+///
+
 pub struct CustomSubstring {
     content: Arc<CustomStringBytesVec>,
     start: usize,
     end: usize,
 }
 impl CustomSubstring {
+    ///  panics if start and end is invalid.
     pub fn new(full_content: Arc<CustomStringBytesVec>, start: usize, end: usize) -> Self {
+        // check bound here... lazily and sinfully.
+        full_content.as_slice().slice_by_char_indice(start, end);
+        // start and end do not cause panic! good.
         Self {
             content: full_content,
             start,
@@ -394,6 +389,33 @@ impl CustomSubstring {
             .as_slice()
             .slice_by_char_indice(self.start, self.end);
         underlying
+    }
+    pub fn chars_len(&self) -> usize {
+        self.end - self.start
+    }
+    pub fn is_empty(&self) -> bool {
+        self.end - self.start == 0
+    }
+}
+impl FixedLengthCustomString for CustomSubstring {
+    /// start and end should be relative to self.start and self.end
+
+    /// If full vec = [0,1,2,3,4,5,6,7,8]
+    /// current_start = 1
+    /// current_end = 7
+    /// raw_content -> [1,2,3,4,5,6,7]
+
+    /// substring(2,3) should be
+    /// [3]
+    /// which means begin = 3
+    /// end = 4
+
+    fn substring(&self, start: usize, end: usize) -> Self {
+        let new_start = self.start + start;
+        let new_end = self.start + end;
+
+        let full_content = self.content.clone();
+        Self::new(full_content, new_start, new_end)
     }
 }
 #[test]
