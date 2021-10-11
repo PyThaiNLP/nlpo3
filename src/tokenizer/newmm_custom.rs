@@ -21,7 +21,7 @@ with heuristic graph size limit added to avoid exponential wait time.
 Rust implementation: ["Thanathip Suntorntip"]
 */
 use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, CustomSubstring, FixedCharsLengthByteSlice,
+    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice,
     BYTES_PER_CHAR,
 };
 use anyhow::Result as AnyResult;
@@ -448,16 +448,16 @@ impl NewmmWordTokenizer {
     }
 
     fn one_cut(
-        input: CustomSubstring,
+        input: &CustomString,
         custom_dict: &Trie,
-    ) -> AnyResult<Vec<CustomSubstring>> {
+    ) -> AnyResult<Vec<CustomString>> {
         let text = input;
         let input_char_len = text.chars_len();
         let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
         let mut graph_size: usize = 0;
         let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> = HashMap::default();
         graph.reserve(input_char_len / 10);
-        let mut result_str: Vec<CustomSubstring> = Vec::with_capacity(input_char_len / 10);
+        let mut result_str: Vec<CustomString> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
         let valid_position = tcc_custom::tcc_pos(text.raw_content());
@@ -619,7 +619,7 @@ impl NewmmWordTokenizer {
             return Ok(vec![]);
         }
         if !safe || input.chars_len() < TEXT_SCAN_END {
-            let result = Self::one_cut(input.substring(0, input.chars_len()), custom_dict)?;
+            let result = Self::one_cut(&input.substring(0, input.chars_len()), custom_dict)?;
             Ok(if parallel {
                 result
                     .into_par_iter()
@@ -641,7 +641,7 @@ impl NewmmWordTokenizer {
             })
         } else {
             let mut txt = input.substring(0, input.chars_len());
-            let mut txt_parts: Vec<CustomSubstring> = Vec::with_capacity(txt.chars_len() / 10);
+            let mut txt_parts: Vec<CustomString> = Vec::with_capacity(txt.chars_len() / 10);
             while txt.chars_len() >= TEXT_SCAN_END {
                 let sample = txt.substring(TEXT_SCAN_BEGIN, TEXT_SCAN_END);
 
@@ -652,7 +652,7 @@ impl NewmmWordTokenizer {
                 if let Some(space_char_index) = space_char_index {
                     cut_pos = space_char_index + 1;
                 } else {
-                    let word_tokens = Self::one_cut(sample, custom_dict)?;
+                    let word_tokens = Self::one_cut(&sample, custom_dict)?;
                     let mut token_max_index = 0;
                     let mut token_max_length = 0;
                     for (idx, token) in word_tokens.iter().enumerate() {
@@ -679,7 +679,7 @@ impl NewmmWordTokenizer {
                     .par_iter()
                     .flat_map(|part| -> AnyResult<_> {
                         let words =
-                            Self::one_cut(part.substring(0, part.chars_len()), custom_dict)?;
+                            Self::one_cut(&part.substring(0, part.chars_len()), custom_dict)?;
                         Ok(words
                             .into_par_iter()
                             .map(|word| {
@@ -694,7 +694,7 @@ impl NewmmWordTokenizer {
                     .iter()
                     .flat_map(|part| -> AnyResult<_> {
                         Ok(
-                            Self::one_cut(part.substring(0, part.chars_len()), custom_dict)?
+                            Self::one_cut(&part.substring(0, part.chars_len()), custom_dict)?
                                 .iter()
                                 .map(|word| {
                                     CustomString::convert_raw_bytes_to_std_string(

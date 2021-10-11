@@ -215,12 +215,13 @@ fn trim_to_std_utf8(
 
 /// This name is WIP
 
-pub trait FixedLengthCustomString {
+pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
     /// start and end are character index.
-    fn substring(&self, start: usize, end: usize) -> CustomSubstring;
+    fn substring(&self, start: usize, end: usize) -> T;
+    fn get_original_string(&self) -> &[u8];
 }
 ///     The content inside this string is a vector of bytes - ALWAYS with length % 4 == 0
-///
+///     
 ///     Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes.
 ///
 ///     For example, Thai characters which use 3 bytes are represented by
@@ -237,42 +238,61 @@ pub trait FixedLengthCustomString {
 
 #[derive(Clone)]
 pub struct CustomString {
+    /// full content
     content: Arc<Vec<u8>>,
-    length: usize,
+
+    start: usize,
+    end: usize,
 }
 
 impl CustomString {
     pub fn from(four_byte_vec: ValidUTF8BytesVec) -> Self {
         let content = Arc::new(four_byte_vec);
         let length = content.len() / BYTES_PER_CHAR;
-        Self { content, length }
+        Self {
+            content,
+
+            start: 0,
+            end: length,
+        }
     }
     pub fn new(base_string: &str) -> Self {
         let content = to_four_bytes(base_string);
         let length = content.len() / BYTES_PER_CHAR;
         Self {
             content: Arc::new(content),
-            length,
+
+            start: 0,
+            end: length,
         }
     }
     #[deprecated()]
     pub fn substring_as_custom_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
         &self.content[(char_start * BYTES_PER_CHAR)..(char_end * BYTES_PER_CHAR)]
     }
+    /// returns a sub-slice  from full content
     pub fn raw_content(&self) -> &[u8] {
-        self.content.as_slice()
+        self.content
+            .as_slice()
+            .slice_by_char_indice(self.start, self.end)
     }
+
+    pub fn is_full_string(&self) -> bool {
+        self.start == 0 && self.end == self.content.len() / BYTES_PER_CHAR
+    }
+
     /// Returns characters length
     pub fn chars_len(&self) -> usize {
-        self.length
+        self.end - self.start
     }
-    pub fn is_empty(&self) -> bool {
-        self.content.len() == 0
-    }
-    /// Returns underlying bytes length.
-    pub fn len(&self) -> usize {
+    pub fn full_string_bytes_len(&self) -> usize {
         self.content.len()
     }
+    pub fn is_empty(&self) -> bool {
+        self.chars_len() == 0
+    }
+    /// Returns underlying full string bytes length.
+
     pub fn trim(&self) -> Self {
         let mut new_content: &[u8] = &self.content;
         while is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
@@ -289,7 +309,9 @@ impl CustomString {
 
         Self {
             content: Arc::new(Vec::from(new_content)),
-            length,
+
+            start: 0,
+            end: length,
         }
     }
     /// start and end are character indices.
@@ -354,70 +376,22 @@ impl CustomString {
         output_content.shrink_to_fit();
         output_content
     }
-}
-impl FixedLengthCustomString for CustomString {
-    fn substring(&self, start: usize, end: usize) -> CustomSubstring {
-        let full_content = self.content.clone();
-        CustomSubstring::new(full_content, start, end)
-    }
-}
-
-/// This struct contains an Arc of full length Vec<u8>.
-/// start and end are character index.
-///
-
-pub struct CustomSubstring {
-    content: Arc<CustomStringBytesVec>,
-    start: usize,
-    end: usize,
-}
-impl CustomSubstring {
-    ///  panics if start and end is invalid.
-    pub fn new(full_content: Arc<CustomStringBytesVec>, start: usize, end: usize) -> Self {
-        // check bound here... lazily and sinfully.
-        full_content.as_slice().slice_by_char_indice(start, end);
-        // start and end do not cause panic! good.
-        Self {
-            content: full_content,
-            start,
-            end,
-        }
-    }
-    pub fn raw_content(&self) -> &[u8] {
-        let underlying = self
-            .content
-            .as_slice()
-            .slice_by_char_indice(self.start, self.end);
-        underlying
-    }
-    pub fn chars_len(&self) -> usize {
-        self.end - self.start
-    }
-    pub fn is_empty(&self) -> bool {
-        self.end - self.start == 0
-    }
-}
-impl FixedLengthCustomString for CustomSubstring {
-    /// start and end should be relative to self.start and self.end
-
-    /// If full vec = [0,1,2,3,4,5,6,7,8]
-    /// current_start = 1
-    /// current_end = 7
-    /// raw_content -> [1,2,3,4,5,6,7]
-
-    /// substring(2,3) should be
-    /// [3]
-    /// which means begin = 3
-    /// end = 4
-
-    fn substring(&self, start: usize, end: usize) -> Self {
+    /// The result substring contains an atomic RC to the same full Vec<u8> as the caller's content.  
+    pub fn substring(&self, start: usize, end: usize) -> Self {
         let new_start = self.start + start;
         let new_end = self.start + end;
 
         let full_content = self.content.clone();
-        Self::new(full_content, new_start, new_end)
+        Self {
+            content: full_content,
+            start: new_start,
+            end: new_end,
+        }
     }
 }
+
+
+
 #[test]
 fn check_slice() {
     let ex: &[u8] = &[255, 255, 255, 255, 0, 255, 111, 0];
@@ -572,5 +546,5 @@ fn test_byte() {
     ]
     .join("");
     let custom_string = CustomString::new(&long_text);
-    assert_eq!(custom_string.len() % 4, 0);
+    assert_eq!(custom_string.full_string_bytes_len() % 4, 0);
 }
