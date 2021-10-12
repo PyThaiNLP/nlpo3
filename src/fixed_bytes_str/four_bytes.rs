@@ -240,14 +240,16 @@ pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
 #[derive(Clone)]
 pub struct CustomString {
     /// full content
-    content: Arc<Vec<u8>>,
-    chars_content:Arc<Vec<char>>,
+    content: Arc<CustomStringBytesVec>,
+    /// full char unicode scalar value contents
+    chars_content: Arc<Vec<char>>,
+    /// char index
     start: usize,
+    /// char index
     end: usize,
 }
 
 impl CustomString {
- 
     pub fn new(base_string: &str) -> Self {
         let content = to_four_bytes(base_string);
         let chars_content = Arc::new(base_string.chars().collect::<Vec<char>>());
@@ -257,11 +259,10 @@ impl CustomString {
 
             start: 0,
             end: length,
-            chars_content
+            chars_content,
         }
     }
-    
-   
+
     /// returns a sub-slice  from full content
     pub fn raw_content(&self) -> &[u8] {
         self.content
@@ -301,16 +302,23 @@ impl CustomString {
 
         Self {
             content: Arc::new(Vec::from(new_content)),
-            chars_content:self.chars_content.clone(),
+            chars_content: self.chars_content.clone(),
             start: 0,
             end: length,
         }
     }
     pub fn get_chars_content(&self) -> &[char] {
-        self.chars_content.as_slice().get(self.start .. self.end).unwrap()
+        self.chars_content
+            .as_slice()
+            .get(self.start..self.end)
+            .unwrap()
     }
-    pub fn get_char_at(&self,index:usize) -> char {
-        *self.chars_content.as_slice().get(index+self.start).unwrap()
+    pub fn get_char_at(&self, index: usize) -> char {
+        *self
+            .chars_content
+            .as_slice()
+            .get(index + self.start)
+            .unwrap()
     }
     /// start and end are character indices.
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {
@@ -382,17 +390,18 @@ impl CustomString {
         let full_content = self.content.clone();
         Self {
             content: full_content,
-            chars_content:self.chars_content.clone(),
+            chars_content: self.chars_content.clone(),
             start: new_start,
             end: new_end,
         }
     }
     pub fn substring_as_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
-        &self.content.as_slice().slice_by_char_indice(char_start, char_end)
+        self
+            .content
+            .as_slice()
+            .slice_by_char_indice(char_start, char_end)
     }
 }
-
-
 
 #[test]
 fn check_slice() {

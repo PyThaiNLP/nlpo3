@@ -2,7 +2,7 @@ use crate::fixed_bytes_str::four_bytes::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
     BYTES_PER_CHAR,
 };
-use lazy_static::__Deref;
+
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::borrow::BorrowMut;
 /**
@@ -15,11 +15,10 @@ Rust Code: Thanathip Suntorntip (Gorlph)
 */
 
 #[derive(Debug)]
-pub struct TrieNode {
+struct TrieNode {
     children: HashMap<char, Self>,
     end: bool,
 }
-
 
 impl Default for TrieNode {
     fn default() -> Self {
@@ -39,15 +38,15 @@ impl TrieNode {
     fn find_child(&self, word: &char) -> Option<&Self> {
         self.children.get(word)
     }
-
+    #[allow(dead_code)]
     fn remove_child(&mut self, word: &char) {
         self.children.remove(word);
     }
-
+    #[allow(dead_code)]
     fn find_mut_child(&mut self, word: &char) -> Option<&mut Self> {
         self.children.get_mut(word)
     }
-
+    #[allow(dead_code)]
     fn set_not_end(&mut self) {
         self.end = false;
     }
@@ -69,7 +68,7 @@ impl TrieNode {
         let char_count = word.chars_len();
         // if has atleast 1 char
         if word.chars_len() >= BYTES_PER_CHAR {
-            let character = word.get_chars_content().get(0).unwrap() ;
+            let character = word.get_chars_content().get(0).unwrap();
             if let Some(child) = self.find_mut_child(&character) {
                 // move 1 character
                 let substring_of_word = word.substring(1, word.chars_len());
@@ -86,7 +85,10 @@ impl TrieNode {
         }
     }
 
-    pub fn list_prefix<'d,'p>(&'d self, prefix: &'p CustomString) -> Vec<&'p CustomStringBytesSlice> {
+    pub fn list_prefix<'d, 'p>(
+        &'d self,
+        prefix: &'p CustomString,
+    ) -> Vec<&'p CustomStringBytesSlice> {
         let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
         let prefix_cpy = prefix.raw_content();
         let mut current_index = 0;
@@ -94,7 +96,6 @@ impl TrieNode {
         while current_index < prefix_cpy.chars_len() {
             let character = prefix.get_char_at(current_index);
             if let Some(current_node) = current_node_wrap {
-                
                 if let Some(child) = current_node.find_child(&character) {
                     if child.end {
                         let substring_of_prefix =
@@ -113,10 +114,12 @@ impl TrieNode {
 }
 
 #[derive(Debug)]
+/// This version of Trie still stores custom bytes vector as words, but prefix operation and its node uses char instead
 pub struct TrieChar {
-    words: HashSet<Vec<u8>>,
+    words: HashSet<CustomStringBytesVec>,
     root: TrieNode,
 }
+
 impl TrieChar {
     pub fn new(words: &[CustomString]) -> Self {
         let mut instance = Self {
@@ -130,7 +133,7 @@ impl TrieChar {
         }
         instance
     }
-
+    #[allow(dead_code)]
     fn remove_word_from_set(&mut self, word: &CustomString) {
         self.words.remove(word.raw_content());
     }
@@ -150,44 +153,9 @@ impl TrieChar {
         }
     }
 
-    pub fn prefix<'d,'p>(&'d self, prefix: &'p CustomString) -> Vec<&'p CustomStringBytesSlice> {
+    pub fn prefix<'d, 'p>(&'d self, prefix: &'p CustomString) -> Vec<&'p CustomStringBytesSlice> {
         self.root.list_prefix(prefix)
     }
-
-    /**
-       This function differs from prefix(&self) mainly about return type
-
-       prefix_ref is more efficient than prefix(&self) because it performs less allocation.
-
-       The only downside I can think about this function is its non-descriptive name..
-    */
-
-    // pub fn prefix_ref<'p, 't>(
-    //     prefix: &'p CustomStringBytesSlice,
-    //     dict_trie: &'t Self,
-    // ) -> Vec<&'p CustomStringBytesSlice> {
-    //     let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
-    //     let prefix_cpy = prefix;
-    //     let mut current_index = 0;
-    //     let mut current_node_wrap = Some(&dict_trie.root);
-    //     while current_index < prefix_cpy.chars_len() {
-    //         let character = prefix_cpy.slice_by_char_indice(current_index, current_index + 1);
-    //         if let Some(current_node) = current_node_wrap {
-    //             if let Some(child) = current_node.find_child(characWter) {
-    //                 if child.end {
-    //                     let substring_of_prefix =
-    //                         prefix_cpy.slice_by_char_indice(0, current_index + 1);
-    //                     result.push(substring_of_prefix);
-    //                 }
-    //                 current_node_wrap = Some(child);
-    //             } else {
-    //                 break;
-    //             }
-    //         }
-    //         current_index = current_index + 1;
-    //     }
-    //     result
-    // }
 
     pub fn contain(&self, word: &CustomString) -> bool {
         self.words.contains(word.raw_content())
@@ -203,7 +171,7 @@ impl TrieChar {
     pub fn prefix_ref<'p, 't>(
         prefix: &'p CustomString,
         dict_trie: &'t Self,
-    ) -> Vec<&'p [u8]> {
+    ) -> Vec<&'p CustomStringBytesSlice> {
         let mut result: Vec<&[u8]> = Vec::with_capacity(100);
         let prefix_cpy = prefix;
         let mut current_index = 0;
@@ -213,8 +181,9 @@ impl TrieChar {
             if let Some(current_node) = current_node_wrap {
                 if let Some(child) = current_node.find_child(&character) {
                     if child.end {
-                        let substring_of_prefix =
-                            prefix_cpy.raw_content().slice_by_char_indice(0 , current_index + 1);
+                        let substring_of_prefix = prefix_cpy
+                            .raw_content()
+                            .slice_by_char_indice(0, current_index + 1);
                         result.push(substring_of_prefix);
                     }
                     current_node_wrap = Some(child);
