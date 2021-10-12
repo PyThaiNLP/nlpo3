@@ -15,6 +15,7 @@ const VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b101111
 const VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
 const SPACE_BYTE: &[u8] = &[0, 0, 0, 32];
 type PreparedCustomBytes = (Option<u8>, Option<u8>, Option<u8>, Option<u8>);
+// use core::slice::SlicePattern;
 use std::{
     error::{self, Error},
     fmt::Display,
@@ -266,10 +267,8 @@ impl CustomString {
             end: length,
         }
     }
-    #[deprecated()]
-    pub fn substring_as_custom_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
-        &self.content[(char_start * BYTES_PER_CHAR)..(char_end * BYTES_PER_CHAR)]
-    }
+    
+   
     /// returns a sub-slice  from full content
     pub fn raw_content(&self) -> &[u8] {
         self.content
@@ -387,6 +386,9 @@ impl CustomString {
             start: new_start,
             end: new_end,
         }
+    }
+    pub fn substring_as_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
+        &self.content.as_slice().slice_by_char_indice(char_start, char_end)
     }
 }
 

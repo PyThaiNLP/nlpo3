@@ -142,17 +142,17 @@ impl Newmm {
         Err(BFSSearchError::new(graph, start, goal).into())
     }
 
-    fn one_cut(
-        input: &CustomString,
-        custom_dict: &Trie,
-    ) -> AnyResult<Vec<CustomString>> {
+    fn one_cut<'a,'b>(
+        input: &'a CustomString,
+        custom_dict: &'b Trie,
+    ) -> AnyResult<Vec<&'a CustomStringBytesSlice>> {
         let text = input;
         let input_char_len = text.chars_len();
         let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
         let mut graph_size: usize = 0;
         let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> = HashMap::default();
         graph.reserve(input_char_len / 10);
-        let mut result_str: Vec<CustomString> = Vec::with_capacity(input_char_len / 10);
+        let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
         let valid_position = tcc_custom::tcc_pos(text.raw_content());
@@ -210,9 +210,9 @@ impl Newmm {
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
-                            let token = text.substring(end_position, *position);
+                            let token_bytes = text.substring_as_bytes(end_position, *position);
 
-                            result_str.push(token);
+                            result_str.push(token_bytes);
                             end_position = *position;
                         }
                     } else {
@@ -283,9 +283,9 @@ impl Newmm {
                     if let Some(existing_path) = graph.get_mut(&begin_position) {
                         existing_path.push(end_position);
                         graph_size += 1;
-                        let token = text.substring(begin_position, end_position);
+                        let token_bytes = text.substring_as_bytes(begin_position, end_position);
 
-                        result_str.push(token);
+                        result_str.push(token_bytes);
                         position_list.push(end_position);
                         existing_candidate.insert(end_position);
                     } else {
@@ -293,8 +293,8 @@ impl Newmm {
                         graph_elem.push(end_position);
                         graph.insert(begin_position, graph_elem);
                         graph_size += 1;
-                        let token = text.substring(begin_position, end_position);
-                        result_str.push(token);
+                        let token_bytes = text.substring_as_bytes(begin_position, end_position);
+                        result_str.push(token_bytes);
                         position_list.push(end_position);
                         existing_candidate.insert(end_position);
                     }
@@ -314,13 +314,14 @@ impl Newmm {
             return Ok(vec![]);
         }
         if !safe || input.chars_len() < TEXT_SCAN_END {
-            let result = Self::one_cut(&input.substring(0, input.chars_len()), custom_dict)?;
+
+            let result = Self::one_cut(input, custom_dict)?;
             Ok(if parallel {
                 result
                     .into_par_iter()
                     .map(|custom_substring| {
                         CustomString::convert_raw_bytes_to_std_string(
-                            custom_substring.raw_content(),
+                            custom_substring
                         )
                     })
                     .collect()
@@ -329,7 +330,7 @@ impl Newmm {
                     .into_iter()
                     .map(|custom_substring| {
                         CustomString::convert_raw_bytes_to_std_string(
-                            custom_substring.raw_content(),
+                            custom_substring
                         )
                     })
                     .collect()
@@ -373,12 +374,14 @@ impl Newmm {
                 txt_parts
                     .par_iter()
                     .flat_map(|part| -> AnyResult<_> {
+                        let bind_part = &part.substring(0, part.chars_len());
                         let words =
-                            Self::one_cut(&part.substring(0, part.chars_len()), custom_dict)?;
+                            Self::one_cut(bind_part, custom_dict)?;
+            
                         Ok(words
                             .into_par_iter()
                             .map(|word| {
-                                CustomString::convert_raw_bytes_to_std_string(word.raw_content())
+                                CustomString::convert_raw_bytes_to_std_string(word)
                             })
                             .collect::<Vec<String>>())
                     })
@@ -393,7 +396,7 @@ impl Newmm {
                                 .iter()
                                 .map(|word| {
                                     CustomString::convert_raw_bytes_to_std_string(
-                                        word.raw_content(),
+                                        word,
                                     )
                                 })
                                 .collect::<Vec<String>>(),
