@@ -310,7 +310,7 @@ impl CustomString {
         self.chars_content.as_slice().get(self.start .. self.end).unwrap()
     }
     pub fn get_char_at(&self,index:usize) -> char {
-        *self.chars_content.as_slice().get(index).unwrap()
+        *self.chars_content.as_slice().get(index+self.start).unwrap()
     }
     /// start and end are character indices.
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {

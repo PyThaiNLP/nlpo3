@@ -5,7 +5,7 @@ use super::{
     dict_reader_custom::{create_dict_trie, DictSource},
     tcc_custom,
     tokenizer_trait::Tokenizer,
-    trie_custom::Trie,
+    trie_char_ver::TrieChar as Trie,
 };
 /**
 Dictionary-based maximal matching word segmentation, constrained with
@@ -172,7 +172,7 @@ impl Newmm {
         } {
             if let Some(begin_position) = position_list.pop() {
                 let sub_text_prefix = text.substring(begin_position, text.chars_len());
-                let prefixes = Trie::prefix_ref(sub_text_prefix.raw_content(), custom_dict);
+                let prefixes = Trie::prefix_ref(&sub_text_prefix, custom_dict);
                 for word in prefixes {
                     let word_length = word.chars_len();
                     let end_position_candidate = begin_position + word_length;
@@ -242,7 +242,7 @@ impl Newmm {
                                     let prefix = text.substring(position, text_length);
 
                                     let list_of_prefixes =
-                                        Trie::prefix_ref(prefix.raw_content(), custom_dict);
+                                        Trie::prefix_ref(&prefix, custom_dict);
                                     let valid_word_filter = |word: &&[u8]| {
                                         let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
