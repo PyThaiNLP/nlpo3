@@ -241,30 +241,23 @@ pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
 pub struct CustomString {
     /// full content
     content: Arc<Vec<u8>>,
-
+    chars_content:Arc<Vec<char>>,
     start: usize,
     end: usize,
 }
 
 impl CustomString {
-    pub fn from(four_byte_vec: ValidUTF8BytesVec) -> Self {
-        let content = Arc::new(four_byte_vec);
-        let length = content.len() / BYTES_PER_CHAR;
-        Self {
-            content,
-
-            start: 0,
-            end: length,
-        }
-    }
+ 
     pub fn new(base_string: &str) -> Self {
         let content = to_four_bytes(base_string);
+        let chars_content = Arc::new(base_string.chars().collect::<Vec<char>>());
         let length = content.len() / BYTES_PER_CHAR;
         Self {
             content: Arc::new(content),
 
             start: 0,
             end: length,
+            chars_content
         }
     }
     
@@ -308,10 +301,16 @@ impl CustomString {
 
         Self {
             content: Arc::new(Vec::from(new_content)),
-
+            chars_content:self.chars_content.clone(),
             start: 0,
             end: length,
         }
+    }
+    pub fn get_chars_content(&self) -> &[char] {
+        self.chars_content.as_slice().get(self.start .. self.end).unwrap()
+    }
+    pub fn get_char_at(&self,index:usize) -> char {
+        *self.chars_content.as_slice().get(index).unwrap()
     }
     /// start and end are character indices.
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {
@@ -383,6 +382,7 @@ impl CustomString {
         let full_content = self.content.clone();
         Self {
             content: full_content,
+            chars_content:self.chars_content.clone(),
             start: new_start,
             end: new_end,
         }
