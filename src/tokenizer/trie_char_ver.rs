@@ -69,7 +69,7 @@ impl TrieNode {
         // if has atleast 1 char
         if word.chars_len() >= BYTES_PER_CHAR {
             let character = word.get_chars_content().get(0).unwrap();
-            if let Some(child) = self.find_mut_child(&character) {
+            if let Some(child) = self.find_mut_child(character) {
                 // move 1 character
                 let substring_of_word = word.substring(1, word.chars_len());
                 // word = &word.substring(1, word.chars_len());
@@ -79,37 +79,10 @@ impl TrieNode {
                 child.remove_word_from_node(word);
                 word = &substring_of_word;
                 if !child.end && child.children.is_empty() {
-                    self.remove_child(&character);
+                    self.remove_child(character);
                 }
             };
         }
-    }
-
-    pub fn list_prefix<'d, 'p>(
-        &'d self,
-        prefix: &'p CustomString,
-    ) -> Vec<&'p CustomStringBytesSlice> {
-        let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
-        let prefix_cpy = prefix.raw_content();
-        let mut current_index = 0;
-        let mut current_node_wrap = Some(self);
-        while current_index < prefix_cpy.chars_len() {
-            let character = prefix.get_char_at(current_index);
-            if let Some(current_node) = current_node_wrap {
-                if let Some(child) = current_node.find_child(&character) {
-                    if child.end {
-                        let substring_of_prefix =
-                            prefix_cpy.slice_by_char_indice(0, current_index + 1);
-                        result.push(substring_of_prefix);
-                    }
-                    current_node_wrap = Some(child);
-                } else {
-                    break;
-                }
-            }
-            current_index = current_index + 1;
-        }
-        result
     }
 }
 
@@ -153,9 +126,6 @@ impl TrieChar {
         }
     }
 
-    pub fn prefix<'d, 'p>(&'d self, prefix: &'p CustomString) -> Vec<&'p CustomStringBytesSlice> {
-        self.root.list_prefix(prefix)
-    }
 
     pub fn contain(&self, word: &CustomString) -> bool {
         self.words.contains(word.raw_content())

@@ -237,11 +237,13 @@ pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
 ///     \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\]
 ///
 
-#[derive(Clone)]
+
+
+#[derive(Clone,Debug)]
 pub struct CustomString {
     /// full content
     content: Arc<CustomStringBytesVec>,
-    /// full char unicode scalar value contents
+    /// full char unicode scalar value contents, corresponding to the full content
     chars_content: Arc<Vec<char>>,
     /// char index
     start: usize,
@@ -278,13 +280,14 @@ impl CustomString {
     pub fn chars_len(&self) -> usize {
         self.end - self.start
     }
+    /// Returns underlying full string bytes length.
     pub fn full_string_bytes_len(&self) -> usize {
         self.content.len()
     }
     pub fn is_empty(&self) -> bool {
         self.chars_len() == 0
     }
-    /// Returns underlying full string bytes length.
+
 
     pub fn trim(&self) -> Self {
         let mut new_content: &[u8] = &self.content;
@@ -320,7 +323,7 @@ impl CustomString {
             .get(index + self.start)
             .unwrap()
     }
-    /// start and end are character indices.
+
     pub fn convert_raw_bytes_to_std_string(input: &[u8]) -> String {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in 0..input.chars_len() {
