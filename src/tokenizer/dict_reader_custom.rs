@@ -5,20 +5,9 @@ use std::io::BufReader;
 use std::{error::Error, io::prelude::*};
 use std::{fs::File, path::PathBuf};
 
-const DEFAULT_DICT_FILE: &str = include_str!("../../words_th.txt");
-
 pub enum DictSource {
     WordList(Vec<String>),
     FilePath(PathBuf),
-}
-
-pub fn create_default_dict() -> Trie {
-    let default_dict = DEFAULT_DICT_FILE
-        .par_lines()
-        .map(|word| CustomString::new(word))
-        .filter(|word| !word.is_empty())
-        .collect::<Vec<CustomString>>();
-    Trie::new(&default_dict)
 }
 
 pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {

@@ -49,9 +49,7 @@ fn segment(
 #[pyfunction]
 fn load_dict(file_path: &str, dict_name: &str) -> PyResult<String> {
     let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
-    if dict_name == "default" {
-        Ok(format!("Failed: 'default' dictionary name is reserved"))
-    } else if let Some(_) = dict_col_lock.get(dict_name) {
+    if let Some(_) = dict_col_lock.get(dict_name) {
         Ok(format!(
             "Failed: dictionary {} exists, please use another name.",
             dict_name
@@ -69,10 +67,6 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<String> {
 
 #[pymodule]
 fn _nlpo3_python_backend(_py: Python, m: &PyModule) -> PyResult<()> {
-    {
-        let mut dict_collect = DICT_COLLECTION.lock().unwrap();
-        dict_collect.insert("default".to_string(), Box::from(Newmm::new(None)));
-    }
     m.add_function(wrap_pyfunction!(load_dict, m)?)?;
     m.add_function(wrap_pyfunction!(segment, m)?)?;
     Ok(())
