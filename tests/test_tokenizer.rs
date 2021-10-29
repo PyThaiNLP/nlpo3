@@ -1,4 +1,4 @@
-use nlpo3::tokenizer::newmm_custom::Newmm as NewmmCustom;
+use nlpo3::tokenizer::newmm_custom::{Newmm as NewmmCustom};
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
@@ -257,3 +257,5 @@ fn test_thai_number() {
         ["USD", "๑,๙๘๔.๔๒"]
     );
 }
+
+

@@ -1,9 +1,11 @@
-use super::super::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, CustomStringBytesVec};
+use super::super::fixed_bytes_str::four_bytes::{
+    CustomStringBytesSlice, CustomStringBytesVec, FixedLengthCustomString,
+};
 use super::{
     dict_reader_custom::{create_dict_trie, DictSource},
     tcc_custom,
     tokenizer_trait::Tokenizer,
-    trie_custom::Trie,
+    trie_char_ver::TrieChar as Trie,
 };
 /**
 Dictionary-based maximal matching word segmentation, constrained with
@@ -19,7 +21,8 @@ with heuristic graph size limit added to avoid exponential wait time.
 Rust implementation: ["Thanathip Suntorntip"]
 */
 use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
+    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice,
+    BYTES_PER_CHAR,
 };
 use anyhow::Result as AnyResult;
 use binary_heap_plus::{BinaryHeap, MinComparator};
@@ -64,9 +67,6 @@ lazy_static! {
     static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(r"^(\x00[ก-ฮ]){0,2}$").unwrap();
 }
 
-pub struct Newmm {
-    dict: Box<Trie>,
-}
 #[derive(Clone, Debug)]
 struct BFSSearchError {
     graph: HashMap<CharacterIndex, Vec<CharacterIndex>>,
@@ -96,7 +96,10 @@ impl Display for BFSSearchError {
     }
 }
 impl Error for BFSSearchError {}
-
+#[derive(Debug)]
+pub struct Newmm {
+    dict: Box<Trie>,
+}
 impl Newmm {
     pub fn new(dict_path: &str) -> Self {
         Self {
@@ -105,7 +108,6 @@ impl Newmm {
             ),
         }
     }
-
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
@@ -140,8 +142,8 @@ impl Newmm {
         Err(BFSSearchError::new(graph, start, goal).into())
     }
 
-    fn one_cut<'a, 'b>(
-        input: &'a CustomStringBytesSlice,
+    fn one_cut<'a,'b>(
+        input: &'a CustomString,
         custom_dict: &'b Trie,
     ) -> AnyResult<Vec<&'a CustomStringBytesSlice>> {
         let text = input;
@@ -153,7 +155,7 @@ impl Newmm {
         let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
-        let valid_position = tcc_custom::tcc_pos(input);
+        let valid_position = tcc_custom::tcc_pos(text.raw_content());
         let text_length = input_char_len;
         let mut position_list: BinaryHeap<CharacterIndex, MinComparator> = BinaryHeap::new_min();
         let mut existing_candidate: HashSet<CharacterIndex> = HashSet::default();
@@ -169,8 +171,8 @@ impl Newmm {
             _ => false,
         } {
             if let Some(begin_position) = position_list.pop() {
-                let sub_text_prefix = text.slice_by_char_indice(begin_position, text.chars_len());
-                let prefixes = Trie::prefix_ref(sub_text_prefix, custom_dict);
+                let sub_text_prefix = text.substring(begin_position, text.chars_len());
+                let prefixes = Trie::prefix_ref(&sub_text_prefix, custom_dict);
                 for word in prefixes {
                     let word_length = word.chars_len();
                     let end_position_candidate = begin_position + word_length;
@@ -208,9 +210,9 @@ impl Newmm {
                         graph_size = 0; // reset our graph
 
                         for position in group_of_end_position_candidate.iter().skip(1) {
-                            let token = text.slice_by_char_indice(end_position, *position);
+                            let token_bytes = text.substring_as_bytes(end_position, *position);
 
-                            result_str.push(token);
+                            result_str.push(token_bytes);
                             end_position = *position;
                         }
                     } else {
@@ -218,13 +220,14 @@ impl Newmm {
                     }
                 } else if position_list_length == 0 {
                     // no candidate, deal with non-dict word
-                    match NON_THAI_PATTERN.find(sub_text_prefix) {
+                    match NON_THAI_PATTERN.find(sub_text_prefix.raw_content()) {
                         Some(match_point) => {
                             let matched_start_char_index = match_point.start() / BYTES_PER_CHAR;
                             let matched_end_char_index = match_point.end() / BYTES_PER_CHAR;
                             //  non thai -> skip to the end of match
                             end_position = begin_position
                                 + sub_text_prefix
+                                    .raw_content()
                                     .slice_by_char_indice(
                                         matched_start_char_index,
                                         matched_end_char_index,
@@ -236,9 +239,10 @@ impl Newmm {
                             let mut finish_without_break = true;
                             for position in begin_position + 1..text_length {
                                 if valid_position.contains(&position) {
-                                    let prefix = &text.slice_by_char_indice(position, text_length);
+                                    let prefix = text.substring(position, text_length);
 
-                                    let list_of_prefixes = Trie::prefix_ref(prefix, custom_dict);
+                                    let list_of_prefixes =
+                                        Trie::prefix_ref(&prefix, custom_dict);
                                     let valid_word_filter = |word: &&[u8]| {
                                         let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
@@ -264,7 +268,7 @@ impl Newmm {
                                         finish_without_break = false;
                                         break;
                                     };
-                                    if NON_THAI_PATTERN.is_match(prefix) {
+                                    if NON_THAI_PATTERN.is_match(prefix.raw_content()) {
                                         end_position = position;
                                         finish_without_break = false;
                                         break;
@@ -279,9 +283,9 @@ impl Newmm {
                     if let Some(existing_path) = graph.get_mut(&begin_position) {
                         existing_path.push(end_position);
                         graph_size += 1;
-                        let token = text.slice_by_char_indice(begin_position, end_position);
+                        let token_bytes = text.substring_as_bytes(begin_position, end_position);
 
-                        result_str.push(token);
+                        result_str.push(token_bytes);
                         position_list.push(end_position);
                         existing_candidate.insert(end_position);
                     } else {
@@ -289,8 +293,8 @@ impl Newmm {
                         graph_elem.push(end_position);
                         graph.insert(begin_position, graph_elem);
                         graph_size += 1;
-                        let token = text.slice_by_char_indice(begin_position, end_position);
-                        result_str.push(token);
+                        let token_bytes = text.substring_as_bytes(begin_position, end_position);
+                        result_str.push(token_bytes);
                         position_list.push(end_position);
                         existing_candidate.insert(end_position);
                     }
@@ -310,36 +314,41 @@ impl Newmm {
             return Ok(vec![]);
         }
         if !safe || input.chars_len() < TEXT_SCAN_END {
-            let result = Self::one_cut(input.raw_content(), custom_dict)?;
+
+            let result = Self::one_cut(input, custom_dict)?;
             Ok(if parallel {
                 result
                     .into_par_iter()
-                    .map(|custom_string_bytes| {
-                        CustomString::convert_raw_bytes_to_std_string(custom_string_bytes)
+                    .map(|custom_substring| {
+                        CustomString::convert_raw_bytes_to_std_string(
+                            custom_substring
+                        )
                     })
                     .collect()
             } else {
                 result
                     .into_iter()
-                    .map(|custom_string_bytes| {
-                        CustomString::convert_raw_bytes_to_std_string(custom_string_bytes)
+                    .map(|custom_substring| {
+                        CustomString::convert_raw_bytes_to_std_string(
+                            custom_substring
+                        )
                     })
                     .collect()
             })
         } else {
-            let mut txt = input.raw_content();
-            let mut txt_parts: Vec<CustomStringBytesVec> = Vec::with_capacity(txt.len() / 10);
+            let mut txt = input.substring(0, input.chars_len());
+            let mut txt_parts: Vec<CustomString> = Vec::with_capacity(txt.chars_len() / 10);
             while txt.chars_len() >= TEXT_SCAN_END {
-                let sample: &[u8] = txt.slice_by_char_indice(TEXT_SCAN_BEGIN, TEXT_SCAN_END);
+                let sample = txt.substring(TEXT_SCAN_BEGIN, TEXT_SCAN_END);
 
                 let mut cut_pos;
 
-                let space_char_index = rfind_space_char_index(sample);
+                let space_char_index = rfind_space_char_index(sample.raw_content());
                 // there is a space
                 if let Some(space_char_index) = space_char_index {
                     cut_pos = space_char_index + 1;
                 } else {
-                    let word_tokens = Self::one_cut(sample, custom_dict)?;
+                    let word_tokens = Self::one_cut(&sample, custom_dict)?;
                     let mut token_max_index = 0;
                     let mut token_max_length = 0;
                     for (idx, token) in word_tokens.iter().enumerate() {
@@ -354,21 +363,26 @@ impl Newmm {
                         cut_pos = cut_pos + word_tokens.get(i).unwrap().chars_len();
                     }
                 }
-                txt_parts.push(txt.slice_by_char_indice(0, cut_pos).to_owned());
-                txt = txt.slice_by_char_indice(cut_pos, txt.chars_len());
+                txt_parts.push(txt.substring(0, cut_pos));
+                txt = txt.substring(cut_pos, txt.chars_len());
             }
             if !txt.is_empty() {
-                txt_parts.push(txt.to_owned());
+                txt_parts.push(txt);
             }
 
             Ok(if parallel {
                 txt_parts
                     .par_iter()
                     .flat_map(|part| -> AnyResult<_> {
-                        let words = Self::one_cut(part, custom_dict)?;
+                        let bind_part = &part.substring(0, part.chars_len());
+                        let words =
+                            Self::one_cut(bind_part, custom_dict)?;
+            
                         Ok(words
                             .into_par_iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
+                            .map(|word| {
+                                CustomString::convert_raw_bytes_to_std_string(word)
+                            })
                             .collect::<Vec<String>>())
                     })
                     .flatten()
@@ -377,10 +391,16 @@ impl Newmm {
                 txt_parts
                     .iter()
                     .flat_map(|part| -> AnyResult<_> {
-                        Ok(Self::one_cut(part, custom_dict)?
-                            .iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
-                            .collect::<Vec<String>>())
+                        Ok(
+                            Self::one_cut(&part.substring(0, part.chars_len()), custom_dict)?
+                                .iter()
+                                .map(|word| {
+                                    CustomString::convert_raw_bytes_to_std_string(
+                                        word,
+                                    )
+                                })
+                                .collect::<Vec<String>>(),
+                        )
                     })
                     .flatten()
                     .collect()
@@ -388,8 +408,7 @@ impl Newmm {
         }
     }
 }
-
-impl Tokenizer for Newmm {
+impl Tokenizer for Newmm{
     fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>> {
         Self::internal_segment(&CustomString::new(text), &self.dict, safe, parallel)
     }
