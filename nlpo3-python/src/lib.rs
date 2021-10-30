@@ -16,7 +16,7 @@ lazy_static! {
 // / --
 // /
 // / This function is newmm algorithhm.
-// / Uses only default dict.
+// 
 // / Can use multithreading, but takes a lot of memory.
 
 // / returns list of valid utf-8 bytes list
@@ -44,24 +44,24 @@ fn segment(
 ///
 /// This function loads a dictionary file and add it to dict collection
 /// Dict file must be a file of words seperate by line.
-
-/// returns a string of loading result
+/// returns a tuple of string of loading result and a boolean
+/// // / signature:    (file_path: str, in_mem_dict_name: str) -> (str,boolean)
 #[pyfunction]
-fn load_dict(file_path: &str, dict_name: &str) -> PyResult<String> {
+fn load_dict(file_path: &str, dict_name: &str) -> PyResult<(String,bool)> {
     let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
-    if let Some(_) = dict_col_lock.get(dict_name) {
-        Ok(format!(
-            "Failed: dictionary {} exists, please use another name.",
+    if dict_col_lock.get(dict_name).is_some() {
+        Ok((format!(
+            "Failed: dictionary {} already exists, please use another name.",
             dict_name
-        ))
+        ),false))
     } else {
         let newmm_dict = Newmm::new(Some(file_path));
         dict_col_lock.insert(dict_name.to_owned(), Box::new(newmm_dict));
 
-        Ok(format!(
-            "Successful: dictionary name {} from file {} has been successfully loaded",
+        Ok((format!(
+            "Successful: dictionary name {} from file {} has been successfully loaded.",
             dict_name, file_path
-        ))
+        ),true))
     }
 }
 
