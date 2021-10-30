@@ -9,7 +9,6 @@ use std::sync::Mutex;
 use tokenizer::tokenizer_trait::Tokenizer;
 lazy_static! {
     static ref DICT_COLLECTION:Mutex<HashMap<String,Box<Newmm>>> = Mutex::new(HashMap::new());
-    // static ref DEFAULT_DICT:Newmm = Newmm::new(None);
 }
 
 // / segment(text, dict_name, safe, parallel, /)
