@@ -237,9 +237,7 @@ pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
 ///     \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\]
 ///
 
-
-
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct CustomString {
     /// full content
     content: Arc<CustomStringBytesVec>,
@@ -287,7 +285,6 @@ impl CustomString {
     pub fn is_empty(&self) -> bool {
         self.chars_len() == 0
     }
-
 
     pub fn trim(&self) -> Self {
         let mut new_content: &[u8] = &self.content;
@@ -399,8 +396,7 @@ impl CustomString {
         }
     }
     pub fn substring_as_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
-        self
-            .content
+        self.content
             .as_slice()
             .slice_by_char_indice(char_start, char_end)
     }

@@ -10,9 +10,9 @@ Credits:
     * Python code: Korakot Chaovavanich
     * Rust Code Translation: Thanathip Suntorntip
 */
-use rustc_hash::FxHashSet as HashSet;
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
 
@@ -65,7 +65,7 @@ lazy_static! {
     )
     .unwrap();
 }
-pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize>{
+pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
     let mut set: HashSet<usize> = HashSet::default();
     set.reserve(custom_text_type.chars_len() / 10);
     let mut txt = custom_text_type;

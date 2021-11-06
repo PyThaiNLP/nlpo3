@@ -1,9 +1,3 @@
-use crate::fixed_bytes_str::four_bytes::{
-    CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
-    BYTES_PER_CHAR,
-};
-use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-use std::borrow::BorrowMut;
 /**
 This module is meant to be a direct implementation of Dict Trie in PythaiNLP.
 
@@ -12,6 +6,12 @@ Rust Borrow Checker and this author's (Thanathip) little experience.
 
 Rust Code: Thanathip Suntorntip (Gorlph)
 */
+use crate::fixed_bytes_str::four_bytes::{
+    CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
+    BYTES_PER_CHAR,
+};
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use std::borrow::BorrowMut;
 
 #[derive(Debug)]
 pub struct TrieNode {
@@ -84,7 +84,10 @@ impl TrieNode {
         }
     }
 
-    pub fn list_prefix<'d,'p>(&'d self, prefix: &'p CustomStringBytesSlice) -> Vec<&'p CustomStringBytesSlice> {
+    pub fn list_prefix<'d, 'p>(
+        &'d self,
+        prefix: &'p CustomStringBytesSlice,
+    ) -> Vec<&'p CustomStringBytesSlice> {
         let mut result: Vec<&CustomStringBytesSlice> = Vec::with_capacity(100);
         let prefix_cpy = prefix;
         let mut current_index = 0;
@@ -148,7 +151,10 @@ impl Trie {
         }
     }
 
-    pub fn prefix<'d,'p>(&'d self, prefix: &'p CustomStringBytesSlice) -> Vec<&'p CustomStringBytesSlice> {
+    pub fn prefix<'d, 'p>(
+        &'d self,
+        prefix: &'p CustomStringBytesSlice,
+    ) -> Vec<&'p CustomStringBytesSlice> {
         self.root.list_prefix(prefix)
     }
 
