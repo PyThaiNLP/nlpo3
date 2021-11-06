@@ -1,4 +1,4 @@
-use crate::fixed_bytes_str::four_bytes::{
+use crate::four_bytes_str::custom_string::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
     BYTES_PER_CHAR,
 };

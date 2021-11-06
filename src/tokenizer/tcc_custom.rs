@@ -14,9 +14,8 @@ use rustc_hash::FxHashSet as HashSet;
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
 
-use crate::fixed_bytes_str::four_bytes::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
+use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLengthByteSlice,BYTES_PER_CHAR};
 
-use super::super::fixed_bytes_str::four_bytes::BYTES_PER_CHAR;
 
 // regex crate does not support look-any-direction
 // \x00 is byte value 0, every unicode character in regex is padded with \x00 to 4 bytes length

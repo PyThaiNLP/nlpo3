@@ -1,12 +1,11 @@
-use super::super::fixed_bytes_str::four_bytes::{
-    CustomStringBytesSlice, CustomStringBytesVec, FixedLengthCustomString,
-};
+
 use super::{
     dict_reader_custom::{create_dict_trie, DictSource},
     tcc_custom,
     tokenizer_trait::Tokenizer,
     trie_char_ver::TrieChar as Trie,
 };
+use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
 /**
 Dictionary-based maximal matching word segmentation, constrained with
 Thai Character Cluster (TCC) boundaries.
@@ -20,8 +19,8 @@ with heuristic graph size limit added to avoid exponential wait time.
 
 Rust implementation: ["Thanathip Suntorntip"]
 */
-use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice,
+use crate::four_bytes_str::custom_string::{
+    rfind_space_char_index, CustomString,
     BYTES_PER_CHAR,
 };
 use anyhow::Result as AnyResult;

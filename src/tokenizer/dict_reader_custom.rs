@@ -1,4 +1,6 @@
-use super::super::fixed_bytes_str::four_bytes::CustomString;
+use crate::four_bytes_str::custom_string::CustomString;
+
+use super::super::four_bytes_str::custom_string;
 use super::trie_char_ver::TrieChar as Trie;
 use rayon::prelude::*;
 use std::io::BufReader;
