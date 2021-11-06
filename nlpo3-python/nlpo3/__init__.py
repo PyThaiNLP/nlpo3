@@ -6,22 +6,23 @@ from ._nlpo3_python_backend import (
 from typing import List
 
 
-def load_dict(file_path: str, dict_name: str):
+def load_dict(file_path: str, dict_name: str) -> tuple[str, bool]:
     """Load dictionary from a file.
+
+    *** This function does not override an existing dict name. ***
 
     :param file_path: Absolute path to a dictionary file
     :type file_path: str
     :param dict_name: A unique dictionary name, use for reference.
-        Can be any valid utf-8 string, except "default" which is reserved.
     :type dict_name: str
+    :return tuple[human_readable_result_str, bool]
     """
-    load_result = rust_load_dict(file_path, dict_name)
-    print(load_result)
+    return rust_load_dict(file_path, dict_name)
 
 
 def segment(
     text: str,
-    dict_name: str = "default",
+    dict_name: str,
     safe: bool = False,
     parallel: bool = False,
 ) -> List[str]:
@@ -32,7 +33,7 @@ def segment(
 
     :param text: Input text
     :type text: str
-    :param dict_name: Path to dictionary, defaults to "default"
+    :param dict_name: Path to dictionary
     :type dict_name: str, optional
     :param safe: Use safe mode to avoid long waiting time in
         a text with lots of ambiguous word boundaries,
