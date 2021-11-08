@@ -1,14 +1,16 @@
-# import from .so (Rust)
-from ._nlpo3_python_backend import (
-    load_dict as rust_load_dict,
-    segment as rust_segment,
-)
 from typing import List
 
+# import from .so (Rust)
+from ._nlpo3_python_backend import load_dict as rust_load_dict
+from ._nlpo3_python_backend import segment as rust_segment
+
+# TODO: load_dict from in-memory list of words
 
 def load_dict(file_path: str, dict_name: str) -> tuple[str, bool]:
     """Load dictionary from a file.
 
+    Load a dictionary file into an in-memory dictionary collection,
+    and assigned dict_name to it.
     *** This function does not override an existing dict name. ***
 
     :param file_path: Absolute path to a dictionary file
@@ -33,7 +35,7 @@ def segment(
 
     :param text: Input text
     :type text: str
-    :param dict_name: Path to dictionary
+    :param dict_name: Dictionary name, as assigned in load_dict()
     :type dict_name: str, optional
     :param safe: Use safe mode to avoid long waiting time in
         a text with lots of ambiguous word boundaries,

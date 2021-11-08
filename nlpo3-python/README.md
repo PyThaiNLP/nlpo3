@@ -14,6 +14,16 @@ Python binding for nlpO3, a Thai natural language processing library in Rust.
     - [2.5x faster](notebooks/nlpo3_segment_benchmarks.ipynb) than similar pure Python implementation (PyThaiNLP's newmm)
   - `load_dict()` - load a dictionary from plain text file (one word per line)
 
+
+## Dictionary file
+
+- For the interest of library size, nlpO3-python does not assume what dictionary the developer would like to use.
+  It does not come with a dictionary. A dictionary is needed for the dictionary-based word tokenizer.
+- For tokenization dictionary, try
+  - [words_th.tx](https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt) from [PyThaiNLP](https://github.com/PyThaiNLP/pythainlp/) - around 62,000 words (CC0)
+  - [word break dictionary](https://github.com/tlwg/libthai/tree/master/data) from [libthai](https://github.com/tlwg/libthai/) - consists of dictionaries in different categories, with make script (LGPL-2.1)
+
+
 ## Install
 
 ```bash

@@ -11,6 +11,15 @@ with Python and Node bindings. Formerly oxidized-thainlp.
   - load a dictionary from a plain text file (one word per line) or from `Vec<String>`
 
 
+## Dictionary file
+
+- For the interest of library size, nlpO3 does not assume what dictionary the developer would like to use.
+  It does not come with a dictionary. A dictionary is needed for the dictionary-based word tokenizer.
+- For tokenization dictionary, try
+  - [words_th.tx](https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt) from [PyThaiNLP](https://github.com/PyThaiNLP/pythainlp/) - around 62,000 words (CC0)
+  - [word break dictionary](https://github.com/tlwg/libthai/tree/master/data) from [libthai](https://github.com/tlwg/libthai/) - consists of dictionaries in different categories, with make script (LGPL-2.1)
+
+
 ## Usage
 
 ### Command line interface
@@ -39,7 +48,7 @@ In `Cargo.toml`:
 ```toml
 [dependencies]
 # ...
-nlpo3 = "1.3.0"
+nlpo3 = "1.3.1"
 ```
 
 ## Build

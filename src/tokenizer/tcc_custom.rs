@@ -55,6 +55,7 @@ lazy_static! {
     )
     .unwrap();
 }
+
 lazy_static! {
     static ref LOOKAHEAD_TCC: Regex = Regex::new(
         &[
@@ -65,6 +66,7 @@ lazy_static! {
     )
     .unwrap();
 }
+
 pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
     let mut set: HashSet<usize> = HashSet::default();
     set.reserve(custom_text_type.chars_len() / 10);
