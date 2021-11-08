@@ -11,9 +11,7 @@ with heuristic graph size limit added to avoid exponential wait time.
 
 Rust implementation: ["Thanathip Suntorntip"]
 */
-use super::super::fixed_bytes_str::four_bytes::{
-    CustomStringBytesSlice, CustomStringBytesVec, FixedLengthCustomString,
-};
+use super::super::fixed_bytes_str::four_bytes::CustomStringBytesSlice;
 use super::{
     dict_reader_custom::{create_dict_trie, DictSource},
     tcc_custom,
@@ -35,7 +33,7 @@ use std::{collections::VecDeque, path::PathBuf};
 const MAX_GRAPH_SIZE: usize = 50;
 const USE_MULTITHREAD_THRESHOLD: usize = 10000;
 
-// Window size for safe mode
+// window size to check break points, for safe mode
 const TEXT_SCAN_POINT: usize = 120;
 const TEXT_SCAN_LEFT: usize = 20;
 const TEXT_SCAN_RIGHT: usize = 20;
@@ -50,7 +48,6 @@ lazy_static! {
     // For example:
     // Normal String: \d+
     // Custom String: (\x00\x00\x00\d)+
-
     static ref NON_THAI_PATTERN: Regex = Regex::new(
         r"(?x)
         ^(\x00\x00\x00[-a-zA-Z])+| # Latin characters
@@ -72,6 +69,7 @@ struct BFSSearchError {
     start: CharacterIndex,
     goal: CharacterIndex,
 }
+
 impl BFSSearchError {
     pub fn new(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
@@ -85,6 +83,7 @@ impl BFSSearchError {
         }
     }
 }
+
 impl Display for BFSSearchError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -94,11 +93,13 @@ impl Display for BFSSearchError {
         )
     }
 }
+
 impl Error for BFSSearchError {}
 #[derive(Debug)]
 pub struct Newmm {
     dict: Box<Trie>,
 }
+
 impl Newmm {
     pub fn new(dict_path: &str) -> Self {
         Self {
@@ -107,6 +108,7 @@ impl Newmm {
             ),
         }
     }
+    
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
@@ -114,8 +116,6 @@ impl Newmm {
         current_queue: &mut VecDeque<(usize, Vec<usize>)>,
     ) -> AnyResult<Vec<CharacterIndex>> {
         current_queue.clear();
-
-        // let mut current_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(graph.len());
 
         let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
         init_path.push(start);
@@ -220,10 +220,10 @@ impl Newmm {
                 } else if position_list_length == 0 {
                     // no candidate, deal with non-dict word
                     match NON_THAI_PATTERN.find(sub_text_prefix.raw_content()) {
+                        // is non-Thai -> skip to the end of match
                         Some(match_point) => {
                             let matched_start_char_index = match_point.start() / BYTES_PER_CHAR;
                             let matched_end_char_index = match_point.end() / BYTES_PER_CHAR;
-                            //  non thai -> skip to the end of match
                             end_position = begin_position
                                 + sub_text_prefix
                                     .raw_content()
@@ -233,8 +233,8 @@ impl Newmm {
                                     )
                                     .chars_len();
                         }
+                        // is Thai -> find min skip
                         None => {
-                            // Is thai -> find min skip
                             let mut finish_without_break = true;
                             for position in begin_position + 1..text_length {
                                 if valid_position.contains(&position) {
@@ -393,6 +393,7 @@ impl Newmm {
         }
     }
 }
+
 impl Tokenizer for Newmm {
     fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>> {
         Self::internal_segment(&CustomString::new(text), &self.dict, safe, parallel)

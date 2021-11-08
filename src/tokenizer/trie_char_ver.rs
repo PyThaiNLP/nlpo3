@@ -38,14 +38,17 @@ impl TrieNode {
     fn find_child(&self, word: &char) -> Option<&Self> {
         self.children.get(word)
     }
+
     #[allow(dead_code)]
     fn remove_child(&mut self, word: &char) {
         self.children.remove(word);
     }
+
     #[allow(dead_code)]
     fn find_mut_child(&mut self, word: &char) -> Option<&mut Self> {
         self.children.get_mut(word)
     }
+
     #[allow(dead_code)]
     fn set_not_end(&mut self) {
         self.end = false;
@@ -84,7 +87,8 @@ impl TrieNode {
 }
 
 #[derive(Debug)]
-// This version of Trie still stores custom bytes vector as words, but prefix operation and its node uses char instead
+// This version of Trie still stores custom bytes vector as words,
+// but prefix operation and its node uses char instead.
 pub struct TrieChar {
     words: HashSet<CustomStringBytesVec>,
     root: TrieNode,
@@ -103,6 +107,7 @@ impl TrieChar {
         }
         instance
     }
+
     #[allow(dead_code)]
     fn remove_word_from_set(&mut self, word: &CustomString) {
         self.words.remove(word.raw_content());
@@ -134,6 +139,7 @@ impl TrieChar {
     pub fn amount_of_words(&self) -> usize {
         self.words.len()
     }
+
     pub fn prefix_ref<'p, 't>(
         prefix: &'p CustomString,
         dict_trie: &'t Self,

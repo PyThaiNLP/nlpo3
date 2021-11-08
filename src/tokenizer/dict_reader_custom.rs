@@ -5,8 +5,8 @@ use std::{error::Error, io::prelude::*};
 use std::{fs::File, path::PathBuf};
 
 pub enum DictSource {
-    WordList(Vec<String>),
     FilePath(PathBuf),
+    WordList(Vec<String>),
 }
 
 pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {

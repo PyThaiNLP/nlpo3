@@ -63,11 +63,11 @@ impl TrieNode {
             .add_word(input_word.slice_by_char_indice(1, input_word.chars_len()));
     }
 
-    fn remove_word_from_node(&mut self, input_word: &CustomStringBytesSlice) {
+    fn remove_word(&mut self, input_word: &CustomStringBytesSlice) {
         let mut word = input_word;
         let char_count = word.len() / BYTES_PER_CHAR;
-        // if has atleast 1 char
-        if word.len() >= BYTES_PER_CHAR {
+        // if has at least 1 char
+        if char_count >= BYTES_PER_CHAR {
             let character = &word.slice_by_char_indice(0, 1);
             if let Some(child) = self.find_mut_child(character) {
                 // move 1 character
@@ -75,7 +75,7 @@ impl TrieNode {
                 if char_count == 1 {
                     child.set_not_end();
                 }
-                child.remove_word_from_node(word);
+                child.remove_word(word);
 
                 if !child.end && child.children.is_empty() {
                     self.remove_child(character);
@@ -117,6 +117,7 @@ pub struct Trie {
     words: HashSet<CustomStringBytesVec>,
     root: TrieNode,
 }
+
 impl Trie {
     pub fn new(words: &[CustomString]) -> Self {
         let mut instance = Self {
@@ -147,7 +148,7 @@ impl Trie {
         let stripped_word_raw = stripped_word.raw_content();
         if self.words.contains(stripped_word_raw) {
             self.remove_word_from_set(stripped_word_raw);
-            self.root.remove_word_from_node(stripped_word_raw);
+            self.root.remove_word(stripped_word_raw);
         }
     }
 

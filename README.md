@@ -39,7 +39,7 @@ In `Cargo.toml`:
 ```toml
 [dependencies]
 # ...
-nlpo3 = "1.3.0"
+nlpo3 = "1.3.1"
 ```
 
 ## Build

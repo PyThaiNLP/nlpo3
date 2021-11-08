@@ -1,4 +1,5 @@
 use bytecount::num_chars;
+
 pub const BYTES_PER_CHAR: usize = 4;
 const VALID_ONE_BYTE_UTF8_FIRST_BYTE_MAX_VALUE: u8 = 0b01111111_u8;
 
@@ -14,32 +15,34 @@ const VALID_FOUR_BYTE_UTF8_SECOND_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111
 const VALID_FOUR_BYTE_UTF8_THIRD_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
 const VALID_FOUR_BYTE_UTF8_FOURTH_BYTE_RANGE: (u8, u8) = (0b10000000_u8, 0b10111111_u8);
 const SPACE_BYTE: &[u8] = &[0, 0, 0, 32];
+
 type PreparedCustomBytes = (Option<u8>, Option<u8>, Option<u8>, Option<u8>);
-// use core::slice::SlicePattern;
+
 use std::{
     error::{self, Error},
     fmt::Display,
     sync::Arc,
 };
 
-pub type ValidUTF8BytesVec = Vec<u8>;
 pub type CustomStringBytesVec = Vec<u8>;
-//pub type ValidUTF8BytesSlice = [u8];
 pub type CustomStringBytesSlice = [u8];
 
 fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
     value >= range.0 && value <= range.1
 }
+
 #[derive(Debug, Clone)]
 enum InvalidCustomStringErrorType {
     InvalidLength(usize),
     InvalidFormat,
 }
+
 #[derive(Debug, Clone)]
 struct InvalidCustomStringByteError {
     error_type: InvalidCustomStringErrorType,
     invalid_sequence: Option<Vec<u8>>,
 }
+
 impl Display for InvalidCustomStringByteError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.error_type {
@@ -56,6 +59,7 @@ impl Display for InvalidCustomStringByteError {
         }
     }
 }
+
 impl InvalidCustomStringByteError {
     pub fn new_invalid_length(invalid_data: &[u8]) -> Self {
         Self {
@@ -70,6 +74,7 @@ impl InvalidCustomStringByteError {
         }
     }
 }
+
 impl Error for InvalidCustomStringByteError {}
 
 pub trait FixedCharsLengthByteSlice {
@@ -77,6 +82,7 @@ pub trait FixedCharsLengthByteSlice {
     fn chars_len(&self) -> usize;
     fn is_valid_custom_str_bytes(&self) -> bool;
 }
+
 impl FixedCharsLengthByteSlice for &CustomStringBytesSlice {
     fn slice_by_char_indice(&self, start: usize, end: usize) -> Self {
         self.get((start * BYTES_PER_CHAR)..(end * BYTES_PER_CHAR))
@@ -221,22 +227,20 @@ pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
     fn substring(&self, start: usize, end: usize) -> T;
     fn get_original_string(&self) -> &[u8];
 }
-///     The content inside this string is a vector of bytes - ALWAYS with length % 4 == 0
+/// The content inside this string is a vector of bytes - ALWAYS with length % 4 == 0
 ///     
-///     Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes.
+/// Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes.
 ///
-///     For example, Thai characters which use 3 bytes are represented by
-///     [0, valid_first_byte, valid_second_byte, valid_third_byte].
+/// For example, Thai characters which use 3 bytes are represented by
+/// [0, valid_first_byte, valid_second_byte, valid_third_byte].
 ///
-///     ***Comparison***
+/// ***Comparison***
 ///
-///     String "กข " is represented by
-///     \[224, 184, 129, 224, 184, 130, 32\]
+/// String "กข " is represented by
+/// \[224, 184, 129, 224, 184, 130, 32\]
 ///
-///     CustomString "กข " is represented by
-///     \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\]
-///
-
+/// CustomString "กข " is represented by
+/// \[0, 224, 184, 129, 0, 224, 184, 130, 0, 0, 0, 32\]
 #[derive(Clone, Debug)]
 pub struct CustomString {
     /// full content
@@ -248,7 +252,6 @@ pub struct CustomString {
     /// char index
     end: usize,
 }
-
 impl CustomString {
     pub fn new(base_string: &str) -> Self {
         let content = to_four_bytes(base_string);
@@ -278,10 +281,12 @@ impl CustomString {
     pub fn chars_len(&self) -> usize {
         self.end - self.start
     }
+
     /// Returns underlying full string bytes length.
     pub fn full_string_bytes_len(&self) -> usize {
         self.content.len()
     }
+
     pub fn is_empty(&self) -> bool {
         self.chars_len() == 0
     }
@@ -307,12 +312,14 @@ impl CustomString {
             end: length,
         }
     }
+
     pub fn get_chars_content(&self) -> &[char] {
         self.chars_content
             .as_slice()
             .get(self.start..self.end)
             .unwrap()
     }
+
     pub fn get_char_at(&self, index: usize) -> char {
         *self
             .chars_content
@@ -352,6 +359,7 @@ impl CustomString {
             unsafe { String::from(std::str::from_utf8_unchecked(output_content.as_slice())) };
         output
     }
+
     pub fn convert_raw_bytes_to_utf8_bytes(input: &[u8]) -> Vec<u8> {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in 0..input.chars_len() {
@@ -382,6 +390,7 @@ impl CustomString {
         output_content.shrink_to_fit();
         output_content
     }
+
     /// The result substring contains an atomic RC to the same full Vec<u8> as the caller's content.  
     pub fn substring(&self, start: usize, end: usize) -> Self {
         let new_start = self.start + start;
@@ -395,6 +404,7 @@ impl CustomString {
             end: new_end,
         }
     }
+
     pub fn substring_as_bytes(&self, char_start: usize, char_end: usize) -> &[u8] {
         self.content
             .as_slice()
