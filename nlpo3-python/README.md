@@ -17,7 +17,7 @@ Python binding for nlpO3, a Thai natural language processing library in Rust.
 
 ## Dictionary file
 
-- For the interest of library size, nlpO3-python does not assume what dictionary the developer would like to use.
+- For the interest of library size, nlpO3 does not assume what dictionary the developer would like to use.
   It does not come with a dictionary. A dictionary is needed for the dictionary-based word tokenizer.
 - For tokenization dictionary, try
   - [words_th.tx](https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt) from [PyThaiNLP](https://github.com/PyThaiNLP/pythainlp/) - around 62,000 words (CC0)
