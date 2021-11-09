@@ -6,13 +6,14 @@ Rust Borrow Checker and this author's (Thanathip) little experience.
 
 Rust Code: Thanathip Suntorntip (Gorlph)
 */
+use std::borrow::BorrowMut;
+
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+
 use crate::fixed_bytes_str::four_bytes::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
     BYTES_PER_CHAR,
 };
-
-use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-use std::borrow::BorrowMut;
 
 #[derive(Debug)]
 struct TrieNode {
@@ -29,7 +30,6 @@ impl Default for TrieNode {
 impl TrieNode {
     pub fn new() -> Self {
         Self {
-            // text: None,
             children: HashMap::default(),
             end: false,
         }

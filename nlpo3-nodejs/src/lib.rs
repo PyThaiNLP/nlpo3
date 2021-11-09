@@ -1,11 +1,12 @@
+use std::sync::Mutex;
+
 use ahash::AHashMap as HashMap;
 use lazy_static::lazy_static;
 use neon::prelude::*;
-use nlpo3::tokenizer::{newmm_custom::Newmm, tokenizer_trait::Tokenizer};
-use std::sync::Mutex;
+use nlpo3::tokenizer::{newmm::NewmmTokenizer, tokenizer_trait::Tokenizer};
+
 lazy_static! {
-    static ref  DICT_COLLECTION:Mutex<HashMap<String,Box<Newmm>>> = Mutex::new(HashMap::new());
-    // static ref DEFAULT_DICT:Newmm = Newmm::new(None);
+    static ref  DICT_COLLECTION:Mutex<HashMap<String,Box<NewmmTokenizer>>> = Mutex::new(HashMap::new());
 }
 
 fn load_dict(mut cx: FunctionContext) -> JsResult<JsString> {
@@ -18,8 +19,8 @@ fn load_dict(mut cx: FunctionContext) -> JsResult<JsString> {
             dict_name
         )))
     } else {
-        let newmm_dict = Newmm::new(Some(&file_path));
-        dict_col_lock.insert(dict_name.to_owned(), Box::new(newmm_dict));
+        let tokenizer = NewmmTokenizer::new(Some(&file_path));
+        dict_col_lock.insert(dict_name.to_owned(), Box::new(tokenizer));
 
         Ok(cx.string(format!(
             "Successful: dictionary name {} from file {} has been successfully loaded",
@@ -27,6 +28,7 @@ fn load_dict(mut cx: FunctionContext) -> JsResult<JsString> {
         )))
     }
 }
+
 fn segment(mut cx: FunctionContext) -> JsResult<JsArray> {
     let text = cx.argument::<JsString>(0)?.value(&mut cx);
     let dict_name = cx.argument::<JsString>(1)?.value(&mut cx);

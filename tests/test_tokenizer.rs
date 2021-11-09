@@ -1,9 +1,11 @@
-use nlpo3::tokenizer::newmm_custom::{Newmm as NewmmCustom};
+use nlpo3::tokenizer::newmm::NewmmTokenizer;
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
+
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
     "อาชญากรรมทางการแพทย์.. หลอกลวงคนไข้ผ่าตัด ตัดหมอนรองข้อเข่าอำพราง รพ.กรุงเทพภูเก็ตปลอมเวชระเบียน ตอนที่๑.";
-const DEFAULT_DICT_PATH: &str =  "/words_th.txt"; // relative to cargo
+const DEFAULT_DICT_PATH: &str = "/words_th.txt"; // relative to cargo
+
 #[test]
 fn test_long_text_byte_tokenizer() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
@@ -151,57 +153,55 @@ fn test_long_text_byte_tokenizer() {
         " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]",
     ]
     .join("");
-    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
-    let result = newmm_default_dict
-        .segment(&long_text, false, true)
-        .unwrap();
-    let safe_result = newmm_default_dict
-        .segment(&long_text, true, true)
-        .unwrap();
+    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+    let result = tokenizer.segment(&long_text, false, true).unwrap();
+    let safe_result = tokenizer.segment(&long_text, true, true).unwrap();
     assert_eq!(result.len(), 1889);
     assert_eq!(safe_result.len(), 1991);
 }
+
 #[test]
 fn test_standard_short_word() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
     relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
-    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
+    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
     assert_eq!(
-        newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
+        tokenizer.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
         ["ฉัน", "รัก", "ภาษาไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("19...", false, false),
+        tokenizer.segment_to_string("19...", false, false),
         ["19", "..."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("19.", false, false),
+        tokenizer.segment_to_string("19.", false, false),
         ["19", "."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("19.84", false, false),
+        tokenizer.segment_to_string("19.84", false, false),
         ["19.84"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("127.0.0.1", false, false),
+        tokenizer.segment_to_string("127.0.0.1", false, false),
         ["127.0.0.1"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("USD1,984.42", false, false),
+        tokenizer.segment_to_string("USD1,984.42", false, false),
         ["USD", "1,984.42"]
     );
 }
+
 #[test]
 fn test_with_some_real_data() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
     relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
-    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
+    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
     assert_eq!(
-        newmm_default_dict.segment_to_string(FIRST_TEXT, false, false),
+        tokenizer.segment_to_string(FIRST_TEXT, false, false),
         ["นิสสัน", "ผ่อน", "จน", "เพลีย", "นาวา", "ร่า", ".."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string(SECOND_TEXT, false, false),
+        tokenizer.segment_to_string(SECOND_TEXT, false, false),
         [
             "อาชญากรรม",
             "ทางการแพทย์",
@@ -231,31 +231,30 @@ fn test_with_some_real_data() {
         ]
     );
 }
+
 #[test]
 fn test_thai_number() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
     relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
-    let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
+    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๙...", false, false),
+        tokenizer.segment_to_string("๑๙...", false, false),
         ["๑๙", "..."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๙.", false, false),
+        tokenizer.segment_to_string("๑๙.", false, false),
         ["๑๙", "."]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๙.๘๔", false, false),
+        tokenizer.segment_to_string("๑๙.๘๔", false, false),
         ["๑๙.๘๔"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("๑๒๗.๐.๐.๑", false, false),
+        tokenizer.segment_to_string("๑๒๗.๐.๐.๑", false, false),
         ["๑๒๗.๐.๐.๑"]
     );
     assert_eq!(
-        newmm_default_dict.segment_to_string("USD๑,๙๘๔.๔๒", false, false),
+        tokenizer.segment_to_string("USD๑,๙๘๔.๔๒", false, false),
         ["USD", "๑,๙๘๔.๔๒"]
     );
 }
-
-

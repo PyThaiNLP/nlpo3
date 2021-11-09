@@ -1,6 +1,6 @@
 [package]
 name = "nlpo3-python"
-version = "1.2.1"
+version = "1.3.0"
 edition = "2018"
 license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 ahash = "0.7.6"
 lazy_static = "1.4.0"
-nlpo3 = "1.3.1"
+nlpo3 = "1.4.0"
 
 [dependencies.pyo3]
 version = "0.15.0"
