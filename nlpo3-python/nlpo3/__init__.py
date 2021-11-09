@@ -48,7 +48,7 @@ def segment(
     :param text: Input text
     :type text: str
     :param dict_name: Dictionary name, as assigned in load_dict()
-    :type dict_name: str, optional
+    :type dict_name: str
     :param safe: Use safe mode to avoid long waiting time in
         a text with lots of ambiguous word boundaries,
         defaults to False
