@@ -6,17 +6,18 @@
 //! Thanathip Suntorntip
 //! Arthit Suriyawongkul
 
+use std::sync::Mutex;
+
 use ahash::AHashMap as HashMap;
 use lazy_static::lazy_static;
-use nlpo3::tokenizer;
-use nlpo3::tokenizer::newmm_custom::Newmm;
+use nlpo3::tokenizer::newmm::NewmmTokenizer;
+use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 use pyo3::prelude::*;
 use pyo3::types::PyString;
 use pyo3::{exceptions, wrap_pyfunction};
-use std::sync::Mutex;
-use tokenizer::tokenizer_trait::Tokenizer;
+
 lazy_static! {
-    static ref DICT_COLLECTION: Mutex<HashMap<String, Box<Newmm>>> = Mutex::new(HashMap::new());
+    static ref DICT_COLLECTION: Mutex<HashMap<String, Box<NewmmTokenizer>>> = Mutex::new(HashMap::new());
 }
 
 /// Break text into tokens.
@@ -53,8 +54,8 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<(String, bool)> {
             false,
         ))
     } else {
-        let newmm_dict = Newmm::new(file_path);
-        dict_col_lock.insert(dict_name.to_owned(), Box::new(newmm_dict));
+        let tokenizer = NewmmTokenizer::new(file_path);
+        dict_col_lock.insert(dict_name.to_owned(), Box::new(tokenizer));
 
         Ok((
             format!(

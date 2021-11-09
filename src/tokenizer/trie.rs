@@ -6,12 +6,14 @@ Rust Borrow Checker and this author's (Thanathip) little experience.
 
 Rust Code: Thanathip Suntorntip (Gorlph)
 */
+use std::borrow::BorrowMut;
+
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+
 use crate::fixed_bytes_str::four_bytes::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
     BYTES_PER_CHAR,
 };
-use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-use std::borrow::BorrowMut;
 
 #[derive(Debug)]
 pub struct TrieNode {
@@ -29,7 +31,6 @@ impl Default for TrieNode {
 impl TrieNode {
     pub fn new() -> Self {
         Self {
-            // text: None,
             children: HashMap::default(),
             end: false,
         }
@@ -152,6 +153,18 @@ impl Trie {
         }
     }
 
+    pub fn contain(&self, word: &CustomStringBytesSlice) -> bool {
+        self.words.contains(word)
+    }
+
+    pub fn iterate(&self) -> std::collections::hash_set::Iter<'_, Vec<u8>> {
+        self.words.iter()
+    }
+
+    pub fn amount_of_words(&self) -> usize {
+        self.words.len()
+    }
+
     pub fn prefix<'d, 'p>(
         &'d self,
         prefix: &'p CustomStringBytesSlice,
@@ -161,12 +174,11 @@ impl Trie {
 
     /**
        This function differs from prefix(&self) mainly about return type
-
-       prefix_ref is more efficient than prefix(&self) because it performs less allocation.
-
-       The only downside I can think about this function is its non-descriptive name..
+       prefix_ref is more efficient than prefix(&self) because it performs
+       less allocation.
+       The only downside I can think about this function is its
+       non-descriptive name..
     */
-
     pub fn prefix_ref<'p, 't>(
         prefix: &'p CustomStringBytesSlice,
         dict_trie: &'t Self,
@@ -192,17 +204,5 @@ impl Trie {
             current_index = current_index + 1;
         }
         result
-    }
-
-    pub fn contain(&self, word: &CustomStringBytesSlice) -> bool {
-        self.words.contains(word)
-    }
-
-    pub fn iterate(&self) -> std::collections::hash_set::Iter<'_, Vec<u8>> {
-        self.words.iter()
-    }
-
-    pub fn amount_of_words(&self) -> usize {
-        self.words.len()
     }
 }

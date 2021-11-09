@@ -11,25 +11,29 @@ with heuristic graph size limit added to avoid exponential wait time.
 
 Rust implementation: ["Thanathip Suntorntip"]
 */
-use super::super::fixed_bytes_str::four_bytes::CustomStringBytesSlice;
-use super::{
-    dict_reader_custom::{create_dict_trie, DictSource},
-    tcc_custom,
-    tokenizer_trait::Tokenizer,
-    trie_char_ver::TrieChar as Trie,
-};
-use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
-};
+use std::error::Error;
+use std::fmt::Display;
+use std::{collections::VecDeque, path::PathBuf};
+
 use anyhow::Result as AnyResult;
 use binary_heap_plus::{BinaryHeap, MinComparator};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::bytes::Regex;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-use std::error::Error;
-use std::fmt::Display;
-use std::{collections::VecDeque, path::PathBuf};
+
+use crate::fixed_bytes_str::four_bytes::{
+    rfind_space_char_index, CustomString, CustomStringBytesSlice, FixedCharsLengthByteSlice,
+    BYTES_PER_CHAR,
+};
+
+use super::{
+    dict_reader::{create_dict_trie, DictSource},
+    tcc,
+    tokenizer_trait::Tokenizer,
+    trie_char::TrieChar as Trie,
+};
+
 const MAX_GRAPH_SIZE: usize = 50;
 const USE_MULTITHREAD_THRESHOLD: usize = 10000;
 
@@ -52,9 +56,9 @@ lazy_static! {
         r"(?x)
         ^(\x00\x00\x00[-a-zA-Z])+| # Latin characters
         ^(\x00\x00\x00\d)+(\x00\x00\x00[,\.](\x00\x00\x00\d)+)*| # number
-        ^(\x00[๐-๙])+(\x00\x00\x00[,\.](\x00[๐-๙])+)*| #  are you serious, Thai number?
+        ^(\x00[๐-๙])+(\x00\x00\x00[,\.](\x00[๐-๙])+)*| # are you serious, Thai number?
         ^(\x00\x00\x00[\ \t])+| # space
-        ^(\x00\x00\x00\r)?\x00\x00\x00\n  # newline" 
+        ^(\x00\x00\x00\r)?\x00\x00\x00\n # newline" 
     )
     .unwrap();
 }
@@ -95,20 +99,21 @@ impl Display for BFSSearchError {
 }
 
 impl Error for BFSSearchError {}
+
 #[derive(Debug)]
-pub struct Newmm {
+pub struct NewmmTokenizer {
     dict: Box<Trie>,
 }
 
-impl Newmm {
+impl NewmmTokenizer {
     pub fn new(dict_path: &str) -> Self {
-        Self {
+        NewmmTokenizer {
             dict: Box::from(
                 create_dict_trie(DictSource::FilePath(PathBuf::from(dict_path))).unwrap(),
             ),
         }
     }
-    
+
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
@@ -154,7 +159,7 @@ impl Newmm {
         let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
-        let valid_position = tcc_custom::tcc_pos(text.raw_content());
+        let valid_position = tcc::tcc_pos(text.raw_content());
         let text_length = input_char_len;
         let mut position_list: BinaryHeap<CharacterIndex, MinComparator> = BinaryHeap::new_min();
         let mut existing_candidate: HashSet<CharacterIndex> = HashSet::default();
@@ -215,7 +220,7 @@ impl Newmm {
                             end_position = *position;
                         }
                     } else {
-                        panic!("incorrect position list");
+                        panic!("Incorrect position list");
                     }
                 } else if position_list_length == 0 {
                     // no candidate, deal with non-dict word
@@ -278,6 +283,7 @@ impl Newmm {
                             }
                         }
                     }
+
                     if let Some(existing_path) = graph.get_mut(&begin_position) {
                         existing_path.push(end_position);
                         graph_size += 1;
@@ -394,7 +400,7 @@ impl Newmm {
     }
 }
 
-impl Tokenizer for Newmm {
+impl Tokenizer for NewmmTokenizer {
     fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>> {
         Self::internal_segment(&CustomString::new(text), &self.dict, safe, parallel)
     }
