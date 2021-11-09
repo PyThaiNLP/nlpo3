@@ -222,7 +222,7 @@ dependencies = [
 
 [[package]]
 name = "nlpo3-python"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "ahash",
  "lazy_static",

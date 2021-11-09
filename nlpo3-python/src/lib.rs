@@ -1,3 +1,11 @@
+//! Python-binding for nlpO3, an natural language process library.
+//!
+//! Provides a tokenizer.
+//!
+//! Authors:
+//! Thanathip Suntorntip
+//! Arthit Suriyawongkul
+
 use ahash::AHashMap as HashMap;
 use lazy_static::lazy_static;
 use nlpo3::tokenizer;
