@@ -67,7 +67,7 @@ impl TrieNode {
         let mut word = input_word;
         let char_count = word.chars_len();
         // if has atleast 1 char
-        if word.chars_len() >= BYTES_PER_CHAR {
+        if word.chars_len() >= 1 {
             let character = word.get_chars_content().get(0).unwrap();
             if let Some(child) = self.find_mut_child(character) {
                 // move 1 character
@@ -76,8 +76,8 @@ impl TrieNode {
                 if char_count == 1 {
                     child.set_not_end();
                 }
-                child.remove_word_from_node(word);
                 word = &substring_of_word;
+                child.remove_word_from_node(word);
                 if !child.end && child.children.is_empty() {
                     self.remove_child(character);
                 }
@@ -125,7 +125,6 @@ impl TrieChar {
             self.root.remove_word_from_node(&stripped_word);
         }
     }
-
 
     pub fn contain(&self, word: &CustomString) -> bool {
         self.words.contains(word.raw_content())

@@ -1,9 +1,9 @@
-use nlpo3::tokenizer::newmm_custom::{Newmm as NewmmCustom};
+use nlpo3::tokenizer::newmm_custom::Newmm as NewmmCustom;
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
     "อาชญากรรมทางการแพทย์.. หลอกลวงคนไข้ผ่าตัด ตัดหมอนรองข้อเข่าอำพราง รพ.กรุงเทพภูเก็ตปลอมเวชระเบียน ตอนที่๑.";
-const DEFAULT_DICT_PATH: &str =  "/words_th.txt"; // relative to cargo
+const DEFAULT_DICT_PATH: &str = "/words_th.txt"; // relative to cargo
 #[test]
 fn test_long_text_byte_tokenizer() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
@@ -152,12 +152,8 @@ fn test_long_text_byte_tokenizer() {
     ]
     .join("");
     let newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
-    let result = newmm_default_dict
-        .segment(&long_text, false, true)
-        .unwrap();
-    let safe_result = newmm_default_dict
-        .segment(&long_text, true, true)
-        .unwrap();
+    let result = newmm_default_dict.segment(&long_text, false, true).unwrap();
+    let safe_result = newmm_default_dict.segment(&long_text, true, true).unwrap();
     assert_eq!(result.len(), 1889);
     assert_eq!(safe_result.len(), 1991);
 }
@@ -189,6 +185,23 @@ fn test_standard_short_word() {
     assert_eq!(
         newmm_default_dict.segment_to_string("USD1,984.42", false, false),
         ["USD", "1,984.42"]
+    );
+}
+#[test]
+fn test_with_add_or_remove_word() {
+    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
+    let mut newmm_default_dict = NewmmCustom::new(&relative_test_dict_path);
+    newmm_default_dict.add_word(&["ฉันรักภาษาไทยเพราะฉันเป็นคนไทย"]); // exaggerated word
+    assert_eq!(
+        newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
+        ["ฉันรักภาษาไทยเพราะฉันเป็นคนไทย"]
+    );
+    newmm_default_dict.remove_word(&["ฉันรักภาษาไทยเพราะฉันเป็นคนไทย"]); // exaggerated word
+    newmm_default_dict.remove_word(&["ภาษาไทย"]); // exaggerated word
+    assert_eq!(
+        newmm_default_dict.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
+        ["ฉัน", "รัก", "ภาษา", "ไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
     );
 }
 #[test]
@@ -257,5 +270,3 @@ fn test_thai_number() {
         ["USD", "๑,๙๘๔.๔๒"]
     );
 }
-
-

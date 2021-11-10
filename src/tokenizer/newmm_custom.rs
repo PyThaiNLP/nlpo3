@@ -21,8 +21,7 @@ with heuristic graph size limit added to avoid exponential wait time.
 Rust implementation: ["Thanathip Suntorntip"]
 */
 use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice,
-    BYTES_PER_CHAR,
+    rfind_space_char_index, CustomString, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
 };
 use anyhow::Result as AnyResult;
 use binary_heap_plus::{BinaryHeap, MinComparator};
@@ -108,6 +107,19 @@ impl Newmm {
             ),
         }
     }
+
+    pub fn add_word(&mut self, word_list: &[&str]) {
+        for word in word_list {
+            self.dict.add(&CustomString::new(word));
+        }
+    }
+
+    pub fn remove_word(&mut self, word_list: &[&str]) {
+        for word in word_list {
+            self.dict.remove(&CustomString::new(word));
+        }
+    }
+
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
@@ -142,7 +154,7 @@ impl Newmm {
         Err(BFSSearchError::new(graph, start, goal).into())
     }
 
-    fn one_cut<'a,'b>(
+    fn one_cut<'a, 'b>(
         input: &'a CustomString,
         custom_dict: &'b Trie,
     ) -> AnyResult<Vec<&'a CustomStringBytesSlice>> {
@@ -241,8 +253,7 @@ impl Newmm {
                                 if valid_position.contains(&position) {
                                     let prefix = text.substring(position, text_length);
 
-                                    let list_of_prefixes =
-                                        Trie::prefix_ref(&prefix, custom_dict);
+                                    let list_of_prefixes = Trie::prefix_ref(&prefix, custom_dict);
                                     let valid_word_filter = |word: &&[u8]| {
                                         let new_position = position + word.chars_len();
                                         let is_valid = valid_position.contains(&new_position);
@@ -314,24 +325,19 @@ impl Newmm {
             return Ok(vec![]);
         }
         if !safe || input.chars_len() < TEXT_SCAN_END {
-
             let result = Self::one_cut(input, custom_dict)?;
             Ok(if parallel {
                 result
                     .into_par_iter()
                     .map(|custom_substring| {
-                        CustomString::convert_raw_bytes_to_std_string(
-                            custom_substring
-                        )
+                        CustomString::convert_raw_bytes_to_std_string(custom_substring)
                     })
                     .collect()
             } else {
                 result
                     .into_iter()
                     .map(|custom_substring| {
-                        CustomString::convert_raw_bytes_to_std_string(
-                            custom_substring
-                        )
+                        CustomString::convert_raw_bytes_to_std_string(custom_substring)
                     })
                     .collect()
             })
@@ -375,14 +381,11 @@ impl Newmm {
                     .par_iter()
                     .flat_map(|part| -> AnyResult<_> {
                         let bind_part = &part.substring(0, part.chars_len());
-                        let words =
-                            Self::one_cut(bind_part, custom_dict)?;
-            
+                        let words = Self::one_cut(bind_part, custom_dict)?;
+
                         Ok(words
                             .into_par_iter()
-                            .map(|word| {
-                                CustomString::convert_raw_bytes_to_std_string(word)
-                            })
+                            .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
                             .collect::<Vec<String>>())
                     })
                     .flatten()
@@ -394,11 +397,7 @@ impl Newmm {
                         Ok(
                             Self::one_cut(&part.substring(0, part.chars_len()), custom_dict)?
                                 .iter()
-                                .map(|word| {
-                                    CustomString::convert_raw_bytes_to_std_string(
-                                        word,
-                                    )
-                                })
+                                .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
                                 .collect::<Vec<String>>(),
                         )
                     })
@@ -408,7 +407,7 @@ impl Newmm {
         }
     }
 }
-impl Tokenizer for Newmm{
+impl Tokenizer for Newmm {
     fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>> {
         Self::internal_segment(&CustomString::new(text), &self.dict, safe, parallel)
     }
