@@ -114,7 +114,7 @@ impl NewmmTokenizer {
         }
     }
 
-    pub fn new_from_word_list(word_list: Vec<String>) -> Self {
+    pub fn from_word_list(word_list: Vec<String>) -> Self {
         NewmmTokenizer {
             dict: Box::from(
                 create_dict_trie(DictSource::WordList(word_list)).unwrap(),
