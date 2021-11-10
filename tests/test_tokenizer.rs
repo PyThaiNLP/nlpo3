@@ -7,7 +7,7 @@ const SECOND_TEXT: &str =
 const DEFAULT_DICT_PATH: &str = "/words_th.txt"; // relative to cargo
 
 #[test]
-fn test_new_from_word_list() {
+fn test_from_word_list() {
     let test_word_list = vec![
         "กากบาท".to_string(),
         "กาแฟ".to_string(),
@@ -15,7 +15,7 @@ fn test_new_from_word_list() {
         "42".to_string(),
         "aง|.%".to_string(),
     ];
-    let _tokenizer = NewmmTokenizer::new_from_word_list(test_word_list);
+    let _tokenizer = NewmmTokenizer::from_word_list(test_word_list);
 }
 
 #[test]
