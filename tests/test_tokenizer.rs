@@ -7,6 +7,18 @@ const SECOND_TEXT: &str =
 const DEFAULT_DICT_PATH: &str = "/words_th.txt"; // relative to cargo
 
 #[test]
+fn test_new_from_word_list() {
+    let test_word_list = vec![
+        "กากบาท".to_string(),
+        "กาแฟ".to_string(),
+        "กรรม".to_string(),
+        "42".to_string(),
+        "aง|.%".to_string(),
+    ];
+    let _tokenizer = NewmmTokenizer::new_from_word_list(test_word_list);
+}
+
+#[test]
 fn test_long_text_byte_tokenizer() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
     relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
