@@ -442,14 +442,20 @@ fn test_byte() {
 }
 
 #[test]
-fn test_trim_with_newline() {
-    //let custom_string = CustomString::new(""); // empty - passed
-    //let custom_string = CustomString::new("a"); // passed
-    //let custom_string = CustomString::new(" a"); // passed
-    //let custom_string = CustomString::new("a "); // passed
-    //let custom_string = CustomString::new(" "); // 1 space - failed
-    //let custom_string = CustomString::new("  "); // 2 spaces - failed
-    //let custom_string = CustomString::new("\t"); // tab - failed
-    let custom_string = CustomString::new(""); // newline - failed
-    custom_string.trim();
+fn test_trim_with_whitespace() {
+    let mut custom_string_1 = CustomString::new(" ");
+    custom_string_1 = custom_string_1.trim();
+    assert_eq!(custom_string_1.is_empty(), true);
+
+    let mut custom_string_2 = CustomString::new("  ");
+    custom_string_2 = custom_string_2.trim();
+    assert_eq!(custom_string_2.is_empty(), true);
+
+    let mut custom_string_3 = CustomString::new("\n");
+    custom_string_3 = custom_string_3.trim();
+    assert_eq!(custom_string_3.is_empty(), true);
+
+    let mut custom_string_4 = CustomString::new(" \t ");
+    custom_string_4 = custom_string_4.trim();
+    assert_eq!(custom_string_4.is_empty(), true);
 }
