@@ -17,7 +17,8 @@ use pyo3::types::PyString;
 use pyo3::{exceptions, wrap_pyfunction};
 
 lazy_static! {
-    static ref DICT_COLLECTION: Mutex<HashMap<String, Box<NewmmTokenizer>>> = Mutex::new(HashMap::new());
+    static ref DICT_COLLECTION: Mutex<HashMap<String, Box<NewmmTokenizer>>> =
+        Mutex::new(HashMap::new());
 }
 
 /// Break text into tokens.
@@ -63,6 +64,42 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<(String, bool)> {
                 file_path, dict_name
             ),
             true,
+        ))
+    }
+}
+
+/// Add words to existing dictionary
+#[pyfunction]
+fn add_word(dict_name: &str, words: Vec<&str>) -> PyResult<(String, bool)> {
+    let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
+    if let Some(newmm_dict) = dict_col_lock.get(dict_name) {
+        newmm_dict.add_word(&words);
+        Ok((format!("Add new word(s) successfully."), true))
+    } else {
+        Ok((
+            format!(
+                "Cannot add new word(s) - dictionary instance named '{}' does not exist.",
+                dict_name
+            ),
+            false,
+        ))
+    }
+}
+
+/// Remove words from existing dictionary
+#[pyfunction]
+fn remove_word(dict_name: &str, words: Vec<&str>) -> PyResult<(String, bool)> {
+    let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
+    if let Some(newmm_dict) = dict_col_lock.get(dict_name) {
+        newmm_dict.remove_word(&words);
+        Ok((format!("Remove word(s) successfully."), true))
+    } else {
+        Ok((
+            format!(
+                "Cannot remove word(s) - dictionary instance named '{}' does not exist.",
+                dict_name
+            ),
+            false,
         ))
     }
 }
