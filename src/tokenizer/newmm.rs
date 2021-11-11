@@ -114,6 +114,14 @@ impl NewmmTokenizer {
         }
     }
 
+    pub fn from_word_list(word_list: Vec<String>) -> Self {
+        NewmmTokenizer {
+            dict: Box::from(
+                create_dict_trie(DictSource::WordList(word_list)).unwrap(),
+            ),
+        }
+    }
+
     fn bfs_paths_graph(
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,

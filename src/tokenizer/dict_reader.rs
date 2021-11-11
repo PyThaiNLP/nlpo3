@@ -12,8 +12,8 @@ pub enum DictSource {
 
 pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
     match source {
-        DictSource::FilePath(single_source) => {
-            let file_reader = File::open(single_source.as_path());
+        DictSource::FilePath(file_path) => {
+            let file_reader = File::open(file_path.as_path());
             match file_reader {
                 Ok(file) => {
                     let mut reader = BufReader::new(file);
@@ -37,4 +37,18 @@ pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
             Ok(Trie::new(&custom_word_list))
         }
     }
+}
+
+#[test]
+fn test_trie() {
+    let test_word_list = vec![
+        "กากบาท".to_string(),
+        "กาแฟ".to_string(),
+        "กรรม".to_string(),
+        "42".to_string(),
+        "aง|.%".to_string(),
+    ];
+    let trie = create_dict_trie(DictSource::WordList(test_word_list)).unwrap();
+    assert_eq!(trie.contain(&CustomString::new("กาแฟ")), true);
+    assert_eq!(trie.amount_of_words(), 5);
 }

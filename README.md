@@ -22,7 +22,7 @@ with Python and Node bindings. Formerly oxidized-thainlp.
 
 ## Usage
 
-### Command line interface
+### Command-line interface
 
 - [nlpo3-cli](nlpo3-cli/) <a href="https://crates.io/crates/nlpo3-cli/"><img alt="crates.io" src="https://img.shields.io/crates/v/nlpo3-cli.svg"/></a>
 
@@ -35,9 +35,10 @@ echo "ฉันกินข้าว" | nlpo3 segment
 - [Python](nlpo3-python/) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
 
 ```python
-from nlpo3 import segment
+from nlpo3 import load_dict, segment
 
-segment("สวัสดีครับ")
+load_dict("path/to/dict.file", "dict_name")
+segment("สวัสดีครับ", "dict_name")
 ```
 
 ### As Rust library
@@ -49,6 +50,14 @@ In `Cargo.toml`:
 [dependencies]
 # ...
 nlpo3 = "1.3.1"
+```
+
+```rust
+use nlpo3::tokenizer::newmm::NewmmTokenizer;
+use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
+
+let tokenizer = NewmmTokenizer::new("path/to/dict.file");
+let tokens = tokenizer.segment("สวัสดีครับ", false, true).unwrap();
 ```
 
 ## Build
