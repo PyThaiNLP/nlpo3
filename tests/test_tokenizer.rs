@@ -7,6 +7,14 @@ const SECOND_TEXT: &str =
 const DEFAULT_DICT_PATH: &str = "/words_th.txt"; // relative to cargo
 
 #[test]
+fn test_dict_with_empty_line() {
+    const DICT_PATH: &str = "/tests/data/dict_with_empty_line.txt";
+    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_test_dict_path.push_str(DICT_PATH);
+    let _tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+}
+
+#[test]
 fn test_long_text_byte_tokenizer() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
     relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
