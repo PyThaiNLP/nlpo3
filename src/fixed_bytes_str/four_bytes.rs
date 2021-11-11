@@ -1,3 +1,5 @@
+/// Functions dealing with a custom four-byte string.
+/// For more details, see src/NOTE_ON_STRING.md
 use std::{
     error::{self, Error},
     fmt::Display,
@@ -136,20 +138,43 @@ pub fn rfind_space_char_index(custom_text: &CustomStringBytesSlice) -> Option<us
     None
 }
 
+/// Check if a white space (including left-to-right and right-to-left marks)
 fn is_whitespace(custom_bytes: &CustomStringBytesSlice) -> bool {
     matches!(
         custom_bytes,
-        [0, 0, 0, 9]
-            | [0, 0, 0, 10]
-            | [0, 0, 0, 11]
-            | [0, 0, 0, 12]
-            | [0, 0, 0, 13]
-            | [0, 0, 0, 32]
-            | [0, 0, 194, 133]
-            | [0, 0xe2, 0x80, 0x8e]
-            | [0, 0xe2, 0x80, 0x8f]
-            | [0, 0xe2, 0x80, 0xa8]
-            | [0, 0xe2, 0x80, 0xa9]
+        [0, 0, 0, 9] // Character tabulation (HT) (\t) U+0009
+            | [0, 0, 0, 10] // Line feed (LF) (\n) U+000A
+            | [0, 0, 0, 11] // Line tabulation (VT) U+000B
+            | [0, 0, 0, 12] // Form feed (FF) (\f) U+000C
+            | [0, 0, 0, 13] // Carriage return (CR) (\r) U+000D
+            | [0, 0, 0, 32] // Space U+0020
+            | [0, 0, 194, 133] // Next line (NEL) U+0085
+            | [0, 0, 194, 160] // No-break space (NBSP) U+00A0
+            | [0, 0xe1, 0x9a, 0x80] // Ogham space mark U+1680
+            | [0, 0xe1, 0xa0, 0x8e] // Mongolian vowel separator U+180E
+            | [0, 0xe2, 0x80, 0x80] // En quad U+2000
+            | [0, 0xe2, 0x80, 0x81] // Em quad U+2001
+            | [0, 0xe2, 0x80, 0x82] // En space U+2002
+            | [0, 0xe2, 0x80, 0x83] // Em space U+2003
+            | [0, 0xe2, 0x80, 0x84] // Three-per-em space U+2004
+            | [0, 0xe2, 0x80, 0x85] // Four-per-em space U+2005
+            | [0, 0xe2, 0x80, 0x86] // Six-per-em space U+2006
+            | [0, 0xe2, 0x80, 0x87] // Figure space U+2007
+            | [0, 0xe2, 0x80, 0x88] // Punctuation space U+2008
+            | [0, 0xe2, 0x80, 0x89] // Thin space U+2009
+            | [0, 0xe2, 0x80, 0x8a] // Hair space U+200A
+            | [0, 0xe2, 0x80, 0x8b] // Zero width space (ZWSP) U+200B
+            | [0, 0xe2, 0x80, 0x8c] // Zero width non-joiner (ZWNJ) U+200C
+            | [0, 0xe2, 0x80, 0x8d] // Zero width joiner (ZWJ) U+200D
+            | [0, 0xe2, 0x80, 0x8e] // Left-to-right mark U+200E *(control character)
+            | [0, 0xe2, 0x80, 0x8f] // Right-to-left mark U+200F *(control character)
+            | [0, 0xe2, 0x80, 0xa8] // Line separator U+2028
+            | [0, 0xe2, 0x80, 0xa9] // Paragraph seperator U+2029
+            | [0, 0xe2, 0x80, 0xaf] // Narrow no-break space U+202F
+            | [0, 0xe2, 0x81, 0x9f] // Medium mathematical space U+205F
+            | [0, 0xe2, 0x81, 0xa0] // Word joiner U+2060
+            | [0, 0xe3, 0x80, 0x80] // Ideographic space U+3000
+            | [0, 0xef, 0xbb, 0xbf] // Zero width no-break space U+FEFF
     )
 }
 
@@ -230,9 +255,11 @@ pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
     fn get_original_string(&self) -> &[u8];
 }
 
-/// The content inside this string is a vector of bytes - ALWAYS with length % 4 == 0
+/// The content inside this string is a vector of bytes,
+/// ALWAYS with length % 4 == 0
 ///     
-/// Every character is a valid utf-8 encoded byte padded left with 0 to make every character takes 4 bytes.
+/// Every character is a valid utf-8 encoded byte padded left with 0
+/// to make every character takes 4 bytes.
 ///
 /// For example, Thai characters which use 3 bytes are represented by
 /// [0, valid_first_byte, valid_second_byte, valid_third_byte].
@@ -263,14 +290,13 @@ impl CustomString {
         let length = content.len() / BYTES_PER_CHAR;
         Self {
             content: Arc::new(content),
-
             start: 0,
             end: length,
             chars_content,
         }
     }
 
-    /// returns a sub-slice  from full content
+    /// Returns a sub-slice from full content
     pub fn raw_content(&self) -> &[u8] {
         self.content
             .as_slice()
@@ -297,16 +323,19 @@ impl CustomString {
 
     pub fn trim(&self) -> Self {
         let mut new_content: &[u8] = &self.content;
-        while is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
+
+        while (new_content.len() > 0) && is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
             // trim left
             new_content = &new_content[BYTES_PER_CHAR..];
         }
 
-        while is_whitespace(&new_content[(new_content.len() - BYTES_PER_CHAR)..]) {
-            // trim left
+        while (new_content.len() > 0)
+            && is_whitespace(&new_content[(new_content.len() - BYTES_PER_CHAR)..])
+        {
+            // trim right
             new_content = &new_content[..(new_content.len() - BYTES_PER_CHAR)];
-            // new_content.drain((self.content.len()-BYTES_PER_CHAR)..(self.content.len()));
         }
+
         let length = new_content.len() / BYTES_PER_CHAR;
 
         Self {
@@ -425,8 +454,8 @@ fn check_slice() {
 }
 
 #[test]
-fn test_byte() {
-    let long_text = [
+fn test_bytes() {
+    let text = [
         "ไต้หวัน (แป่ะเอ๋ยี้: Tâi-oân; ไต่อวัน) หรือ ไถวาน ",
         "(อักษรโรมัน: Taiwan; จีนตัวย่อ: 台湾; จีนตัวเต็ม: 臺灣/台灣; พินอิน: ",
         "Táiwān; ไถวาน) หรือชื่อทางการว่า สาธารณรัฐจีน (จีนตัวย่อ: 中华民国; ",
@@ -437,6 +466,16 @@ fn test_byte() {
         "ท้องที่ดังกล่าวเรียกรวมกันว่า \"พื้นที่ไต้หวัน\" (臺灣地區)\n",
     ]
     .join("");
-    let custom_string = CustomString::new(&long_text);
+    let custom_string = CustomString::new(&text);
     assert_eq!(custom_string.full_string_bytes_len() % 4, 0);
+}
+
+#[test]
+fn test_trim() {
+    assert_eq!(CustomString::new(" ").trim().is_empty(), true);
+    assert_eq!(CustomString::new("  ").trim().is_empty(), true);
+    assert_eq!(CustomString::new("\n").trim().is_empty(), true);
+    assert_eq!(CustomString::new("  \t\n ").trim().is_empty(), true);
+    assert_eq!(CustomString::new(" abc ").trim().chars_len(), 3);
+    assert_eq!(CustomString::new(" aก  ").trim().full_string_bytes_len(), 8); // 2 chars * 4 bytes
 }
