@@ -112,24 +112,20 @@ impl TrieChar {
     }
 
     pub fn add(&mut self, word: &CustomString) {
-        if !word.is_empty() {
-            let stripped_word = word.trim();
-            if !stripped_word.is_empty() {
-                self.words.insert(stripped_word.raw_content().into());
-                let current_cursor = self.root.borrow_mut();
-                current_cursor.add_word(&stripped_word);
-            }
+        let stripped_word = word.trim();
+        if !stripped_word.is_empty() {
+            self.words.insert(stripped_word.raw_content().into());
+            let current_cursor = self.root.borrow_mut();
+            current_cursor.add_word(&stripped_word);
         }
     }
 
     pub fn remove(&mut self, word: &CustomString) {
-        if !word.is_empty() {
-            let stripped_word = word.trim();
-            if !stripped_word.is_empty() {
-                if self.words.contains(stripped_word.raw_content()) {
-                    self.remove_word_from_set(&stripped_word);
-                    self.root.remove_word(&stripped_word); // remove from node
-                }
+        let stripped_word = word.trim();
+        if !stripped_word.is_empty() {
+            if self.words.contains(stripped_word.raw_content()) {
+                self.remove_word_from_set(&stripped_word);
+                self.root.remove_word(&stripped_word); // remove from node
             }
         }
     }

@@ -296,15 +296,24 @@ impl CustomString {
 
     pub fn trim(&self) -> Self {
         let mut new_content: &[u8] = &self.content;
-        while is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
+
+        if self.chars_len() == 0 {
+            return Self {
+                content: Arc::new(Vec::from(new_content)),
+                chars_content: self.chars_content.clone(),
+                start: 0,
+                end: new_content.len(),
+            };
+        }
+
+        while (new_content.len() > 0) && is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
             // trim left
             new_content = &new_content[BYTES_PER_CHAR..];
         }
 
-        while is_whitespace(&new_content[(new_content.len() - BYTES_PER_CHAR)..]) {
-            // trim left
+        while (new_content.len() > 0) && is_whitespace(&new_content[(new_content.len() - BYTES_PER_CHAR)..]) {
+            // trim right
             new_content = &new_content[..(new_content.len() - BYTES_PER_CHAR)];
-            // new_content.drain((self.content.len()-BYTES_PER_CHAR)..(self.content.len()));
         }
         let length = new_content.len() / BYTES_PER_CHAR;
 
