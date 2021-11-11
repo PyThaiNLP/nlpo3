@@ -302,7 +302,9 @@ impl CustomString {
             new_content = &new_content[BYTES_PER_CHAR..];
         }
 
-        while (new_content.len() > 0) && is_whitespace(&new_content[(new_content.len() - BYTES_PER_CHAR)..]) {
+        while (new_content.len() > 0)
+            && is_whitespace(&new_content[(new_content.len() - BYTES_PER_CHAR)..])
+        {
             // trim right
             new_content = &new_content[..(new_content.len() - BYTES_PER_CHAR)];
         }
@@ -425,8 +427,8 @@ fn check_slice() {
 }
 
 #[test]
-fn test_byte() {
-    let long_text = [
+fn test_bytes() {
+    let text = [
         "ไต้หวัน (แป่ะเอ๋ยี้: Tâi-oân; ไต่อวัน) หรือ ไถวาน ",
         "(อักษรโรมัน: Taiwan; จีนตัวย่อ: 台湾; จีนตัวเต็ม: 臺灣/台灣; พินอิน: ",
         "Táiwān; ไถวาน) หรือชื่อทางการว่า สาธารณรัฐจีน (จีนตัวย่อ: 中华民国; ",
@@ -437,25 +439,15 @@ fn test_byte() {
         "ท้องที่ดังกล่าวเรียกรวมกันว่า \"พื้นที่ไต้หวัน\" (臺灣地區)\n",
     ]
     .join("");
-    let custom_string = CustomString::new(&long_text);
+    let custom_string = CustomString::new(&text);
     assert_eq!(custom_string.full_string_bytes_len() % 4, 0);
 }
 
 #[test]
 fn test_trim_with_whitespace() {
-    let mut custom_string_1 = CustomString::new(" ");
-    custom_string_1 = custom_string_1.trim();
-    assert_eq!(custom_string_1.is_empty(), true);
-
-    let mut custom_string_2 = CustomString::new("  ");
-    custom_string_2 = custom_string_2.trim();
-    assert_eq!(custom_string_2.is_empty(), true);
-
-    let mut custom_string_3 = CustomString::new("\n");
-    custom_string_3 = custom_string_3.trim();
-    assert_eq!(custom_string_3.is_empty(), true);
-
-    let mut custom_string_4 = CustomString::new(" \t ");
-    custom_string_4 = custom_string_4.trim();
-    assert_eq!(custom_string_4.is_empty(), true);
+    assert_eq!(CustomString::new(" ").trim().is_empty(), true);
+    assert_eq!(CustomString::new("  ").trim().is_empty(), true);
+    assert_eq!(CustomString::new("\n").trim().is_empty(), true);
+    assert_eq!(CustomString::new("  \t\n ").trim().is_empty(), true);
+    assert_eq!(CustomString::new(" abc ").trim().chars_len(), 3);
 }
