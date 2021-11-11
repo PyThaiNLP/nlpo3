@@ -86,6 +86,10 @@ cargo build --release
 Check `target/` for build artifacts.
 
 
+## Development documents
+
+- [Notes on custom string](src/NOTE_ON_STRING.md)
+
 ## Issues
 
 Please report issues at https://github.com/PyThaiNLP/nlpo3/issues

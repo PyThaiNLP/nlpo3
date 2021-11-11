@@ -19,4 +19,6 @@ with \x00 one time.
 For "space" in regex, it is padded with \x00\x00\x00.
 
 
-[More on UTF-8](https://en.wikipedia.org/wiki/UTF-8)
+## References
+- [Rust String indexing and internal representation](https://doc.rust-lang.org/book/ch08-02-strings.html#indexing-into-strings)
+- Read more about [UTF-8](https://en.wikipedia.org/wiki/UTF-8) at Wikipedia.
