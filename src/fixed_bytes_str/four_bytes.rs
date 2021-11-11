@@ -297,15 +297,6 @@ impl CustomString {
     pub fn trim(&self) -> Self {
         let mut new_content: &[u8] = &self.content;
 
-        if self.chars_len() == 0 {
-            return Self {
-                content: Arc::new(Vec::from(new_content)),
-                chars_content: self.chars_content.clone(),
-                start: 0,
-                end: new_content.len(),
-            };
-        }
-
         while (new_content.len() > 0) && is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
             // trim left
             new_content = &new_content[BYTES_PER_CHAR..];
@@ -315,6 +306,7 @@ impl CustomString {
             // trim right
             new_content = &new_content[..(new_content.len() - BYTES_PER_CHAR)];
         }
+
         let length = new_content.len() / BYTES_PER_CHAR;
 
         Self {
@@ -447,4 +439,17 @@ fn test_byte() {
     .join("");
     let custom_string = CustomString::new(&long_text);
     assert_eq!(custom_string.full_string_bytes_len() % 4, 0);
+}
+
+#[test]
+fn test_trim_with_newline() {
+    //let custom_string = CustomString::new(""); // empty - passed
+    //let custom_string = CustomString::new("a"); // passed
+    //let custom_string = CustomString::new(" a"); // passed
+    //let custom_string = CustomString::new("a "); // passed
+    //let custom_string = CustomString::new(" "); // 1 space - failed
+    //let custom_string = CustomString::new("  "); // 2 spaces - failed
+    //let custom_string = CustomString::new("\t"); // tab - failed
+    let custom_string = CustomString::new(""); // newline - failed
+    custom_string.trim();
 }
