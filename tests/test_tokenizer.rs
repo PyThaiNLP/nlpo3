@@ -212,6 +212,25 @@ fn test_standard_short_word() {
 }
 
 #[test]
+fn test_with_add_or_remove_word() {
+    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
+
+    let mut tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+    tokenizer.add_word(&["ฉันรักภาษาไทยเพราะฉันเป็นคนไทย"]); // exaggerated word
+    assert_eq!(
+        tokenizer.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
+        ["ฉันรักภาษาไทยเพราะฉันเป็นคนไทย"]
+    );
+    tokenizer.remove_word(&["ฉันรักภาษาไทยเพราะฉันเป็นคนไทย"]); // exaggerated word
+    tokenizer.remove_word(&["ภาษาไทย"]); // exaggerated word
+    assert_eq!(
+        tokenizer.segment_to_string("ฉันรักภาษาไทยเพราะฉันเป็นคนไทย", false, false),
+        ["ฉัน", "รัก", "ภาษา", "ไทย", "เพราะ", "ฉัน", "เป็น", "คนไทย"]
+    );
+}
+
+#[test]
 fn test_with_some_real_data() {
     let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
     relative_test_dict_path.push_str(DEFAULT_DICT_PATH);

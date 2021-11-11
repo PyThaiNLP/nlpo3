@@ -67,16 +67,18 @@ impl TrieNode {
     }
 
     fn remove_word(&mut self, input_word: &CustomString) {
-        let word = input_word;
+        let mut word = input_word;
         let char_count = word.chars_len();
-        // if has at least 1 char
-        if char_count >= BYTES_PER_CHAR {
+        // if has atleast 1 char
+        if char_count >= 1 {
             let character = word.get_chars_content().get(0).unwrap();
             if let Some(child) = self.find_mut_child(character) {
-                // word = &word.substring(1, word.chars_len());
+                // move 1 character
+                let substring_of_word = word.substring(1, word.chars_len());
                 if char_count == 1 {
                     child.set_not_end();
                 }
+                word = &substring_of_word;
                 child.remove_word(word);
                 if !child.end && child.children.is_empty() {
                     self.remove_child(character);

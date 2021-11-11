@@ -116,9 +116,19 @@ impl NewmmTokenizer {
 
     pub fn from_word_list(word_list: Vec<String>) -> Self {
         NewmmTokenizer {
-            dict: Box::from(
-                create_dict_trie(DictSource::WordList(word_list)).unwrap(),
-            ),
+            dict: Box::from(create_dict_trie(DictSource::WordList(word_list)).unwrap()),
+        }
+    }
+
+    pub fn add_word(&mut self, word_list: &[&str]) {
+        for word in word_list {
+            self.dict.add(&CustomString::new(word));
+        }
+    }
+
+    pub fn remove_word(&mut self, word_list: &[&str]) {
+        for word in word_list {
+            self.dict.remove(&CustomString::new(word));
         }
     }
 
