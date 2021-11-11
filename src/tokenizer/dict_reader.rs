@@ -20,7 +20,7 @@ pub fn create_dict_trie(source: DictSource) -> Result<Trie, Box<dyn Error>> {
                     let mut line = String::with_capacity(50);
                     let mut dict: Vec<CustomString> = Vec::with_capacity(600);
                     while reader.read_line(&mut line).unwrap() != 0 {
-                        line = line.trim().to_string();
+                        line = line.trim().to_string();  // remove newline char
                         if !line.is_empty() {
                             dict.push(CustomString::new(&line));
                         }

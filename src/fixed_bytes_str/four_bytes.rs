@@ -263,7 +263,6 @@ impl CustomString {
         let length = content.len() / BYTES_PER_CHAR;
         Self {
             content: Arc::new(content),
-
             start: 0,
             end: length,
             chars_content,
