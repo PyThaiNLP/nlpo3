@@ -49,7 +49,7 @@ In `Cargo.toml`:
 ```toml
 [dependencies]
 # ...
-nlpo3 = "1.3.1"
+nlpo3 = "1.3.2"
 ```
 
 Create a tokenizer using a dictionary from file,
