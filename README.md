@@ -62,9 +62,10 @@ let tokenizer = NewmmTokenizer::new("path/to/dict.file");
 let tokens = tokenizer.segment("ห้องสมุดประชาชน", true, false).unwrap();
 ```
 
-Create a tokenizer using a dictionary from `Vec<String>`:
+Create a tokenizer using a dictionary from a vector of Strings:
 ```rust
-tokenizer = from_word_list(Vec<String>);
+let words = vec!["ปาลิเมนต์".to_string(), "คอนสติติวชั่น".to_string()];
+let tokenizer = NewmmTokenizer::from_word_list(words);
 ```
 
 Add words to an existing tokenizer:

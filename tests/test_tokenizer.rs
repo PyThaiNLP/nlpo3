@@ -9,28 +9,23 @@ const DEFAULT_DICT_PATH: &str = "/words_th.txt"; // relative to cargo
 #[test]
 fn test_dict_with_empty_line() {
     const DICT_PATH: &str = "/tests/data/dict_with_empty_line.txt";
-    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
-    relative_test_dict_path.push_str(DICT_PATH);
-    let _tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+    let mut relative_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_dict_path.push_str(DICT_PATH);
+    let _tokenizer = NewmmTokenizer::new(&relative_dict_path);
 }
 
 #[test]
 fn test_from_word_list() {
-    let test_word_list = vec![
-        "กากบาท".to_string(),
-        "กาแฟ".to_string(),
-        "กรรม".to_string(),
-        "42".to_string(),
-        "aง|.%".to_string(),
-    ];
-    let _tokenizer = NewmmTokenizer::from_word_list(test_word_list);
+    let words = vec!["ปาลิเมนต์".to_string(), "คอนสติติวชั่น".to_string()];
+    let _tokenizer = NewmmTokenizer::from_word_list(words);
 }
 
 #[test]
 fn test_long_text_byte_tokenizer() {
-    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
-    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
-    let long_text = [
+    let mut relative_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_dict_path.push_str(DEFAULT_DICT_PATH);
+
+    let text = [
         "ไต้หวัน (แป่ะเอ๋ยี้: Tâi-oân; ไต่อวัน) หรือ ไถวาน ",
         "(อักษรโรมัน: Taiwan; จีนตัวย่อ: 台湾; จีนตัวเต็ม: 臺灣/台灣; พินอิน: ",
         "Táiwān; ไถวาน) หรือชื่อทางการว่า สาธารณรัฐจีน (จีนตัวย่อ: 中华民国; ",
@@ -173,18 +168,20 @@ fn test_long_text_byte_tokenizer() {
         " ทำให้เป็นประเทศแรกในทวีปเอเชียที่ผ่านกฎหมายดังกล่าว[18][19]",
     ]
     .join("");
-    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
-    let result = tokenizer.segment(&long_text, false, true).unwrap();
-    let safe_result = tokenizer.segment(&long_text, true, true).unwrap();
+
+    let tokenizer = NewmmTokenizer::new(&relative_dict_path);
+    let result = tokenizer.segment(&text, false, true).unwrap();
+    let safe_result = tokenizer.segment(&text, true, true).unwrap();
     assert_eq!(result.len(), 1889);
     assert_eq!(safe_result.len(), 1991);
 }
 
 #[test]
 fn test_standard_short_word() {
-    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
-    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
-    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+    let mut relative_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_dict_path.push_str(DEFAULT_DICT_PATH);
+
+    let tokenizer = NewmmTokenizer::new(&relative_dict_path);
     assert_eq!(
         tokenizer.segment_to_string("1) ประมวลผลภาษาไทย", false, false),
         ["1", ")", " ", "ประมวลผล", "ภาษาไทย"]
@@ -217,10 +214,10 @@ fn test_standard_short_word() {
 
 #[test]
 fn test_add_or_remove_word() {
-    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
-    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
+    let mut relative_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_dict_path.push_str(DEFAULT_DICT_PATH);
 
-    let mut tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+    let mut tokenizer = NewmmTokenizer::new(&relative_dict_path);
     tokenizer.add_word(&["ห้องสมุดประชาชนเทศบาลตำบลวิชิต"]);
     assert_eq!(
         tokenizer.segment_to_string("ห้องสมุดประชาชนเทศบาลตำบลวิชิต", false, false),
@@ -235,9 +232,10 @@ fn test_add_or_remove_word() {
 
 #[test]
 fn test_with_some_real_data() {
-    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
-    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
-    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+    let mut relative_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_dict_path.push_str(DEFAULT_DICT_PATH);
+
+    let tokenizer = NewmmTokenizer::new(&relative_dict_path);
     assert_eq!(
         tokenizer.segment_to_string(FIRST_TEXT, false, false),
         ["นิสสัน", "ผ่อน", "จน", "เพลีย", "นาวา", "ร่า", ".."]
@@ -276,9 +274,10 @@ fn test_with_some_real_data() {
 
 #[test]
 fn test_thai_number() {
-    let mut relative_test_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
-    relative_test_dict_path.push_str(DEFAULT_DICT_PATH);
-    let tokenizer = NewmmTokenizer::new(&relative_test_dict_path);
+    let mut relative_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
+    relative_dict_path.push_str(DEFAULT_DICT_PATH);
+
+    let tokenizer = NewmmTokenizer::new(&relative_dict_path);
     assert_eq!(
         tokenizer.segment_to_string("๑๙...", false, false),
         ["๑๙", "..."]
