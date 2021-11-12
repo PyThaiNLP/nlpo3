@@ -32,13 +32,13 @@ pip install nlpo3
 
 ## Usage
 
-Load file `path/to/dict.file` to memory and assigned it with name `custom_dict`.
-Then tokenize a text with `custom_dict` dictionary:
+Load file `path/to/dict.file` to memory and assign a name `dict_name` to it.
+Then tokenize a text with the `dict_name` dictionary:
 ```python
 from nlpo3 import load_dict, segment
 
 load_dict("path/to/dict.file", "custom_dict")
-segment("สวัสดีครับ", "custom_dict")
+segment("สวัสดีครับ", "dict_name")
 ```
 
 it will return a list of strings:
@@ -47,14 +47,15 @@ it will return a list of strings:
 ```
 (result depends on words included in the dictionary)
 
-Use multithread mode, also use the `custom_dict` dictionary:
+Use multithread mode, also use the `dict_name` dictionary:
 ```python
-segment("สวัสดีครับ", dict_name="custom_dict", parallel=True)
+segment("สวัสดีครับ", dict_name="dict_name", parallel=True)
 ```
 
-Use safe mode to avoid long waiting time in some edge cases for text with lots of ambiguous word boundaries:
+Use safe mode to avoid long waiting time in some edge cases
+for text with lots of ambiguous word boundaries:
 ```python
-segment("สวัสดีครับ", dict_name="custom_dict", safe=True)
+segment("สวัสดีครับ", dict_name="dict_name", safe=True)
 ```
 
 ## Build
