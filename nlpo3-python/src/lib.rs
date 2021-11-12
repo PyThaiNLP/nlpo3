@@ -68,6 +68,7 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<(String, bool)> {
     }
 }
 
+/* 
 /// Add words to existing dictionary
 #[pyfunction]
 fn add_word(dict_name: &str, words: Vec<&str>) -> PyResult<(String, bool)> {
@@ -103,6 +104,7 @@ fn remove_word(dict_name: &str, words: Vec<&str>) -> PyResult<(String, bool)> {
         ))
     }
 }
+*/
 
 #[pymodule]
 fn _nlpo3_python_backend(_py: Python, m: &PyModule) -> PyResult<()> {

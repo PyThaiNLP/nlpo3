@@ -207,9 +207,9 @@ dependencies = [
 
 [[package]]
 name = "nlpo3"
-version = "1.3.1"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23449064256ef25e6e24d26cb8dac7dd81a7ad8a88504383ed170b0b897e4ddb"
+checksum = "4abb929ff559b009fc7d354aaac3f5c4cd508a20777b55acafa59dcde7807734"
 dependencies = [
  "anyhow",
  "binary-heap-plus",
@@ -222,7 +222,7 @@ dependencies = [
 
 [[package]]
 name = "nlpo3-python"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "ahash",
  "lazy_static",
