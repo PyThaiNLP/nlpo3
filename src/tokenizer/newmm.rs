@@ -106,6 +106,7 @@ pub struct NewmmTokenizer {
 }
 
 impl NewmmTokenizer {
+    /// Create a new tokenizer using a dictionary from a text file
     pub fn new(dict_path: &str) -> Self {
         NewmmTokenizer {
             dict: Box::from(
@@ -114,18 +115,21 @@ impl NewmmTokenizer {
         }
     }
 
+    /// Create a new tokenizer using a dictionary from a vector of Strings
     pub fn from_word_list(word_list: Vec<String>) -> Self {
         NewmmTokenizer {
             dict: Box::from(create_dict_trie(DictSource::WordList(word_list)).unwrap()),
         }
     }
 
+    /// Add words to the tokenizer's dictionary
     pub fn add_word(&mut self, word_list: &[&str]) {
         for word in word_list {
             self.dict.add(&CustomString::new(word));
         }
     }
 
+    /// Remove words from the tokenizer's dictionary
     pub fn remove_word(&mut self, word_list: &[&str]) {
         for word in word_list {
             self.dict.remove(&CustomString::new(word));

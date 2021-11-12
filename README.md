@@ -52,12 +52,29 @@ In `Cargo.toml`:
 nlpo3 = "1.3.1"
 ```
 
+Create a tokenizer using a dictionary from file,
+then use it to tokenize a string (safe mode = true, and parallel mode = false):
 ```rust
 use nlpo3::tokenizer::newmm::NewmmTokenizer;
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 
 let tokenizer = NewmmTokenizer::new("path/to/dict.file");
-let tokens = tokenizer.segment("สวัสดีครับ", false, true).unwrap();
+let tokens = tokenizer.segment("ห้องสมุดประชาชน", true, false).unwrap();
+```
+
+Create a tokenizer using a dictionary from `Vec<String>`:
+```rust
+tokenizer = from_word_list(Vec<String>);
+```
+
+Add words to an existing tokenizer:
+```rust
+tokenizer.add_word(&["มิวเซียม"]);
+```
+
+Remove words from an existing tokenizer:
+```rust
+tokenizer.remove_word(&["กระเพรา", "ชานชลา"]);
 ```
 
 ## Build

@@ -12,7 +12,6 @@ use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 use crate::fixed_bytes_str::four_bytes::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
-    BYTES_PER_CHAR,
 };
 
 #[derive(Debug)]
@@ -171,4 +170,24 @@ impl TrieChar {
         }
         result
     }
+}
+
+#[test]
+fn test_add_and_remove_word() {
+    let mut trie = TrieChar::new(&[CustomString::new("ศาล")]);
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.add(&CustomString::new("ศาล"));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.add(&CustomString::new("  ศาล "));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.add(&CustomString::new("ศาลา"));
+    assert_eq!(trie.amount_of_words(), 2);
+    trie.remove(&CustomString::new("ศาลา"));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.remove(&CustomString::new("ลา"));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.remove(&CustomString::new("ศาล"));
+    assert_eq!(trie.amount_of_words(), 0);
+    trie.remove(&CustomString::new(""));
+    assert_eq!(trie.amount_of_words(), 0);
 }
