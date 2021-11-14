@@ -1,9 +1,17 @@
-use regex_syntax::{Parser, ParserBuilder, ast::{self, Literal}, hir::{Class, Literal as LiteralEnum}, hir::{ClassBytes, ClassUnicodeRange, Hir, HirKind}, is_meta_character};
-
+use regex_syntax::{
+    ast::{self, Literal},
+    hir::{Class, Literal as LiteralEnum},
+    hir::{ClassBytes, ClassUnicodeRange, Hir, HirKind},
+    is_meta_character, Parser, ParserBuilder,
+};
+trait ToCustomStringRepr {
+    fn to_custom_byte_repr(&self) -> String;
+}
+#[test]
 fn test_regex_parser() {
     let abs = ast::parse::Parser::new().parse("(abc)+").unwrap();
     // Parser::new().p
-    let hir = Parser::new().parse(r"[a-z0-9,-\-]").unwrap();
+    let hir = Parser::new().parse(r"a|b|c|deeee").unwrap();
     // abc -> \x00\x00\x00
 
     // HirKind::
@@ -12,7 +20,7 @@ fn test_regex_parser() {
     // hir.()
     // println!("{}",hir.());
     println!("{:?}", hir);
-    println!("{}",create_custom_bytes_regex(&hir));
+    println!("{}", create_custom_bytes_regex(&hir));
     // println!("{}",create_custom_bytes_regex(&hir));
     //    Hir::
     // println!("{:?}",test);
@@ -28,7 +36,7 @@ fn create_custom_bytes_regex(hir: &Hir) -> String {
         HirKind::Repetition(rep) => todo!(),
         HirKind::Group(group) => todo!(),
         HirKind::Concat(hirs) => iterate_concat_kind(hirs),
-        HirKind::Alternation(hirs) => todo!(),
+        HirKind::Alternation(hirs) => iterate_alteration_kind(hirs),
     }
 }
 fn get_char_range_byte_class(class_range: &ClassUnicodeRange) -> Option<UTFBytesLength> {
@@ -73,13 +81,46 @@ fn iterate_concat_kind(concat_members: &Vec<Hir>) -> String {
             HirKind::Concat(concat) => {
                 cus_str = cus_str + &(iterate_concat_kind(concat));
             }
-            HirKind::Alternation(_) => todo!(),
+            HirKind::Alternation(alternation) => {
+                cus_str = cus_str + &(iterate_alteration_kind(alternation));
+            }
+        }
+    }
+    cus_str
+}
+fn iterate_alteration_kind(alter_members: &Vec<Hir>) -> String {
+    let mut cus_str = String::new();
+    for member in alter_members {
+        match member.kind() {
+            HirKind::Empty => todo!(),
+            HirKind::Literal(literal) => {
+                if !cus_str.is_empty() {
+                    cus_str = cus_str + "|" + format!("({})", &convert_literal(literal)).as_str();
+                } else {
+                    cus_str = format!("({})", &convert_literal(literal));
+                }
+            }
+            HirKind::Class(_) => todo!(),
+            HirKind::Anchor(_) => todo!(),
+            HirKind::WordBoundary(_) => todo!(),
+            HirKind::Repetition(_) => todo!(),
+            HirKind::Group(_) => todo!(),
+            HirKind::Concat(concat) => {
+                if !cus_str.is_empty() {
+                    cus_str = cus_str + "|"+ format!("({})",(iterate_concat_kind(concat))).as_str();
+                } else {
+                    cus_str = iterate_concat_kind(concat);
+                }
+            }
+            HirKind::Alternation(alternation) => {
+                cus_str = cus_str + &iterate_alteration_kind(alternation);
+            }
         }
     }
     cus_str
 }
 
-#[derive(PartialEq, Eq,Clone,Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 enum UTFBytesLength {
     One,
     Two,
@@ -105,10 +146,10 @@ fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
 trait PadLeftZeroFourBytesRep {
     fn to_four_byte_string(&self) -> String;
 }
-fn escape_meta_character(c:char)->String{
-    if is_meta_character(c)  {
-        format!(r"\{}",c)
-    }else {
+fn escape_meta_character(c: char) -> String {
+    if is_meta_character(c) {
+        format!(r"\{}", c)
+    } else {
         c.to_string()
     }
 }
@@ -135,7 +176,7 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
                     UTFBytesLength::Four => r"",
                 };
                 let mut output_four_bytes_rep = format!("({}[", pad_left_0);
-                println!("{:?}",&urange);
+                println!("{:?}", &urange);
                 // we want to create all syntax of \x00\x00\x00[a-z]
                 for regex_range in urange.iter() {
                     let (start, end) = (regex_range.start(), regex_range.end());
@@ -144,10 +185,10 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
                     output_four_bytes_rep.push_str(&escape_meta_character(end));
                 }
                 format!("{}])", output_four_bytes_rep)
-            }else{
+            } else {
                 todo!()
             }
-        }else{
+        } else {
             todo!()
         }
     }
