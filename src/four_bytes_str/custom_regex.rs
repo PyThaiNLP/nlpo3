@@ -9,25 +9,6 @@ use std::{any::Any, error::Error, fmt::Display};
 trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
 }
-#[test]
-fn test_regex_parser() {
-    let abs = ast::parse::Parser::new().parse("(abc)+").unwrap();
-    // Parser::new().p
-    let hir = Parser::new().parse(r"abc?").unwrap();
-    // abc -> \x00\x00\x00
-
-    // HirKind::
-    // HirKind::
-    // hir.to_string()
-    // hir.()
-    // println!("{}",hir.());
-    println!("{:?}", hir);
-    println!("{:?}", create_custom_bytes_regex(&hir));
-    // println!("{}",create_custom_bytes_regex(&hir));
-    //    Hir::
-    // println!("{:?}",test);
-}
-
 #[derive(Debug, Clone)]
 enum CustomRegexParserError {
     UnsupportedByteLiteral,
@@ -36,6 +17,31 @@ enum CustomRegexParserError {
     UnsupportedDifferentRanges(char, char),
     UnsupportedRepetitionRange,
 }
+enum IterableHirKind{
+    Alternation(Vec<Hir>),
+    Concat(Vec<Hir>)
+}
+#[test]
+fn test_regex_parser() {
+    let abs = ast::parse::Parser::new().parse("(abc)+").unwrap();
+    // Parser::new().p
+    let hir = Parser::new().parse(r"เ[ก-ฮ]็?[ก-ฮ]").unwrap();
+    // abc -> \x00\x00\x00
+
+    // HirKind::
+    // HirKind::
+    // hir.to_string()
+    // hir.()
+    // println!("{}",hir.());
+    println!("{:?}", hir);
+    println!("{:?}", &hir.to_custom_byte_repr());
+    // println!("{}",create_custom_bytes_regex(&hir));
+    //    Hir::
+    // println!("{:?}",test);
+}
+
+
+
 impl Display for CustomRegexParserError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -60,20 +66,169 @@ impl Display for CustomRegexParserError {
     }
 }
 impl Error for CustomRegexParserError {}
+ 
 
-fn create_custom_bytes_regex(hir: &Hir) -> Result<String> {
-    match hir.kind() {
-        HirKind::Empty => todo!(),
-        HirKind::Literal(literal) => convert_literal(literal),
-        HirKind::Class(class) => convert_class(class),
-        HirKind::Anchor(anchor) => todo!(),
-        HirKind::WordBoundary(bound) => todo!(),
-        HirKind::Repetition(rep) => convert_repetition(rep),
-        HirKind::Group(group) => todo!(),
-        HirKind::Concat(hirs) => iterate_concat_kind(hirs),
-        HirKind::Alternation(hirs) => iterate_alteration_kind(hirs),
+impl ToCustomStringRepr for Hir {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        self.kind().to_custom_byte_repr()
+
     }
 }
+impl ToCustomStringRepr for HirKind {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        match self {
+            HirKind::Empty => todo!(),
+            HirKind::Literal(l) => l.to_custom_byte_repr(),
+            HirKind::Class(c) => c.to_custom_byte_repr(),
+            HirKind::Anchor(_) => todo!(),
+            HirKind::WordBoundary(_) => todo!(),
+            HirKind::Repetition(r) => r.to_custom_byte_repr(),
+            HirKind::Group(g) => g.to_custom_byte_repr(),
+            HirKind::Concat(c) => IterableHirKind::Concat(c.to_vec()).to_custom_byte_repr(),
+            HirKind::Alternation(a) => IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr(),
+        }
+    }
+}
+impl ToCustomStringRepr for LiteralEnum {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        match self {
+            LiteralEnum::Unicode(a) => Ok(a.to_four_byte_string()),
+            LiteralEnum::Byte(b) => Err(AnyError::new(
+                CustomRegexParserError::UnsupportedByteLiteral,
+            )),
+        }
+    }
+}
+impl ToCustomStringRepr for Class {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        match self {
+            Class::Unicode(u) => Ok(u.ranges().to_four_byte_string()),
+            Class::Bytes(b) => Err(AnyError::from(CustomRegexParserError::UnsupportedByteClass)),
+        }
+    }
+}
+impl ToCustomStringRepr for Repetition {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        let symbol = match self.kind {
+            regex_syntax::hir::RepetitionKind::ZeroOrOne => Ok("?"),
+            regex_syntax::hir::RepetitionKind::ZeroOrMore => Ok("*"),
+            regex_syntax::hir::RepetitionKind::OneOrMore => Ok("+"),
+            regex_syntax::hir::RepetitionKind::Range(_) => {
+                Err(CustomRegexParserError::UnsupportedRepetitionRange)
+            }
+        };
+    
+        let repeated_expression = match &self.hir.kind() {
+            HirKind::Empty => todo!(),
+            HirKind::Literal(l) => l.to_custom_byte_repr(),
+            HirKind::Class(c) => c.to_custom_byte_repr(),
+            HirKind::Anchor(_) => todo!(),
+            HirKind::WordBoundary(_) => todo!(),
+            HirKind::Repetition(r) => r.to_custom_byte_repr(),
+            HirKind::Group(g) => g.to_custom_byte_repr(),
+            HirKind::Concat(c) => IterableHirKind::Concat(c.to_vec()).to_custom_byte_repr(),
+            HirKind::Alternation(a) => IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr(),
+        };
+        Ok("(".to_owned()+&repeated_expression?+")"+symbol?)
+    }
+}
+impl ToCustomStringRepr for IterableHirKind {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        match self {
+            IterableHirKind::Alternation(a) => {
+                let mut cus_str = String::new();
+                for member in a {
+                    match member.kind() {
+                        HirKind::Empty => todo!(),
+                        HirKind::Literal(literal) => {
+                            if !cus_str.is_empty() {
+                                cus_str = cus_str + "|" + format!("({})", &literal.to_custom_byte_repr()?).as_str();
+                            } else {
+                                cus_str = format!("({})", &literal.to_custom_byte_repr()?);
+                            }
+                        }
+                        HirKind::Class(c) =>   if !cus_str.is_empty() {
+                            cus_str = cus_str + "|" + format!("({})", &c.to_custom_byte_repr()?).as_str();
+                        } else {
+                            cus_str = format!("({})", &c.to_custom_byte_repr()?);
+                        },
+                        HirKind::Anchor(_) => todo!(),
+                        HirKind::WordBoundary(_) => todo!(),
+                        HirKind::Repetition(_) => todo!(),
+                        HirKind::Group(g) => todo!(),
+                        HirKind::Concat(concat) => {
+                            if !cus_str.is_empty() {
+                                cus_str =
+                                    cus_str + "|" + format!("({})", (&IterableHirKind::Concat(concat.to_vec()).to_custom_byte_repr()?)).as_str();
+                            } else {
+                                cus_str = IterableHirKind::Concat(concat.to_vec()).to_custom_byte_repr()?;
+                            }
+                        }
+                        HirKind::Alternation(alternation) => {
+                            cus_str = cus_str + &IterableHirKind::Alternation(alternation.to_vec()).to_custom_byte_repr()?;
+                        }
+                    }
+                }
+                Ok(cus_str)
+            },
+            IterableHirKind::Concat(c) => {
+                let mut cus_str = String::new();
+                for member in c {
+                    match member.kind() {
+                        HirKind::Empty => todo!(),
+                        HirKind::Literal(literal) => {
+                            cus_str = cus_str + &literal.to_custom_byte_repr()?;
+                        }
+                        HirKind::Class(c) => cus_str = cus_str + &c.to_custom_byte_repr()?,
+                        HirKind::Anchor(_) => todo!(),
+                        HirKind::WordBoundary(_) => todo!(),
+                        HirKind::Repetition(r) => cus_str = cus_str+&r.to_custom_byte_repr()?,
+                        HirKind::Group(g) => cus_str = cus_str + &g.to_custom_byte_repr()?,
+                        HirKind::Concat(concat) => {
+                            cus_str = cus_str + &IterableHirKind::Concat(concat.to_vec()).to_custom_byte_repr()?;
+                        }
+                        HirKind::Alternation(alternation) => {
+                            cus_str = cus_str + &(IterableHirKind::Alternation(alternation.to_vec()).to_custom_byte_repr()?);
+                        }
+                    }
+                }
+                Ok(cus_str)
+            },
+        }
+    }
+}
+impl ToCustomStringRepr for Group {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        let recur = match self.hir.kind() {
+            HirKind::Empty => todo!(),
+            HirKind::Literal(lit) => lit.to_custom_byte_repr(),
+            HirKind::Class(c) => c.to_custom_byte_repr(),
+            HirKind::Anchor(_) => todo!(),
+            HirKind::WordBoundary(_) => todo!(),
+            HirKind::Repetition(_) => todo!(),
+            HirKind::Group(g) => g.to_custom_byte_repr(),
+            HirKind::Concat(c) => IterableHirKind::Concat(c.to_vec()).to_custom_byte_repr(),
+            HirKind::Alternation(a) => IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr(),
+        };
+        Ok("(".to_owned() + &recur? + ")")
+    
+        //   Err(AnyError::new(CustomRegexParserError::UnsupportedCaptureGroup))
+    }
+}
+
+// fn create_custom_bytes_regex(hir: &Hir) -> Result<String> {
+//     match hir.kind() {
+//         HirKind::Empty => todo!(),
+//         HirKind::Literal(literal) => convert_literal(literal),
+//         HirKind::Class(class) => convert_class(class),
+//         HirKind::Anchor(anchor) => todo!(),
+//         HirKind::WordBoundary(bound) => todo!(),
+//         HirKind::Repetition(rep) => convert_repetition(rep),
+//         HirKind::Group(group) => todo!(),
+//         HirKind::Concat(hirs) => iterate_concat_kind(hirs),
+//         HirKind::Alternation(hirs) => iterate_alteration_kind(hirs),
+//     }
+// }
 fn get_char_range_byte_class(class_range: &ClassUnicodeRange) -> Option<UTFBytesLength> {
     // currently allow only the same byte length
     let start_class = char_class(class_range.start());
@@ -84,115 +239,12 @@ fn get_char_range_byte_class(class_range: &ClassUnicodeRange) -> Option<UTFBytes
         None
     }
 }
-fn convert_class(class: &Class) -> Result<String> {
-    match class {
-        Class::Unicode(u) => Ok(u.ranges().to_four_byte_string()),
-        Class::Bytes(b) => todo!(),
-    }
-}
-fn convert_literal(literal: &LiteralEnum) -> Result<String> {
-    match literal {
-        LiteralEnum::Unicode(a) => Ok(a.to_four_byte_string()),
-        LiteralEnum::Byte(b) => Err(AnyError::new(
-            CustomRegexParserError::UnsupportedByteLiteral,
-        )),
-    }
-}
-fn convert_repetition(repetition: &Repetition) -> Result<String> {
-    let symbol = match repetition.kind {
-        regex_syntax::hir::RepetitionKind::ZeroOrOne => Ok("?"),
-        regex_syntax::hir::RepetitionKind::ZeroOrMore => Ok("*"),
-        regex_syntax::hir::RepetitionKind::OneOrMore => Ok("+"),
-        regex_syntax::hir::RepetitionKind::Range(_) => {
-            Err(CustomRegexParserError::UnsupportedRepetitionRange)
-        }
-    };
 
-    let repeated_expression = match &repetition.hir.kind() {
-        HirKind::Empty => todo!(),
-        HirKind::Literal(l) => convert_literal(l),
-        HirKind::Class(c) => convert_class(c),
-        HirKind::Anchor(_) => todo!(),
-        HirKind::WordBoundary(_) => todo!(),
-        HirKind::Repetition(r) => convert_repetition(r),
-        HirKind::Group(g) => convert_group_kind(g),
-        HirKind::Concat(c) => iterate_concat_kind(c),
-        HirKind::Alternation(a) => iterate_alteration_kind(a),
-    };
-    Ok("(".to_owned()+&repeated_expression?+")"+symbol?)
-}
-fn iterate_concat_kind(concat_members: &[Hir]) -> Result<String> {
-    let mut cus_str = String::new();
-    for member in concat_members {
-        match member.kind() {
-            HirKind::Empty => todo!(),
-            HirKind::Literal(literal) => {
-                cus_str = cus_str + &convert_literal(literal)?;
-            }
-            HirKind::Class(_) => todo!(),
-            HirKind::Anchor(_) => todo!(),
-            HirKind::WordBoundary(_) => todo!(),
-            HirKind::Repetition(r) => cus_str = cus_str+&convert_repetition(r)?,
-            HirKind::Group(g) => cus_str = cus_str + &convert_group_kind(g)?,
-            HirKind::Concat(concat) => {
-                cus_str = cus_str + &iterate_concat_kind(concat)?;
-            }
-            HirKind::Alternation(alternation) => {
-                cus_str = cus_str + &(iterate_alteration_kind(alternation)?);
-            }
-        }
-    }
-    Ok(cus_str)
-}
-fn iterate_alteration_kind(alter_members: &[Hir]) -> Result<String> {
-    let mut cus_str = String::new();
-    for member in alter_members {
-        match member.kind() {
-            HirKind::Empty => todo!(),
-            HirKind::Literal(literal) => {
-                if !cus_str.is_empty() {
-                    cus_str = cus_str + "|" + format!("({})", &convert_literal(literal)?).as_str();
-                } else {
-                    cus_str = format!("({})", &convert_literal(literal)?);
-                }
-            }
-            HirKind::Class(_) => todo!(),
-            HirKind::Anchor(_) => todo!(),
-            HirKind::WordBoundary(_) => todo!(),
-            HirKind::Repetition(_) => todo!(),
-            HirKind::Group(_) => todo!(),
-            HirKind::Concat(concat) => {
-                if !cus_str.is_empty() {
-                    cus_str =
-                        cus_str + "|" + format!("({})", (iterate_concat_kind(concat)?)).as_str();
-                } else {
-                    cus_str = iterate_concat_kind(concat)?;
-                }
-            }
-            HirKind::Alternation(alternation) => {
-                cus_str = cus_str + &iterate_alteration_kind(alternation)?;
-            }
-        }
-    }
-    Ok(cus_str)
-}
 
-fn convert_group_kind(group: &Group) -> Result<String> {
-    let recur: String = match &group.hir.kind() {
-        HirKind::Empty => todo!(),
-        HirKind::Literal(lit) => convert_literal(lit)?,
-        HirKind::Class(c) => convert_class(c)?,
-        HirKind::Anchor(_) => todo!(),
-        HirKind::WordBoundary(_) => todo!(),
-        HirKind::Repetition(_) => todo!(),
-        HirKind::Group(g) => convert_group_kind(g)?,
-        HirKind::Concat(c) => iterate_concat_kind(c)?,
-        HirKind::Alternation(a) => iterate_alteration_kind(a)?,
-    };
-    Ok("(".to_owned() + &recur + ")")
 
-    //   Err(AnyError::new(CustomRegexParserError::UnsupportedCaptureGroup))
-}
+
+
+
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum UTFBytesLength {
@@ -246,7 +298,7 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
                     UTFBytesLength::Three => r"\x00",
                     UTFBytesLength::Four => r"",
                 };
-                let mut output_four_bytes_rep = format!("({}[", pad_left_0);
+                let mut output_four_bytes_rep = format!("{}[", pad_left_0);
                 println!("{:?}", &urange);
                 // we want to create all syntax of \x00\x00\x00[a-z]
                 for regex_range in urange.iter() {
@@ -255,7 +307,7 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
                     output_four_bytes_rep.push('-');
                     output_four_bytes_rep.push_str(&escape_meta_character(end));
                 }
-                format!("{}])", output_four_bytes_rep)
+                format!("{}]", output_four_bytes_rep)
             } else {
                 todo!()
             }
