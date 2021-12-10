@@ -18,74 +18,35 @@ use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLen
 use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern,replace_tcc_symbol};
 
 // regex crate does not support look-any-direction
-// \x00 is byte value 0, every unicode character in regex is padded with \x00 to 4 bytes length
-// https://www.fileformat.info/info/unicode/
-// Thai characters use 3 bytes per character, so it is padded with \x00 only once.
-// The following regular expressions are translated from pythainlp/tokenize/tcc.py
-/**
- * 
- * 
- * _RE_TCC = (
-    """\
-เc็c
-เcctาะ
-เccีtยะ
-เcc็c
-เcิc์c
-เcิtc
-เcีtยะ?
-เcืtอะ?
-เctา?ะ?
-cัtวะ
-c[ัื]tc[ุิะ]?
-c[ิุู]์
-c[ะ-ู]t
-c็
-ct[ะาำ]?
-แc็c
-แcc์
-แctะ
-แcc็c
-แccc์
-โctะ
-[เ-ไ]ct
-""".replace(
-        "c", "[ก-ฮ]"
-    )
-    .replace("t", "[่-๋]?")
-    .split()
-)
 
- */
 lazy_static! {
     static ref NON_LOOKAHEAD_TCC: Regex = Regex::new(
         &[
-            r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ]", //1
-            r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ](\x00[่-๋])?\x00า\x00ะ",//2
-            r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย\x00ะ",//3
-            r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00็\x00[ก-ฮ]",//4
-            r"^\x00เ\x00[ก-ฮ]\x00ิ\x00[ก-ฮ]\x00์\x00[ก-ฮ]",//5
-            r"^\x00เ\x00[ก-ฮ]\x00ิ(\x00[่-๋])?\x00[ก-ฮ]",//6
-            r"^\x00เ\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย(\x00ะ)?",//7
-            r"^\x00เ\x00[ก-ฮ]\x00ื(\x00[่-๋])?\x00อ(\x00ะ)?",//8
-            r"^\x00เ\x00[ก-ฮ](\x00[่-๋])?(\x00า)?(\x00ะ)?",//9
-            r"^\x00[ก-ฮ]\x00ั(\x00[่-๋])?\x00ว\x00ะ",//10
-            r"^\x00[ก-ฮ]\x00[ัื](\x00[่-๋])?\x00[ก-ฮ](\x00[ุิะ])?",//11
-            r"^\x00[ก-ฮ]\x00[ิุู]\x00์",//12
-            r"^\x00[ก-ฮ]\x00[ะ-ู](\x00[่-๋])?",//13
-            r"^\x00[ก-ฮ]\x00็",//14
-            r"^\x00[ก-ฮ](\x00[่-๋])?(\x00[ะาำ])?",//15
-            r"^\x00แ\x00[ก-ฮ]\x00็\x00[ก-ฮ]",//16
-            r"^\x00แ\x00[ก-ฮ]\x00[ก-ฮ]\x00์",//17
-            r"^\x00แ\x00[ก-ฮ](\x00[่-๋])?\x00ะ",//18
-            r"^\x00แ\x00[ก-ฮ]\x00[ก-ฮ]\x00็\x00[ก-ฮ]",//19
-            r"^\x00แ\x00[ก-ฮ]\x00[ก-ฮ]\x00[ก-ฮ]\x00์",//20
-            r"^\x00โ\x00[ก-ฮ](\x00[่-๋])?\x00ะ",//21
-            r"^\x00[เ-ไ]\x00[ก-ฮ](\x00[่-๋])?",//22
-            r"^(\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย)\x00[เ-ไก-ฮ]", // look ahead 1
-            r"^(\x00เ\x00[ก-ฮ]\x00[ิีุู](\x00[่-๋])?\x00ย)\x00[เ-ไก-ฮ]",// look ahead 2
-            ]
-            // .map(|pattern|{regex_pattern_to_custom_pattern(pattern).unwrap()})
+            r"^เc็c", //1
+            r"^เcctาะ",//2
+            r"^เccีtยะ",//3
+            r"^เcc็c",//4
+            r"^เcิc์c",//5
+            r"^เcิtc",//6
+            r"^เcีtยะ?",//7
+            r"^เcืtอะ?",//8
+            r"^เctา?ะ?",//9
+            r"^cัtวะ",//10
+            r"^c[ัื]tc[ุิะ]?",//11
+            r"^c[ิุู]์",//12
+            r"^c[ะ-ู]t",//13
+            r"^c็",//14
+            r"^ct[ะาำ]?",//15
+            r"^แc็c",//16
+            r"^แcc์",//17
+            r"^แctะ",//18
+            r"^แcc็c",//19
+            r"^แccc์",//20
+            r"^โctะ",//21
+            r"^[เ-ไ]ct",//22
+            r"^(เccีtย)[เ-ไก-ฮ]", // look ahead 1
+            r"^(เc[ิีุู]tย)[เ-ไก-ฮ]",// look ahead 2
+            ].map(|pattern| {regex_pattern_to_custom_pattern(&replace_tcc_symbol(pattern)).unwrap()})
         .join("|")
     )
     .unwrap();

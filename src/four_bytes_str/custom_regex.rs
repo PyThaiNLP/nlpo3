@@ -1,14 +1,22 @@
+// This is a result of an attempt to create a formatter
+// which translates normal, human readable thai regex 
+// into 4-bytes zero-left-pad bytes regex pattern string
+
 use anyhow::{Error as AnyError, Result};
 use regex_syntax::{
-    ast::{self, Literal},
-    hir::{Anchor, Class, Group, GroupKind, Literal as LiteralEnum, Repetition},
-    hir::{ClassBytes, ClassUnicodeRange, Hir, HirKind},
-    is_meta_character, Parser, ParserBuilder,
+
+    hir::{Anchor, Class, Group, Literal as LiteralEnum, Repetition},
+    hir::{ClassUnicodeRange, Hir, HirKind},
+    is_meta_character, Parser,
 };
-use std::{any::Any, error::Error, fmt::Display};
+use std::{error::Error, fmt::Display};
+
+
+
 trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
 }
+
 #[derive(Debug, Clone)]
 enum UnsupportedCustomRegexParserError {
     ByteLiteral,
@@ -522,7 +530,7 @@ fn tcc_regex_test_cases() {
         r"^\x00[เ-ไ]\x00[ก-ฮ](\x00[่-๋])?"
     );
 
-    let look_ahead_case_1 = replace_tcc_symbol("^(เccีtย)[เ-ไก-ฮ]");
+    let look_ahead_case_1 = replace_tcc_symbol(r"^(เccีtย)[เ-ไก-ฮ]");
     let look_ahead_1_regex = regex_pattern_to_custom_pattern(&look_ahead_case_1).unwrap();
     let look_ahead_case_2 = replace_tcc_symbol(r"^(เc[ิีุู]tย)[เ-ไก-ฮ]");
     let look_ahead_2_regex = regex_pattern_to_custom_pattern(&look_ahead_case_2).unwrap();
@@ -535,8 +543,4 @@ fn tcc_regex_test_cases() {
         r"^(\x00เ\x00[ก-ฮ]\x00[ิ-ีุ-ู](\x00[่-๋])?\x00ย)\x00[ก-ฮเ-ไ]"
     );
 }
-#[test]
-fn test_regex_parser() {
-    let hir = Parser::new().parse("[ัื]").unwrap();
-    println!("{:?}", hir);
-}
+
