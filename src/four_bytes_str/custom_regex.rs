@@ -10,62 +10,41 @@ trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
 }
 #[derive(Debug, Clone)]
-enum CustomRegexParserError {
-    UnsupportedByteLiteral,
-    UnsupportedByteClass,
-    UnsupportedCaptureGroup,
-    UnsupportedDifferentRanges(char, char),
-    UnsupportedRepetitionRange,
+enum UnsupportedCustomRegexParserError {
+    ByteLiteral,
+    ByteClass,
+    DifferentRanges(char, char),
+    RepetitionRange,
 }
 enum IterableHirKind{
     Alternation(Vec<Hir>),
     Concat(Vec<Hir>)
 }
-#[test]
-fn test_regex_parser() {
-    let abs = ast::parse::Parser::new().parse("(abc)+").unwrap();
-    // Parser::new().p
-    let hir = Parser::new().parse(r"เ[ก-ฮ]็?[ก-ฮ]").unwrap();
-    // abc -> \x00\x00\x00
-
-    // HirKind::
-    // HirKind::
-    // hir.to_string()
-    // hir.()
-    // println!("{}",hir.());
-    println!("{:?}", hir);
-    println!("{:?}", &hir.to_custom_byte_repr());
-    // println!("{}",create_custom_bytes_regex(&hir));
-    //    Hir::
-    // println!("{:?}",test);
-}
 
 
 
-impl Display for CustomRegexParserError {
+
+impl Display for UnsupportedCustomRegexParserError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::UnsupportedByteLiteral => {
+            Self::ByteLiteral => {
                 write!(f, "Byte literal is not supported")
             }
-            CustomRegexParserError::UnsupportedByteClass => {
+            UnsupportedCustomRegexParserError::ByteClass => {
                 write!(f, "Byte class is not supported")
             }
-            CustomRegexParserError::UnsupportedCaptureGroup => {
-                write!(f, "Capture group is not supported")
-            }
-            CustomRegexParserError::UnsupportedDifferentRanges(a, b) => {
+            UnsupportedCustomRegexParserError::DifferentRanges(a, b) => {
                 write!(
                     f,
                     "Different byte length range is not supported {} {}",
                     a, b
                 )
             }
-            CustomRegexParserError::UnsupportedRepetitionRange => todo!(),
+            UnsupportedCustomRegexParserError::RepetitionRange => todo!(),
         }
     }
 }
-impl Error for CustomRegexParserError {}
+impl Error for UnsupportedCustomRegexParserError {}
  
 
 impl ToCustomStringRepr for Hir {
@@ -94,7 +73,7 @@ impl ToCustomStringRepr for LiteralEnum {
         match self {
             LiteralEnum::Unicode(a) => Ok(a.to_four_byte_string()),
             LiteralEnum::Byte(b) => Err(AnyError::new(
-                CustomRegexParserError::UnsupportedByteLiteral,
+                UnsupportedCustomRegexParserError::ByteLiteral,
             )),
         }
     }
@@ -103,7 +82,7 @@ impl ToCustomStringRepr for Class {
     fn to_custom_byte_repr(&self) -> Result<String> {
         match self {
             Class::Unicode(u) => Ok(u.ranges().to_four_byte_string()),
-            Class::Bytes(b) => Err(AnyError::from(CustomRegexParserError::UnsupportedByteClass)),
+            Class::Bytes(b) => Err(AnyError::from(UnsupportedCustomRegexParserError::ByteClass)),
         }
     }
 }
@@ -114,7 +93,7 @@ impl ToCustomStringRepr for Repetition {
             regex_syntax::hir::RepetitionKind::ZeroOrMore => Ok("*"),
             regex_syntax::hir::RepetitionKind::OneOrMore => Ok("+"),
             regex_syntax::hir::RepetitionKind::Range(_) => {
-                Err(CustomRegexParserError::UnsupportedRepetitionRange)
+                Err(UnsupportedCustomRegexParserError::RepetitionRange)
             }
         };
     
@@ -343,9 +322,20 @@ impl PadLeftZeroFourBytesRep for char {
         result
     }
 }
+
+
+pub fn compile_to_custom_regex_string(regex_pattern:&str)->Result<String> {
+    let hir = Parser::new().parse(regex_pattern)?;
+    hir.to_custom_byte_repr()
+}
+
+
+fn replace_tcc_symbol(tcc_pattern:&str) -> String {
+        tcc_pattern.replace("c", "[ก-ฮ]").replace("t","[่-๋]?")
+}
 #[test]
 fn tcc_regex_test_cases() {
-    // _RE_TCC = (
+
     //     """\
     // เc็c
     // เcctาะ
@@ -378,4 +368,22 @@ fn tcc_regex_test_cases() {
     //     .split()
     // )
     // assert_eq!(create_custom_bytes_regex(""))
+    let first_case = replace_tcc_symbol("^เc็c");
+    assert_eq!(compile_to_custom_regex_string(&first_case).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ]");
+}
+#[test]
+fn test_regex_parser() {
+
+
+    let hir = Parser::new().parse(r"เ[ก-ฮ]็?[ก-ฮ]").unwrap();
+    // abc -> \x00\x00\x00
+
+    // HirKind::
+    // HirKind::
+    // hir.to_string()
+    // hir.()
+    // println!("{}",hir.());
+    println!("{:?}", hir);
+    println!("{:?}", &hir.to_custom_byte_repr());
+
 }
