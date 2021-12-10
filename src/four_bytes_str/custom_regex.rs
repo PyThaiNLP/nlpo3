@@ -1,7 +1,7 @@
 use anyhow::{Error as AnyError, Result};
 use regex_syntax::{
     ast::{self, Literal},
-    hir::{Class, Group, GroupKind, Literal as LiteralEnum, Repetition},
+    hir::{Class, Group, GroupKind, Literal as LiteralEnum, Repetition, Anchor},
     hir::{ClassBytes, ClassUnicodeRange, Hir, HirKind},
     is_meta_character, Parser, ParserBuilder,
 };
@@ -15,6 +15,8 @@ enum UnsupportedCustomRegexParserError {
     ByteClass,
     DifferentRanges(char, char),
     RepetitionRange,
+    AnchorStartLine,
+    AnchorEndLine
 }
 enum IterableHirKind{
     Alternation(Vec<Hir>),
@@ -41,6 +43,9 @@ impl Display for UnsupportedCustomRegexParserError {
                 )
             }
             UnsupportedCustomRegexParserError::RepetitionRange => todo!(),
+            UnsupportedCustomRegexParserError::ByteLiteral => todo!(),
+            UnsupportedCustomRegexParserError::AnchorStartLine => todo!(),
+            UnsupportedCustomRegexParserError::AnchorEndLine => todo!(),
         }
     }
 }
@@ -59,12 +64,22 @@ impl ToCustomStringRepr for HirKind {
             HirKind::Empty => todo!(),
             HirKind::Literal(l) => l.to_custom_byte_repr(),
             HirKind::Class(c) => c.to_custom_byte_repr(),
-            HirKind::Anchor(_) => todo!(),
+            HirKind::Anchor(a) => a.to_custom_byte_repr(),
             HirKind::WordBoundary(_) => todo!(),
             HirKind::Repetition(r) => r.to_custom_byte_repr(),
             HirKind::Group(g) => g.to_custom_byte_repr(),
             HirKind::Concat(c) => IterableHirKind::Concat(c.to_vec()).to_custom_byte_repr(),
             HirKind::Alternation(a) => IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr(),
+        }
+    }
+}
+impl ToCustomStringRepr for Anchor {
+    fn to_custom_byte_repr(&self) -> Result<String> {
+        match self {
+            Anchor::StartLine => todo!(),
+            Anchor::EndLine => todo!(),
+            Anchor::StartText => Ok("^".to_string()),
+            Anchor::EndText => Ok("$".to_string()),
         }
     }
 }
@@ -82,7 +97,7 @@ impl ToCustomStringRepr for Class {
     fn to_custom_byte_repr(&self) -> Result<String> {
         match self {
             Class::Unicode(u) => Ok(u.ranges().to_four_byte_string()),
-            Class::Bytes(b) => Err(AnyError::from(UnsupportedCustomRegexParserError::ByteClass)),
+            Class::Bytes(_) => Err(AnyError::from(UnsupportedCustomRegexParserError::ByteClass)),
         }
     }
 }
@@ -101,7 +116,7 @@ impl ToCustomStringRepr for Repetition {
             HirKind::Empty => todo!(),
             HirKind::Literal(l) => l.to_custom_byte_repr(),
             HirKind::Class(c) => c.to_custom_byte_repr(),
-            HirKind::Anchor(_) => todo!(),
+            HirKind::Anchor(a) => a.to_custom_byte_repr(),
             HirKind::WordBoundary(_) => todo!(),
             HirKind::Repetition(r) => r.to_custom_byte_repr(),
             HirKind::Group(g) => g.to_custom_byte_repr(),
@@ -131,10 +146,22 @@ impl ToCustomStringRepr for IterableHirKind {
                         } else {
                             cus_str = format!("({})", &c.to_custom_byte_repr()?);
                         },
-                        HirKind::Anchor(_) => todo!(),
+                        HirKind::Anchor(a) =>  if !cus_str.is_empty() {
+                            cus_str = cus_str + "|" + format!("({})", &a.to_custom_byte_repr()?).as_str();
+                        } else {
+                            cus_str = format!("({})", &a.to_custom_byte_repr()?);
+                        },
                         HirKind::WordBoundary(_) => todo!(),
-                        HirKind::Repetition(_) => todo!(),
-                        HirKind::Group(g) => todo!(),
+                        HirKind::Repetition(r) => if !cus_str.is_empty() {
+                            cus_str = cus_str + "|" + format!("({})", &r.to_custom_byte_repr()?).as_str();
+                        } else {
+                            cus_str = format!("({})", &r.to_custom_byte_repr()?);
+                        },
+                        HirKind::Group(g) =>  if !cus_str.is_empty() {
+                            cus_str = cus_str + "|" + format!("({})", &g.to_custom_byte_repr()?).as_str();
+                        } else {
+                            cus_str = format!("({})", &g.to_custom_byte_repr()?);
+                        },
                         HirKind::Concat(concat) => {
                             if !cus_str.is_empty() {
                                 cus_str =
@@ -159,7 +186,7 @@ impl ToCustomStringRepr for IterableHirKind {
                             cus_str = cus_str + &literal.to_custom_byte_repr()?;
                         }
                         HirKind::Class(c) => cus_str = cus_str + &c.to_custom_byte_repr()?,
-                        HirKind::Anchor(_) => todo!(),
+                        HirKind::Anchor(a) => cus_str = cus_str +&a.to_custom_byte_repr()?,
                         HirKind::WordBoundary(_) => todo!(),
                         HirKind::Repetition(r) => cus_str = cus_str+&r.to_custom_byte_repr()?,
                         HirKind::Group(g) => cus_str = cus_str + &g.to_custom_byte_repr()?,
@@ -182,7 +209,7 @@ impl ToCustomStringRepr for Group {
             HirKind::Empty => todo!(),
             HirKind::Literal(lit) => lit.to_custom_byte_repr(),
             HirKind::Class(c) => c.to_custom_byte_repr(),
-            HirKind::Anchor(_) => todo!(),
+            HirKind::Anchor(a) => a.to_custom_byte_repr(),
             HirKind::WordBoundary(_) => todo!(),
             HirKind::Repetition(_) => todo!(),
             HirKind::Group(g) => g.to_custom_byte_repr(),
@@ -278,7 +305,6 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
                     UTFBytesLength::Four => r"",
                 };
                 let mut output_four_bytes_rep = format!("{}[", pad_left_0);
-                println!("{:?}", &urange);
                 // we want to create all syntax of \x00\x00\x00[a-z]
                 for regex_range in urange.iter() {
                     let (start, end) = (regex_range.start(), regex_range.end());
@@ -336,54 +362,20 @@ fn replace_tcc_symbol(tcc_pattern:&str) -> String {
 #[test]
 fn tcc_regex_test_cases() {
 
-    //     """\
-    // เc็c
-    // เcctาะ
-    // เccีtยะ
-    // เccีtย(?=[เ-ไก-ฮ]|$)
-    // เcc็c
-    // เcิc์c
-    // เcิtc
-    // เcีtยะ?
-    // เcืtอะ?
-    // เc[ิีุู]tย(?=[เ-ไก-ฮ]|$)
-    // เctา?ะ?
-    // cัtวะ
-    // c[ัื]tc[ุิะ]?
-    // c[ิุู]์
-    // c[ะ-ู]t
-    // c็
-    // ct[ะาำ]?
-    // แc็c
-    // แcc์
-    // แctะ
-    // แcc็c
-    // แccc์
-    // โctะ
-    // [เ-ไ]ct
-    // """.replace(
-    //         "c", "[ก-ฮ]"
-    //     )
-    //     .replace("t", "[่-๋]?")
-    //     .split()
-    // )
-    // assert_eq!(create_custom_bytes_regex(""))
-    let first_case = replace_tcc_symbol("^เc็c");
-    assert_eq!(compile_to_custom_regex_string(&first_case).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ]");
+    let case_1 = replace_tcc_symbol("^เc็c");
+    let case_2 = replace_tcc_symbol("^เcctาะ");
+    let case_3 = replace_tcc_symbol("^เccีtยะ");
+    assert_eq!(compile_to_custom_regex_string(&case_1).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ]");
+    assert_eq!(compile_to_custom_regex_string(&case_2).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ](\x00[่-๋])?\x00า\x00ะ");
+    assert_eq!(compile_to_custom_regex_string(&case_3).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย\x00ะ");
+
 }
 #[test]
 fn test_regex_parser() {
 
 
-    let hir = Parser::new().parse(r"เ[ก-ฮ]็?[ก-ฮ]").unwrap();
-    // abc -> \x00\x00\x00
-
-    // HirKind::
-    // HirKind::
-    // hir.to_string()
-    // hir.()
-    // println!("{}",hir.());
+    let hir = Parser::new().parse("\n^เ[ก-ฮ]็?[ก-ฮ]").unwrap();
     println!("{:?}", hir);
-    println!("{:?}", &hir.to_custom_byte_repr());
+  
 
 }
