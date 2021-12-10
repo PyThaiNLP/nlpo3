@@ -1,7 +1,7 @@
 use anyhow::{Error as AnyError, Result};
 use regex_syntax::{
     ast::{self, Literal},
-    hir::{Class, Group, GroupKind, Literal as LiteralEnum, Repetition, Anchor},
+    hir::{Anchor, Class, Group, GroupKind, Literal as LiteralEnum, Repetition},
     hir::{ClassBytes, ClassUnicodeRange, Hir, HirKind},
     is_meta_character, Parser, ParserBuilder,
 };
@@ -16,15 +16,12 @@ enum UnsupportedCustomRegexParserError {
     DifferentRanges(char, char),
     RepetitionRange,
     AnchorStartLine,
-    AnchorEndLine
+    AnchorEndLine,
 }
-enum IterableHirKind{
+enum IterableHirKind {
     Alternation(Vec<Hir>),
-    Concat(Vec<Hir>)
+    Concat(Vec<Hir>),
 }
-
-
-
 
 impl Display for UnsupportedCustomRegexParserError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -50,12 +47,10 @@ impl Display for UnsupportedCustomRegexParserError {
     }
 }
 impl Error for UnsupportedCustomRegexParserError {}
- 
 
 impl ToCustomStringRepr for Hir {
     fn to_custom_byte_repr(&self) -> Result<String> {
         self.kind().to_custom_byte_repr()
-
     }
 }
 impl ToCustomStringRepr for HirKind {
@@ -69,7 +64,9 @@ impl ToCustomStringRepr for HirKind {
             HirKind::Repetition(r) => r.to_custom_byte_repr(),
             HirKind::Group(g) => g.to_custom_byte_repr(),
             HirKind::Concat(c) => IterableHirKind::Concat(c.to_vec()).to_custom_byte_repr(),
-            HirKind::Alternation(a) => IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr(),
+            HirKind::Alternation(a) => {
+                IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr()
+            }
         }
     }
 }
@@ -111,7 +108,7 @@ impl ToCustomStringRepr for Repetition {
                 Err(UnsupportedCustomRegexParserError::RepetitionRange)
             }
         };
-    
+
         let repeated_expression = match &self.hir.kind() {
             HirKind::Empty => todo!(),
             HirKind::Literal(l) => l.to_custom_byte_repr(),
@@ -121,9 +118,11 @@ impl ToCustomStringRepr for Repetition {
             HirKind::Repetition(r) => r.to_custom_byte_repr(),
             HirKind::Group(g) => g.to_custom_byte_repr(),
             HirKind::Concat(c) => IterableHirKind::Concat(c.to_vec()).to_custom_byte_repr(),
-            HirKind::Alternation(a) => IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr(),
+            HirKind::Alternation(a) => {
+                IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr()
+            }
         };
-        Ok("(".to_owned()+&repeated_expression?+")"+symbol?)
+        Ok("(".to_owned() + &repeated_expression? + ")" + symbol?)
     }
 }
 impl ToCustomStringRepr for IterableHirKind {
@@ -136,47 +135,74 @@ impl ToCustomStringRepr for IterableHirKind {
                         HirKind::Empty => todo!(),
                         HirKind::Literal(literal) => {
                             if !cus_str.is_empty() {
-                                cus_str = cus_str + "|" + format!("({})", &literal.to_custom_byte_repr()?).as_str();
+                                cus_str = cus_str
+                                    + "|"
+                                    + format!("({})", &literal.to_custom_byte_repr()?).as_str();
                             } else {
                                 cus_str = format!("({})", &literal.to_custom_byte_repr()?);
                             }
                         }
-                        HirKind::Class(c) =>   if !cus_str.is_empty() {
-                            cus_str = cus_str + "|" + format!("({})", &c.to_custom_byte_repr()?).as_str();
-                        } else {
-                            cus_str = format!("({})", &c.to_custom_byte_repr()?);
-                        },
-                        HirKind::Anchor(a) =>  if !cus_str.is_empty() {
-                            cus_str = cus_str + "|" + format!("({})", &a.to_custom_byte_repr()?).as_str();
-                        } else {
-                            cus_str = format!("({})", &a.to_custom_byte_repr()?);
-                        },
+                        HirKind::Class(c) => {
+                            if !cus_str.is_empty() {
+                                cus_str = cus_str
+                                    + "|"
+                                    + format!("({})", &c.to_custom_byte_repr()?).as_str();
+                            } else {
+                                cus_str = format!("({})", &c.to_custom_byte_repr()?);
+                            }
+                        }
+                        HirKind::Anchor(a) => {
+                            if !cus_str.is_empty() {
+                                cus_str = cus_str
+                                    + "|"
+                                    + format!("({})", &a.to_custom_byte_repr()?).as_str();
+                            } else {
+                                cus_str = format!("({})", &a.to_custom_byte_repr()?);
+                            }
+                        }
                         HirKind::WordBoundary(_) => todo!(),
-                        HirKind::Repetition(r) => if !cus_str.is_empty() {
-                            cus_str = cus_str + "|" + format!("({})", &r.to_custom_byte_repr()?).as_str();
-                        } else {
-                            cus_str = format!("({})", &r.to_custom_byte_repr()?);
-                        },
-                        HirKind::Group(g) =>  if !cus_str.is_empty() {
-                            cus_str = cus_str + "|" + format!("({})", &g.to_custom_byte_repr()?).as_str();
-                        } else {
-                            cus_str = format!("({})", &g.to_custom_byte_repr()?);
-                        },
+                        HirKind::Repetition(r) => {
+                            if !cus_str.is_empty() {
+                                cus_str = cus_str
+                                    + "|"
+                                    + format!("({})", &r.to_custom_byte_repr()?).as_str();
+                            } else {
+                                cus_str = format!("({})", &r.to_custom_byte_repr()?);
+                            }
+                        }
+                        HirKind::Group(g) => {
+                            if !cus_str.is_empty() {
+                                cus_str = cus_str
+                                    + "|"
+                                    + format!("({})", &g.to_custom_byte_repr()?).as_str();
+                            } else {
+                                cus_str = format!("({})", &g.to_custom_byte_repr()?);
+                            }
+                        }
                         HirKind::Concat(concat) => {
                             if !cus_str.is_empty() {
-                                cus_str =
-                                    cus_str + "|" + format!("({})", (&IterableHirKind::Concat(concat.to_vec()).to_custom_byte_repr()?)).as_str();
+                                cus_str = cus_str
+                                    + "|"
+                                    + format!(
+                                        "({})",
+                                        (&IterableHirKind::Concat(concat.to_vec())
+                                            .to_custom_byte_repr()?)
+                                    )
+                                    .as_str();
                             } else {
-                                cus_str = IterableHirKind::Concat(concat.to_vec()).to_custom_byte_repr()?;
+                                cus_str = IterableHirKind::Concat(concat.to_vec())
+                                    .to_custom_byte_repr()?;
                             }
                         }
                         HirKind::Alternation(alternation) => {
-                            cus_str = cus_str + &IterableHirKind::Alternation(alternation.to_vec()).to_custom_byte_repr()?;
+                            cus_str = cus_str
+                                + &IterableHirKind::Alternation(alternation.to_vec())
+                                    .to_custom_byte_repr()?;
                         }
                     }
                 }
                 Ok(cus_str)
-            },
+            }
             IterableHirKind::Concat(c) => {
                 let mut cus_str = String::new();
                 for member in c {
@@ -186,20 +212,24 @@ impl ToCustomStringRepr for IterableHirKind {
                             cus_str = cus_str + &literal.to_custom_byte_repr()?;
                         }
                         HirKind::Class(c) => cus_str = cus_str + &c.to_custom_byte_repr()?,
-                        HirKind::Anchor(a) => cus_str = cus_str +&a.to_custom_byte_repr()?,
+                        HirKind::Anchor(a) => cus_str = cus_str + &a.to_custom_byte_repr()?,
                         HirKind::WordBoundary(_) => todo!(),
-                        HirKind::Repetition(r) => cus_str = cus_str+&r.to_custom_byte_repr()?,
+                        HirKind::Repetition(r) => cus_str = cus_str + &r.to_custom_byte_repr()?,
                         HirKind::Group(g) => cus_str = cus_str + &g.to_custom_byte_repr()?,
                         HirKind::Concat(concat) => {
-                            cus_str = cus_str + &IterableHirKind::Concat(concat.to_vec()).to_custom_byte_repr()?;
+                            cus_str = cus_str
+                                + &IterableHirKind::Concat(concat.to_vec())
+                                    .to_custom_byte_repr()?;
                         }
                         HirKind::Alternation(alternation) => {
-                            cus_str = cus_str + &(IterableHirKind::Alternation(alternation.to_vec()).to_custom_byte_repr()?);
+                            cus_str = cus_str
+                                + &(IterableHirKind::Alternation(alternation.to_vec())
+                                    .to_custom_byte_repr()?);
                         }
                     }
                 }
                 Ok(cus_str)
-            },
+            }
         }
     }
 }
@@ -214,10 +244,12 @@ impl ToCustomStringRepr for Group {
             HirKind::Repetition(_) => todo!(),
             HirKind::Group(g) => g.to_custom_byte_repr(),
             HirKind::Concat(c) => IterableHirKind::Concat(c.to_vec()).to_custom_byte_repr(),
-            HirKind::Alternation(a) => IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr(),
+            HirKind::Alternation(a) => {
+                IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr()
+            }
         };
         Ok("(".to_owned() + &recur? + ")")
-    
+
         //   Err(AnyError::new(CustomRegexParserError::UnsupportedCaptureGroup))
     }
 }
@@ -245,12 +277,6 @@ fn get_char_range_byte_class(class_range: &ClassUnicodeRange) -> Option<UTFBytes
         None
     }
 }
-
-
-
-
-
-
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 enum UTFBytesLength {
@@ -349,33 +375,168 @@ impl PadLeftZeroFourBytesRep for char {
     }
 }
 
-
-pub fn compile_to_custom_regex_string(regex_pattern:&str)->Result<String> {
+pub fn regex_pattern_to_custom_pattern(regex_pattern: &str) -> Result<String> {
     let hir = Parser::new().parse(regex_pattern)?;
     hir.to_custom_byte_repr()
 }
 
-
-fn replace_tcc_symbol(tcc_pattern:&str) -> String {
-        tcc_pattern.replace("c", "[ก-ฮ]").replace("t","[่-๋]?")
+pub fn replace_tcc_symbol(tcc_pattern: &str) -> String {
+    tcc_pattern.replace("c", "[ก-ฮ]").replace("t", "[่-๋]?")
 }
 #[test]
 fn tcc_regex_test_cases() {
-
+    // เc็c 1
+    // เcctาะ 2
+    // เccีtยะ 3
+    // เcc็c 4
+    // เcิc์c 5
+    // เcิtc 6
+    // เcีtยะ? 7
+    // เcืtอะ? 8
+    // เctา?ะ? 9
+    // cัtวะ 10
+    // c[ัื]tc[ุิะ]? 11
+    // c[ิุู]์ 12
+    // c[ะ-ู]t 13
+    // c็ 14
+    // ct[ะาำ]? 15
+    // แc็c 16
+    // แcc์ 17
+    // แctะ 18
+    // แcc็c 19
+    // แccc์ 20
+    // โctะ 21
+    // [เ-ไ]ct 22
     let case_1 = replace_tcc_symbol("^เc็c");
     let case_2 = replace_tcc_symbol("^เcctาะ");
     let case_3 = replace_tcc_symbol("^เccีtยะ");
-    assert_eq!(compile_to_custom_regex_string(&case_1).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ]");
-    assert_eq!(compile_to_custom_regex_string(&case_2).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ](\x00[่-๋])?\x00า\x00ะ");
-    assert_eq!(compile_to_custom_regex_string(&case_3).unwrap(),r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย\x00ะ");
+    let case_4 = replace_tcc_symbol("^เcc็c");
+    let case_5 = replace_tcc_symbol("^เcิc์c");
+    let case_6 = replace_tcc_symbol("^เcิtc");
+    let case_7 = replace_tcc_symbol("^เcีtยะ?");
+    let case_8 = replace_tcc_symbol("^เcืtอะ?");
+    let case_9 = replace_tcc_symbol("^เctา?ะ?");
+    let case_10 = replace_tcc_symbol("^cัtวะ");
+    let case_11 = replace_tcc_symbol("^c[ัื]tc[ุิะ]?");
+    let case_12 = replace_tcc_symbol("^c[ิุู]์");
+    let case_13 = replace_tcc_symbol("^c[ะ-ู]t");
+    let case_14 = replace_tcc_symbol("^c็");
+    let case_15 = replace_tcc_symbol("^ct[ะาำ]?");
+    let case_16 = replace_tcc_symbol("^แc็c");
+    let case_17 = replace_tcc_symbol("^แcc์");
+    let case_18 = replace_tcc_symbol("^แctะ");
+    let case_19 = replace_tcc_symbol("^แcc็c");
+    let case_20 = replace_tcc_symbol("^แccc์");
+    let case_21 = replace_tcc_symbol("^โctะ");
+    let case_22 = replace_tcc_symbol("^[เ-ไ]ct");
 
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_1).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ]"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_2).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ](\x00[่-๋])?\x00า\x00ะ"
+    );
+
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_3).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย\x00ะ"
+    );
+
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_4).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00็\x00[ก-ฮ]"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_5).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00ิ\x00[ก-ฮ]\x00์\x00[ก-ฮ]"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_6).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00ิ(\x00[่-๋])?\x00[ก-ฮ]"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_7).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย(\x00ะ)?"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_8).unwrap(),
+        r"^\x00เ\x00[ก-ฮ]\x00ื(\x00[่-๋])?\x00อ(\x00ะ)?"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_9).unwrap(),
+        r"^\x00เ\x00[ก-ฮ](\x00[่-๋])?(\x00า)?(\x00ะ)?"
+    );
+
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_10).unwrap(),
+        r"^\x00[ก-ฮ]\x00ั(\x00[่-๋])?\x00ว\x00ะ"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_11).unwrap(),
+        r"^\x00[ก-ฮ]\x00[ั-ัื-ื](\x00[่-๋])?\x00[ก-ฮ](\x00[ะ-ะิ-ิุ-ุ])?"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_12).unwrap(),
+        r"^\x00[ก-ฮ]\x00[ิ-ิุ-ู]\x00์"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_13).unwrap(),
+        r"^\x00[ก-ฮ]\x00[ะ-ู](\x00[่-๋])?"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_14).unwrap(),
+        r"^\x00[ก-ฮ]\x00็"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_15).unwrap(),
+        r"^\x00[ก-ฮ](\x00[่-๋])?(\x00[ะ-ะา-ำ])?"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_16).unwrap(),
+        r"^\x00แ\x00[ก-ฮ]\x00็\x00[ก-ฮ]"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_17).unwrap(),
+        r"^\x00แ\x00[ก-ฮ]\x00[ก-ฮ]\x00์"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_18).unwrap(),
+        r"^\x00แ\x00[ก-ฮ](\x00[่-๋])?\x00ะ"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_19).unwrap(),
+        r"^\x00แ\x00[ก-ฮ]\x00[ก-ฮ]\x00็\x00[ก-ฮ]"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_20).unwrap(),
+        r"^\x00แ\x00[ก-ฮ]\x00[ก-ฮ]\x00[ก-ฮ]\x00์"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_21).unwrap(),
+        r"^\x00โ\x00[ก-ฮ](\x00[่-๋])?\x00ะ"
+    );
+    assert_eq!(
+        regex_pattern_to_custom_pattern(&case_22).unwrap(),
+        r"^\x00[เ-ไ]\x00[ก-ฮ](\x00[่-๋])?"
+    );
+
+    let look_ahead_case_1 = replace_tcc_symbol("^(เccีtย)[เ-ไก-ฮ]");
+    let look_ahead_1_regex = regex_pattern_to_custom_pattern(&look_ahead_case_1).unwrap();
+    let look_ahead_case_2 = replace_tcc_symbol(r"^(เc[ิีุู]tย)[เ-ไก-ฮ]");
+    let look_ahead_2_regex = regex_pattern_to_custom_pattern(&look_ahead_case_2).unwrap();
+    assert!(
+        (look_ahead_1_regex == r"^(\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย)\x00[เ-ไก-ฮ]"
+            || look_ahead_1_regex == r"^(\x00เ\x00[ก-ฮ]\x00[ก-ฮ]\x00ี(\x00[่-๋])?\x00ย)\x00[ก-ฮเ-ไ]")
+    );
+    assert_eq!(
+        look_ahead_2_regex,
+        r"^(\x00เ\x00[ก-ฮ]\x00[ิ-ีุ-ู](\x00[่-๋])?\x00ย)\x00[ก-ฮเ-ไ]"
+    );
 }
 #[test]
 fn test_regex_parser() {
-
-
-    let hir = Parser::new().parse("\n^เ[ก-ฮ]็?[ก-ฮ]").unwrap();
+    let hir = Parser::new().parse("[ัื]").unwrap();
     println!("{:?}", hir);
-  
-
 }
