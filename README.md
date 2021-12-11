@@ -7,14 +7,22 @@ with Python and Node bindings. Formerly oxidized-thainlp.
 
 - Thai word tokenizer
   - use maximal-matching dictionary-based tokenization algorithm and honor Thai Character Cluster boundaries
-    - [2x faster](https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb) than similar pure Python implementation (PyThaiNLP's newmm)
-  - support custom dictionary
-  - default dictionary included (62,000 words, a copy [from PyThaiNLP](https://github.com/PyThaiNLP/pythainlp))
+    - [2.5x faster](https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb) than similar pure Python implementation (PyThaiNLP's newmm)
+  - load a dictionary from a plain text file (one word per line) or from `Vec<String>`
+
+
+## Dictionary file
+
+- For the interest of library size, nlpO3 does not assume what dictionary the developer would like to use.
+  It does not come with a dictionary. A dictionary is needed for the dictionary-based word tokenizer.
+- For tokenization dictionary, try
+  - [words_th.tx](https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt) from [PyThaiNLP](https://github.com/PyThaiNLP/pythainlp/) - around 62,000 words (CC0)
+  - [word break dictionary](https://github.com/tlwg/libthai/tree/master/data) from [libthai](https://github.com/tlwg/libthai/) - consists of dictionaries in different categories, with make script (LGPL-2.1)
 
 
 ## Usage
 
-### Command line interface
+### Command-line interface
 
 - [nlpo3-cli](nlpo3-cli/) <a href="https://crates.io/crates/nlpo3-cli/"><img alt="crates.io" src="https://img.shields.io/crates/v/nlpo3-cli.svg"/></a>
 
@@ -27,9 +35,10 @@ echo "ฉันกินข้าว" | nlpo3 segment
 - [Python](nlpo3-python/) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
 
 ```python
-from nlpo3 import segment
+from nlpo3 import load_dict, segment
 
-segment("สวัสดีครับ")
+load_dict("path/to/dict.file", "dict_name")
+segment("สวัสดีครับ", "dict_name")
 ```
 
 ### As Rust library
@@ -40,7 +49,33 @@ In `Cargo.toml`:
 ```toml
 [dependencies]
 # ...
-nlpo3 = "1.2.0"
+nlpo3 = "1.3.2"
+```
+
+Create a tokenizer using a dictionary from file,
+then use it to tokenize a string (safe mode = true, and parallel mode = false):
+```rust
+use nlpo3::tokenizer::newmm::NewmmTokenizer;
+use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
+
+let tokenizer = NewmmTokenizer::new("path/to/dict.file");
+let tokens = tokenizer.segment("ห้องสมุดประชาชน", true, false).unwrap();
+```
+
+Create a tokenizer using a dictionary from a vector of Strings:
+```rust
+let words = vec!["ปาลิเมนต์".to_string(), "คอนสติติวชั่น".to_string()];
+let tokenizer = NewmmTokenizer::from_word_list(words);
+```
+
+Add words to an existing tokenizer:
+```rust
+tokenizer.add_word(&["มิวเซียม"]);
+```
+
+Remove words from an existing tokenizer:
+```rust
+tokenizer.remove_word(&["กระเพรา", "ชานชลา"]);
 ```
 
 ## Build
@@ -68,6 +103,10 @@ cargo build --release
 
 Check `target/` for build artifacts.
 
+
+## Development documents
+
+- [Notes on custom string](src/NOTE_ON_STRING.md)
 
 ## Issues
 

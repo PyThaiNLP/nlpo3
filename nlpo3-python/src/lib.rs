@@ -1,69 +1,110 @@
+//! Python-binding for nlpO3, an natural language process library.
+//!
+//! Provides a tokenizer.
+//!
+//! Authors:
+//! Thanathip Suntorntip
+//! Arthit Suriyawongkul
+
+use std::sync::Mutex;
+
 use ahash::AHashMap as HashMap;
 use lazy_static::lazy_static;
-use nlpo3::tokenizer;
-use nlpo3::tokenizer::newmm_custom::Newmm;
+use nlpo3::tokenizer::newmm::NewmmTokenizer;
+use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 use pyo3::prelude::*;
 use pyo3::types::PyString;
 use pyo3::{exceptions, wrap_pyfunction};
-use std::sync::Mutex;
-use tokenizer::tokenizer_trait::Tokenizer;
+
 lazy_static! {
-    static ref DICT_COLLECTION:Mutex<HashMap<String,Box<Newmm>>> = Mutex::new(HashMap::new());
-    // static ref DEFAULT_DICT:Newmm = Newmm::new(None);
+    static ref DICT_COLLECTION: Mutex<HashMap<String, Box<NewmmTokenizer>>> =
+        Mutex::new(HashMap::new());
 }
 
-// / segment(text, dict_name, safe, parallel, /)
-// / --
-// /
-// / This function is newmm algorithhm.
-// / Uses only default dict.
-// / Can use multithreading, but takes a lot of memory.
-
-// / returns list of valid utf-8 bytes list
-// / signature:    (text: str, safe = false, parallel = false) -> List[List[u8]]
+/// Break text into tokens.
+/// Use newmm algorithhm.
+/// Can use multithreading, but takes a lot of memory.
+/// returns list of valid utf-8 bytes list
+/// signature: (text: str, dict_name: str, safe: boolean = false, parallel: boolean = false) -> List[List[u8]]
 #[pyfunction]
-fn segment(
-    text: &PyString,
-    dict_name: &str,
-    safe: Option<bool>,
-    parallel: Option<bool>,
-) -> PyResult<Vec<String>> {
+fn segment(text: &PyString, dict_name: &str, safe: bool, parallel: bool) -> PyResult<Vec<String>> {
     if let Some(loaded_dict) = DICT_COLLECTION.lock().unwrap().get(dict_name) {
         let result = loaded_dict.segment_to_string(text.to_str()?, safe, parallel);
         Ok(result)
     } else {
         Err(exceptions::PyRuntimeError::new_err(format!(
-            "Dictionary {} does not exist.",
+            "Dictionary name {} does not exist.",
             dict_name
         )))
     }
 }
 
-/// load_dict(file_path, dict_name /)
-/// --
-///
-/// This function loads a dictionary file and add it to dict collection
-/// Dict file must be a file of words seperate by line.
-
-/// returns a string of loading result
+/// Load a dictionary file to the dict collection.
+/// Dictionary file must one word per line.
+/// returns a tuple of string of loading result and a boolean
+/// signature: (file_path: str, dict_name: str) -> (str, boolean)
 #[pyfunction]
-fn load_dict(file_path: &str, dict_name: &str) -> PyResult<String> {
+fn load_dict(file_path: &str, dict_name: &str) -> PyResult<(String, bool)> {
     let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
-    if let Some(_) = dict_col_lock.get(dict_name) {
-        Ok(format!(
-            "Failed: dictionary {} exists, please use another name.",
-            dict_name
+    if dict_col_lock.get(dict_name).is_some() {
+        Ok((
+            format!(
+                "Failed: dictionary name {} already exists, please use another name.",
+                dict_name
+            ),
+            false,
         ))
     } else {
-        let newmm_dict = Newmm::new(Some(file_path));
-        dict_col_lock.insert(dict_name.to_owned(), Box::new(newmm_dict));
+        let tokenizer = NewmmTokenizer::new(file_path);
+        dict_col_lock.insert(dict_name.to_owned(), Box::new(tokenizer));
 
-        Ok(format!(
-            "Successful: dictionary name {} from file {} has been successfully loaded",
-            dict_name, file_path
+        Ok((
+            format!(
+                "Successful: file {} has been successfully loaded to dictionary name {}.",
+                file_path, dict_name
+            ),
+            true,
         ))
     }
 }
+
+/* 
+/// Add words to existing dictionary
+#[pyfunction]
+fn add_word(dict_name: &str, words: Vec<&str>) -> PyResult<(String, bool)> {
+    let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
+    if let Some(newmm_dict) = dict_col_lock.get(dict_name) {
+        newmm_dict.add_word(&words);
+        Ok((format!("Add new word(s) successfully."), true))
+    } else {
+        Ok((
+            format!(
+                "Cannot add new word(s) - dictionary instance named '{}' does not exist.",
+                dict_name
+            ),
+            false,
+        ))
+    }
+}
+
+/// Remove words from existing dictionary
+#[pyfunction]
+fn remove_word(dict_name: &str, words: Vec<&str>) -> PyResult<(String, bool)> {
+    let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
+    if let Some(newmm_dict) = dict_col_lock.get(dict_name) {
+        newmm_dict.remove_word(&words);
+        Ok((format!("Remove word(s) successfully."), true))
+    } else {
+        Ok((
+            format!(
+                "Cannot remove word(s) - dictionary instance named '{}' does not exist.",
+                dict_name
+            ),
+            false,
+        ))
+    }
+}
+*/
 
 #[pymodule]
 fn _nlpo3_python_backend(_py: Python, m: &PyModule) -> PyResult<()> {

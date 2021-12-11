@@ -13,6 +13,13 @@ Rust Borrow Checker and this author's (Thanathip) little experience.
 
 Rust Code: Thanathip Suntorntip (Gorlph)
 */
+use std::borrow::BorrowMut;
+
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+
+use crate::fixed_bytes_str::four_bytes::{
+    CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
+};
 
 #[derive(Debug)]
 struct TrieNode {
@@ -29,7 +36,6 @@ impl Default for TrieNode {
 impl TrieNode {
     pub fn new() -> Self {
         Self {
-            // text: None,
             children: HashMap::default(),
             end: false,
         }
@@ -38,14 +44,17 @@ impl TrieNode {
     fn find_child(&self, word: &char) -> Option<&Self> {
         self.children.get(word)
     }
+
     #[allow(dead_code)]
     fn remove_child(&mut self, word: &char) {
         self.children.remove(word);
     }
+
     #[allow(dead_code)]
     fn find_mut_child(&mut self, word: &char) -> Option<&mut Self> {
         self.children.get_mut(word)
     }
+
     #[allow(dead_code)]
     fn set_not_end(&mut self) {
         self.end = false;
@@ -63,21 +72,20 @@ impl TrieNode {
             .add_word(&input_word.substring(1, input_word.chars_len()));
     }
 
-    fn remove_word_from_node(&mut self, input_word: &CustomString) {
+    fn remove_word(&mut self, input_word: &CustomString) {
         let mut word = input_word;
         let char_count = word.chars_len();
-        // if has atleast 1 char
-        if word.chars_len() >= BYTES_PER_CHAR {
+        // if has at least 1 char
+        if char_count >= 1 {
             let character = word.get_chars_content().get(0).unwrap();
             if let Some(child) = self.find_mut_child(character) {
                 // move 1 character
                 let substring_of_word = word.substring(1, word.chars_len());
-                // word = &word.substring(1, word.chars_len());
                 if char_count == 1 {
                     child.set_not_end();
                 }
-                child.remove_word_from_node(word);
                 word = &substring_of_word;
+                child.remove_word(word);
                 if !child.end && child.children.is_empty() {
                     self.remove_child(character);
                 }
@@ -87,7 +95,8 @@ impl TrieNode {
 }
 
 #[derive(Debug)]
-/// This version of Trie still stores custom bytes vector as words, but prefix operation and its node uses char instead
+// This version of Trie still stores custom bytes vector as words,
+// but prefix operation and its node uses char instead.
 pub struct TrieChar {
     words: HashSet<CustomStringBytesVec>,
     root: TrieNode,
@@ -100,12 +109,11 @@ impl TrieChar {
             root: TrieNode::new(),
         };
         for word in words.iter() {
-            if !word.is_empty() {
-                instance.add(word);
-            }
+            instance.add(word);
         }
         instance
     }
+
     #[allow(dead_code)]
     fn remove_word_from_set(&mut self, word: &CustomString) {
         self.words.remove(word.raw_content());
@@ -113,19 +121,22 @@ impl TrieChar {
 
     pub fn add(&mut self, word: &CustomString) {
         let stripped_word = word.trim();
-        self.words.insert(stripped_word.raw_content().into());
-        let current_cursor = self.root.borrow_mut();
-        current_cursor.add_word(&stripped_word);
+        if !stripped_word.is_empty() {
+            self.words.insert(stripped_word.raw_content().into());
+            let current_cursor = self.root.borrow_mut();
+            current_cursor.add_word(&stripped_word);
+        }
     }
 
     pub fn remove(&mut self, word: &CustomString) {
         let stripped_word = word.trim();
-        if self.words.contains(stripped_word.raw_content()) {
-            self.remove_word_from_set(&stripped_word);
-            self.root.remove_word_from_node(&stripped_word);
+        if !stripped_word.is_empty() {
+            if self.words.contains(stripped_word.raw_content()) {
+                self.remove_word_from_set(&stripped_word);
+                self.root.remove_word(&stripped_word); // remove from node
+            }
         }
     }
-
 
     pub fn contain(&self, word: &CustomString) -> bool {
         self.words.contains(word.raw_content())
@@ -138,6 +149,7 @@ impl TrieChar {
     pub fn amount_of_words(&self) -> usize {
         self.words.len()
     }
+
     pub fn prefix_ref<'p, 't>(
         prefix: &'p CustomString,
         dict_trie: &'t Self,
@@ -165,4 +177,24 @@ impl TrieChar {
         }
         result
     }
+}
+
+#[test]
+fn test_add_and_remove_word() {
+    let mut trie = TrieChar::new(&[CustomString::new("ศาล")]);
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.add(&CustomString::new("ศาล"));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.add(&CustomString::new("  ศาล "));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.add(&CustomString::new("ศาลา"));
+    assert_eq!(trie.amount_of_words(), 2);
+    trie.remove(&CustomString::new("ศาลา"));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.remove(&CustomString::new("ลา"));
+    assert_eq!(trie.amount_of_words(), 1);
+    trie.remove(&CustomString::new("ศาล"));
+    assert_eq!(trie.amount_of_words(), 0);
+    trie.remove(&CustomString::new(""));
+    assert_eq!(trie.amount_of_words(), 0);
 }

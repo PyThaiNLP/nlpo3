@@ -10,9 +10,9 @@ Credits:
     * Python code: Korakot Chaovavanich
     * Rust Code Translation: Thanathip Suntorntip
 */
-use rustc_hash::FxHashSet as HashSet;
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
+use rustc_hash::FxHashSet as HashSet;
 
 use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLengthByteSlice,BYTES_PER_CHAR};
 use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern,replace_tcc_symbol};
@@ -51,6 +51,7 @@ lazy_static! {
     )
     .unwrap();
 }
+
 lazy_static! {
     static ref LOOKAHEAD_TCC: Regex = Regex::new(
         &[
@@ -61,7 +62,8 @@ lazy_static! {
     )
     .unwrap();
 }
-pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize>{
+
+pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
     let mut set: HashSet<usize> = HashSet::default();
     set.reserve(custom_text_type.chars_len() / 10);
     let mut txt = custom_text_type;
