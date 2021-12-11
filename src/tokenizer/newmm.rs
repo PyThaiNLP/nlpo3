@@ -1,9 +1,11 @@
 
+use std::{fmt::Display, error::Error, collections::VecDeque, path::PathBuf};
+
 use super::{
-    dict_reader_custom::{create_dict_trie, DictSource},
-    tcc_custom,
+    dict_reader::{create_dict_trie, DictSource},
+    tcc,
     tokenizer_trait::Tokenizer,
-    trie_char_ver::TrieChar as Trie,
+    trie_char::TrieChar as Trie,
 };
 use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
 /**
@@ -30,17 +32,7 @@ use rayon::prelude::*;
 use regex::bytes::Regex;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
-use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, CustomStringBytesSlice, FixedCharsLengthByteSlice,
-    BYTES_PER_CHAR,
-};
 
-use super::{
-    dict_reader::{create_dict_trie, DictSource},
-    tcc,
-    tokenizer_trait::Tokenizer,
-    trie_char::TrieChar as Trie,
-};
 
 const MAX_GRAPH_SIZE: usize = 50;
 const USE_MULTITHREAD_THRESHOLD: usize = 10000;

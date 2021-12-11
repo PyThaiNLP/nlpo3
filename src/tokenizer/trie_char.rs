@@ -13,13 +13,9 @@ Rust Borrow Checker and this author's (Thanathip) little experience.
 
 Rust Code: Thanathip Suntorntip (Gorlph)
 */
-use std::borrow::BorrowMut;
 
-use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
-use crate::fixed_bytes_str::four_bytes::{
-    CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
-};
+
 
 #[derive(Debug)]
 struct TrieNode {
