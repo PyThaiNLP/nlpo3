@@ -108,12 +108,22 @@ impl ToCustomStringRepr for Class {
 }
 impl ToCustomStringRepr for Repetition {
     fn to_custom_byte_repr(&self) -> Result<String> {
-        let symbol = match self.kind {
-            regex_syntax::hir::RepetitionKind::ZeroOrOne => Ok("?"),
-            regex_syntax::hir::RepetitionKind::ZeroOrMore => Ok("*"),
-            regex_syntax::hir::RepetitionKind::OneOrMore => Ok("+"),
-            regex_syntax::hir::RepetitionKind::Range(_) => {
-                Err(UnsupportedCustomRegexParserError::RepetitionRange)
+        let symbol:Result<String> = match &self.kind {
+            regex_syntax::hir::RepetitionKind::ZeroOrOne => Ok("?".to_string()),
+            regex_syntax::hir::RepetitionKind::ZeroOrMore => Ok("*".to_string()),
+            regex_syntax::hir::RepetitionKind::OneOrMore => Ok("+".to_string()),
+            regex_syntax::hir::RepetitionKind::Range(r) => {
+                match r {
+                    regex_syntax::hir::RepetitionRange::Exactly(e) => {
+                        Ok(format!("{{{}}}",e))
+                    },
+                    regex_syntax::hir::RepetitionRange::AtLeast(l) => {
+                        Ok(format!("{{{},}}",l))
+                    },
+                    regex_syntax::hir::RepetitionRange::Bounded(start, end) => {
+                        Ok(format!("{{{},{}}}",start,end))
+                    }
+                }
             }
         };
 
@@ -130,7 +140,7 @@ impl ToCustomStringRepr for Repetition {
                 IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr()
             }
         };
-        Ok("(".to_owned() + &repeated_expression? + ")" + symbol?)
+        Ok("(".to_owned() + &repeated_expression? + ")" + &symbol?)
     }
 }
 impl ToCustomStringRepr for IterableHirKind {
