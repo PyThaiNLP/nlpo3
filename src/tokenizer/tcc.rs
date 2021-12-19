@@ -14,8 +14,10 @@ use lazy_static::lazy_static;
 use regex::bytes::Regex;
 use rustc_hash::FxHashSet as HashSet;
 
-use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLengthByteSlice,BYTES_PER_CHAR};
-use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern,replace_tcc_symbol};
+use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern, replace_tcc_symbol};
+use crate::four_bytes_str::custom_string::{
+    CustomStringBytesSlice, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
+};
 
 // regex crate does not support look-any-direction
 

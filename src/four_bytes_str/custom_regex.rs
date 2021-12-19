@@ -1,17 +1,14 @@
 // This is a result of an attempt to create a formatter
-// which translates normal, human readable thai regex 
+// which translates normal, human readable thai regex
 // into 4-bytes zero-left-pad bytes regex pattern string
 
 use anyhow::{Error as AnyError, Result};
 use regex_syntax::{
-
     hir::{Anchor, Class, Group, Literal as LiteralEnum, Repetition},
     hir::{ClassUnicodeRange, Hir, HirKind},
     is_meta_character, Parser,
 };
 use std::{error::Error, fmt::Display};
-
-
 
 trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
@@ -108,23 +105,17 @@ impl ToCustomStringRepr for Class {
 }
 impl ToCustomStringRepr for Repetition {
     fn to_custom_byte_repr(&self) -> Result<String> {
-        let symbol:Result<String> = match &self.kind {
+        let symbol: Result<String> = match &self.kind {
             regex_syntax::hir::RepetitionKind::ZeroOrOne => Ok("?".to_string()),
             regex_syntax::hir::RepetitionKind::ZeroOrMore => Ok("*".to_string()),
             regex_syntax::hir::RepetitionKind::OneOrMore => Ok("+".to_string()),
-            regex_syntax::hir::RepetitionKind::Range(r) => {
-                match r {
-                    regex_syntax::hir::RepetitionRange::Exactly(e) => {
-                        Ok(format!("{{{}}}",e))
-                    },
-                    regex_syntax::hir::RepetitionRange::AtLeast(l) => {
-                        Ok(format!("{{{},}}",l))
-                    },
-                    regex_syntax::hir::RepetitionRange::Bounded(start, end) => {
-                        Ok(format!("{{{},{}}}",start,end))
-                    }
+            regex_syntax::hir::RepetitionKind::Range(r) => match r {
+                regex_syntax::hir::RepetitionRange::Exactly(e) => Ok(format!("{{{}}}", e)),
+                regex_syntax::hir::RepetitionRange::AtLeast(l) => Ok(format!("{{{},}}", l)),
+                regex_syntax::hir::RepetitionRange::Bounded(start, end) => {
+                    Ok(format!("{{{},{}}}", start, end))
                 }
-            }
+            },
         };
 
         let repeated_expression = match &self.hir.kind() {
@@ -140,7 +131,11 @@ impl ToCustomStringRepr for Repetition {
                 IterableHirKind::Alternation(a.to_vec()).to_custom_byte_repr()
             }
         };
-        Ok("(".to_owned() + &repeated_expression? + ")" + &symbol?)
+        if let HirKind::Group(_) = &self.hir.kind() {
+            Ok(repeated_expression? + &symbol?)
+        } else {
+            Ok("(".to_owned() + &repeated_expression? + ")" + &symbol?)
+        }
     }
 }
 impl ToCustomStringRepr for IterableHirKind {
@@ -267,24 +262,9 @@ impl ToCustomStringRepr for Group {
             }
         };
         Ok("(".to_owned() + &recur? + ")")
-
-        //   Err(AnyError::new(CustomRegexParserError::UnsupportedCaptureGroup))
     }
 }
 
-// fn create_custom_bytes_regex(hir: &Hir) -> Result<String> {
-//     match hir.kind() {
-//         HirKind::Empty => todo!(),
-//         HirKind::Literal(literal) => convert_literal(literal),
-//         HirKind::Class(class) => convert_class(class),
-//         HirKind::Anchor(anchor) => todo!(),
-//         HirKind::WordBoundary(bound) => todo!(),
-//         HirKind::Repetition(rep) => convert_repetition(rep),
-//         HirKind::Group(group) => todo!(),
-//         HirKind::Concat(hirs) => iterate_concat_kind(hirs),
-//         HirKind::Alternation(hirs) => iterate_alteration_kind(hirs),
-//     }
-// }
 fn get_char_range_byte_class(class_range: &ClassUnicodeRange) -> Option<UTFBytesLength> {
     // currently allow only the same byte length
     let start_class = char_class(class_range.start());
@@ -325,6 +305,8 @@ trait PadLeftZeroFourBytesRep {
 fn escape_meta_character(c: char) -> String {
     if is_meta_character(c) {
         format!(r"\{}", c)
+    } else if c.is_whitespace() {
+        format!("{:?}", c).replace("'", "")
     } else {
         c.to_string()
     }
@@ -348,16 +330,27 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
                     UTFBytesLength::Three => r"\x00",
                     UTFBytesLength::Four => r"",
                 };
-                let mut output_four_bytes_rep = format!("{}[", pad_left_0);
+                let mut output_four_bytes_rep: Vec<String> = vec![];
                 // we want to create all syntax of \x00\x00\x00[a-z]
                 for regex_range in urange.iter() {
                     let (start, end) = (regex_range.start(), regex_range.end());
-                    output_four_bytes_rep.push_str(&escape_meta_character(start));
-                    output_four_bytes_rep.push('-');
-                    output_four_bytes_rep.push_str(&escape_meta_character(end));
+                    if start == end {
+                        output_four_bytes_rep
+                            .push(escape_meta_character(end).to_string().replace("'", ""));
+                    } else {
+                        output_four_bytes_rep.push(
+                            format!(
+                                r"{}-{}",
+                                escape_meta_character(start),
+                                escape_meta_character(end)
+                            )
+                            .replace("'", ""),
+                        );
+                    }
                 }
-                format!("{}]", output_four_bytes_rep)
+                format!(r"{}[{}]", pad_left_0, output_four_bytes_rep.join(""))
             } else {
+                println!("{:?}", self);
                 todo!()
             }
         } else {
@@ -369,15 +362,16 @@ impl PadLeftZeroFourBytesRep for char {
     fn to_four_byte_string(&self) -> String {
         let character = self;
 
-        // let mut output:&[u8;4] = &[0;output_size];
-
         let mut bytes_buffer: [u8; 4] = [0; 4];
-
         character.encode_utf8(&mut bytes_buffer);
         // not leading zero yet
         let result = match bytes_buffer {
             [_a, 0, 0, 0] => {
-                format!(r"\x00\x00\x00{}", character)
+                if character.is_alphanumeric() || (character.is_whitespace() && *character == ' ') {
+                    format!(r"\x00\x00\x00{}", character)
+                } else {
+                    format!(r"\x00\x00\x00{:?}", character).replace("'", "")
+                }
             }
             [_a, _b, 0, 0] => {
                 format!(r"\x00\x00{}", character)
@@ -387,8 +381,6 @@ impl PadLeftZeroFourBytesRep for char {
             }
             _ => character.to_string(),
         };
-        // let vec_of_bytes = Vec::with_capacity(4);
-
         result
     }
 }
@@ -403,15 +395,15 @@ pub fn replace_tcc_symbol(tcc_pattern: &str) -> String {
 }
 #[test]
 fn tcc_regex_test_cases() {
-    // เc็c 1
-    // เcctาะ 2
-    // เccีtยะ 3
-    // เcc็c 4
-    // เcิc์c 5
-    // เcิtc 6
-    // เcีtยะ? 7
-    // เcืtอะ? 8
-    // เctา?ะ? 9
+    // เc็c 1 1
+    // เcctาะ 2 2
+    // เccีtยะ 3 3
+    // เcc็c 4 4
+    // เcิc์c 5 5
+    // เcิtc 6 6
+    // เcีtยะ? 7 7
+    // เcืtอะ? 8 8
+    // เctา?ะ? 9 9
     // cัtวะ 10
     // c[ัื]tc[ุิะ]? 11
     // c[ิุู]์ 12
@@ -493,11 +485,11 @@ fn tcc_regex_test_cases() {
     );
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_11).unwrap(),
-        r"^\x00[ก-ฮ]\x00[ั-ัื-ื](\x00[่-๋])?\x00[ก-ฮ](\x00[ะ-ะิ-ิุ-ุ])?"
+        r"^\x00[ก-ฮ]\x00[ัื](\x00[่-๋])?\x00[ก-ฮ](\x00[ะิุ])?"
     );
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_12).unwrap(),
-        r"^\x00[ก-ฮ]\x00[ิ-ิุ-ู]\x00์"
+        r"^\x00[ก-ฮ]\x00[ิุ-ู]\x00์"
     );
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_13).unwrap(),
@@ -509,7 +501,7 @@ fn tcc_regex_test_cases() {
     );
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_15).unwrap(),
-        r"^\x00[ก-ฮ](\x00[่-๋])?(\x00[ะ-ะา-ำ])?"
+        r"^\x00[ก-ฮ](\x00[่-๋])?(\x00[ะา-ำ])?"
     );
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_16).unwrap(),
@@ -554,3 +546,31 @@ fn tcc_regex_test_cases() {
     );
 }
 
+#[test]
+fn newmm_exception_match_cases() {
+    assert_eq!(
+        r"^(\x00\x00\x00\r)?\x00\x00\x00\n",
+        regex_pattern_to_custom_pattern(r"(?x)^\r?\n").unwrap()
+    );
+
+    assert_eq!(
+        r"^(\x00\x00\x00[\t ])+",
+        regex_pattern_to_custom_pattern(r"^[ \t]+").unwrap()
+    );
+    assert_eq!(
+        r"^(\x00\x00\x00[\-A-Za-z])+",
+        regex_pattern_to_custom_pattern(r"(?x)^[-a-zA-Z]+").unwrap()
+    );
+    assert_eq!(
+        r"^(\x00[๐-๙])+(\x00\x00\x00[,\.](\x00[๐-๙])+)*",
+        regex_pattern_to_custom_pattern(r"(?x)^[๐-๙]+([,\.][๐-๙]+)*").unwrap()
+    );
+    assert_eq!(
+        r"^(\x00\x00\x00[0-9])+(\x00\x00\x00[,\.](\x00\x00\x00[0-9])+)*",
+        regex_pattern_to_custom_pattern(r"(?x)^[0-9]+([,\.][0-9]+)*").unwrap()
+    );
+    assert_eq!(
+        r"^(\x00[ก-ฮ]){0,2}$",
+        regex_pattern_to_custom_pattern(r"^[ก-ฮ]{0,2}$").unwrap()
+    )
+}
