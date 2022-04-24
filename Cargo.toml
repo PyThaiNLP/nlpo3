@@ -41,7 +41,7 @@ lazy_static = "1.4.0"
 rayon = "1.5.1"
 regex = "1.5.4"
 rustc-hash = "1.1.0"
-
+regex-syntax = "0.6.25"
 
 [[test]]
 name = "basic"

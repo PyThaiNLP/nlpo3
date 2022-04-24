@@ -11,21 +11,9 @@ with heuristic graph size limit added to avoid exponential wait time.
 
 Rust implementation: ["Thanathip Suntorntip"]
 */
-use std::error::Error;
-use std::fmt::Display;
-use std::{collections::VecDeque, path::PathBuf};
 
-use anyhow::Result as AnyResult;
-use binary_heap_plus::{BinaryHeap, MinComparator};
-use lazy_static::lazy_static;
-use rayon::prelude::*;
-use regex::bytes::Regex;
-use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
-use crate::fixed_bytes_str::four_bytes::{
-    rfind_space_char_index, CustomString, CustomStringBytesSlice, FixedCharsLengthByteSlice,
-    BYTES_PER_CHAR,
-};
+use std::{fmt::Display, error::Error, collections::VecDeque, path::PathBuf};
 
 use super::{
     dict_reader::{create_dict_trie, DictSource},
@@ -33,6 +21,21 @@ use super::{
     tokenizer_trait::Tokenizer,
     trie_char::TrieChar as Trie,
 };
+use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
+
+use crate::four_bytes_str::custom_string::{
+    rfind_space_char_index, CustomString,
+    BYTES_PER_CHAR,
+};
+use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern,replace_tcc_symbol};
+use anyhow::Result as AnyResult;
+use binary_heap_plus::{BinaryHeap, MinComparator};
+use lazy_static::lazy_static;
+use rayon::prelude::*;
+use regex::bytes::Regex;
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+
+
 
 const MAX_GRAPH_SIZE: usize = 50;
 const USE_MULTITHREAD_THRESHOLD: usize = 10000;
@@ -46,25 +49,23 @@ const TEXT_SCAN_END: usize = TEXT_SCAN_POINT + TEXT_SCAN_RIGHT;
 
 type CharacterIndex = usize;
 
+const NON_THAI_READABLE_PATTERN:&[&str;5] = &[
+    r"(?x)^[-a-zA-Z]+",
+    r"(?x)^[0-9]+([,\.][0-9]+)*",
+    r"(?x)^[๐-๙]+([,\.][๐-๙]+)*",
+    r"(?x)^[\ \t]+",
+    r"(?x)^\r?\n"
+];
+
 lazy_static! {
-    // Regex here is very ugly.
-    // Any quantitative symbols (+ * {a,b}) must be used with grouped four bytes.
-    // For example:
-    // Normal String: \d+
-    // Custom String: (\x00\x00\x00\d)+
     static ref NON_THAI_PATTERN: Regex = Regex::new(
-        r"(?x)
-        ^(\x00\x00\x00[-a-zA-Z])+| # Latin characters
-        ^(\x00\x00\x00\d)+(\x00\x00\x00[,\.](\x00\x00\x00\d)+)*| # number
-        ^(\x00[๐-๙])+(\x00\x00\x00[,\.](\x00[๐-๙])+)*| # are you serious, Thai number?
-        ^(\x00\x00\x00[\ \t])+| # space
-        ^(\x00\x00\x00\r)?\x00\x00\x00\n # newline" 
+        &NON_THAI_READABLE_PATTERN.map(|p| {regex_pattern_to_custom_pattern(p).unwrap()}).join("|")
     )
     .unwrap();
 }
 
 lazy_static! {
-    static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(r"^(\x00[ก-ฮ]){0,2}$").unwrap();
+    static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(&regex_pattern_to_custom_pattern(r"^[ก-ฮ]{0,2}$").unwrap()).unwrap();
 }
 
 #[derive(Clone, Debug)]

@@ -1,9 +1,10 @@
+use crate::four_bytes_str::custom_string::CustomString;
+
+use super::trie_char::TrieChar as Trie;
+use rayon::prelude::*;
 use std::io::BufReader;
 use std::{error::Error, io::prelude::*};
 use std::{fs::File, path::PathBuf};
-
-use super::super::fixed_bytes_str::four_bytes::CustomString;
-use super::trie_char::TrieChar as Trie;
 
 pub enum DictSource {
     FilePath(PathBuf),
