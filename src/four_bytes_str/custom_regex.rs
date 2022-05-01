@@ -306,7 +306,7 @@ fn escape_meta_character(c: char) -> String {
     if is_meta_character(c) {
         format!(r"\{}", c)
     } else if c.is_whitespace() {
-        format!("{:?}", c).replace("'", "")
+        format!("{:?}", c).replace('\'', "")
     } else {
         c.to_string()
     }
@@ -316,7 +316,7 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
         let urange = self;
         let char_classes = urange
             .iter()
-            .map(|range| get_char_range_byte_class(range))
+            .map(get_char_range_byte_class)
             .collect::<Vec<_>>();
 
         if char_classes.iter().all(|elem| elem.is_some()) {
@@ -344,7 +344,7 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
                                 escape_meta_character(start),
                                 escape_meta_character(end)
                             )
-                            .replace("'", ""),
+                            .replace('\'', ""),
                         );
                     }
                 }
@@ -370,7 +370,7 @@ impl PadLeftZeroFourBytesRep for char {
                 if character.is_alphanumeric() || (character.is_whitespace() && *character == ' ') {
                     format!(r"\x00\x00\x00{}", character)
                 } else {
-                    format!(r"\x00\x00\x00{:?}", character).replace("'", "")
+                    format!(r"\x00\x00\x00{:?}", character).replace('\'', "")
                 }
             }
             [_a, _b, 0, 0] => {
@@ -391,7 +391,7 @@ pub fn regex_pattern_to_custom_pattern(regex_pattern: &str) -> Result<String> {
 }
 
 pub fn replace_tcc_symbol(tcc_pattern: &str) -> String {
-    tcc_pattern.replace("c", "[ก-ฮ]").replace("t", "[่-๋]?")
+    tcc_pattern.replace('c', "[ก-ฮ]").replace('t', "[่-๋]?")
 }
 #[test]
 fn tcc_regex_test_cases() {

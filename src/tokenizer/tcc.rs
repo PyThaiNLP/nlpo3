@@ -57,7 +57,7 @@ lazy_static! {
 lazy_static! {
     static ref LOOKAHEAD_TCC: Regex = Regex::new(
         &[
-            "^(เccีtย)[เ-ไก-ฮ]",//เccีtย(?=[เ-ไก-ฮ]|$)
+            r"^(เccีtย)[เ-ไก-ฮ]",//เccีtย(?=[เ-ไก-ฮ]|$)
             r"^(เc[ิีุู]tย)[เ-ไก-ฮ]",//เc[ิีุู]tย(?=[เ-ไก-ฮ]|$)
         ].map(|pattern| {regex_pattern_to_custom_pattern(&replace_tcc_symbol(pattern)).unwrap()})
         .join("|")
@@ -99,34 +99,4 @@ pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
         }
     }
     set
-}
-
-#[allow(dead_code)]
-pub fn tcc_segment(custom_text_type: &CustomStringBytesSlice) -> Vec<&CustomStringBytesSlice> {
-    let mut txt = custom_text_type;
-    let mut tcc_result: Vec<&[u8]> = Vec::with_capacity(txt.len() / 10);
-    while !txt.is_empty() {
-        if let Some(result) = NON_LOOKAHEAD_TCC.find(txt) {
-            let mut matched = &txt[result.start()..result.end()];
-            let match_length = matched.len();
-            if LOOKAHEAD_TCC.is_match(matched) {
-                // trim one more char to the right.
-                let end_bytes_index = match_length - (1 * BYTES_PER_CHAR);
-                matched = &matched[0..end_bytes_index];
-                tcc_result.push(matched);
-                txt = &txt[end_bytes_index..];
-            } else {
-                tcc_result.push(matched);
-
-                let end_bytes_index = match_length;
-                txt = &txt[end_bytes_index..];
-            }
-        } else {
-            // not thai
-            let first_char = txt.slice_by_char_indice(0, 1);
-            tcc_result.push(first_char);
-            txt = txt.slice_by_char_indice(1, txt.chars_len());
-        }
-    }
-    tcc_result
 }
