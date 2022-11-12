@@ -12,9 +12,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Setup Rust dependencies
-        uses: actions-rs/cargo@v2
-        with:
-          command: check
+        uses: ATiltedTree/setup-rust@v1
 
       - name: Cache Rust files
         uses: actions/cache@v2
