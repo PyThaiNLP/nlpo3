@@ -85,6 +85,8 @@ jobs:
             platform_id: win32
           - os: macos-latest
             pip-path: ~/Library/Caches/pip
+          - os: self-hosted
+            pip-path: ~/Library/Caches/pip
           - os: ubuntu-latest
             pip-path: ~/.cache/pip
           - os: windows-latest
@@ -117,7 +119,7 @@ jobs:
         if: startsWith(matrix.os, 'windows') && matrix.bitness == '32'
 
       - name: Setup Rust dependencies
-        uses: actions-rs/toolchain@v1
+        uses: ATiltedTree/setup-rust@v1
         with:
           rust-version: 1.65.0
 
