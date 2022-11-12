@@ -3,10 +3,10 @@ on:
   push:
     branches:
       - main
-#     paths:
-#       - 'src/**'
-#       - 'tests/**'
-#       - 'Cargo.toml'
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
   pull_request:
     branches:
       - main
