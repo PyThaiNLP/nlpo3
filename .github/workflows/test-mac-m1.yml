@@ -1,4 +1,4 @@
-name: Test main lib (Rust crate)
+name: Test main lib (Mac M1)
 on:
   push:
     branches:
