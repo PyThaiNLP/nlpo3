@@ -3,10 +3,10 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'Cargo.toml'
+#     paths:
+#       - 'src/**'
+#       - 'tests/**'
+#       - 'Cargo.toml'
   pull_request:
     branches:
       - main
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest, self-hosted]
         bitness: [64]  # 32, 64
         include:
           - os: windows-latest
@@ -50,9 +50,9 @@ jobs:
         if: startsWith(matrix.os, 'windows') && matrix.bitness == '32'
 
       - name: Setup Rust dependencies
-        uses: actions-rs/cargo@v1
+        uses: ATiltedTree/setup-rust@v1
         with:
-          command: check
+          rust-version: 1.65.0
 
       - name: Cache Rust files
         uses: actions/cache@v2
