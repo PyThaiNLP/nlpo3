@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Setup Rust dependencies
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v2
         with:
           command: check
 
