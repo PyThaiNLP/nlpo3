@@ -60,7 +60,7 @@ jobs:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest, self-hosted]
         python: [cp36, cp37, cp38, cp39]  # pp37
         bitness: [32, 64]
         manylinux_image: [manylinux2014]
@@ -68,6 +68,9 @@ jobs:
           - os: macos-latest
             bitness: 64
             platform_id: macosx_x86_64
+          - os: self-hosted
+            bitness: 64
+            platform_id: macosx_arm64
           - os: ubuntu-latest
             bitness: 64
             platform_id: manylinux_x86_64
@@ -114,9 +117,9 @@ jobs:
         if: startsWith(matrix.os, 'windows') && matrix.bitness == '32'
 
       - name: Setup Rust dependencies
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/toolchain@v1
         with:
-          command: check
+          rust-version: 1.65.0
 
       - name: Cache Rust files
         uses: actions/cache@v2
