@@ -3,9 +3,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/**'
-      - 'Cargo.toml'
+#     paths:
+#       - 'src/**'
+#       - 'Cargo.toml'
 #       - 'tests/**'
   pull_request:
     branches:
