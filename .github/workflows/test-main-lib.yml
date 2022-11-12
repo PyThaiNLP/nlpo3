@@ -5,8 +5,8 @@ on:
       - main
     paths:
       - 'src/**'
-      - 'tests/**'
       - 'Cargo.toml'
+#       - 'tests/**'
   pull_request:
     branches:
       - main
