@@ -13,6 +13,8 @@ jobs:
 
       - name: Setup Rust dependencies
         uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: 1.65.0
 
       - name: Cache Rust files
         uses: actions/cache@v2
