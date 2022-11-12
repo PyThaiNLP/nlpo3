@@ -3,10 +3,10 @@ on:
   push:
     branches:
       - main
-#     paths:
-#       - 'src/**'
-#       - 'tests/**'
-#       - 'Cargo.toml'
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
   pull_request:
     branches:
       - main
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, self-hosted]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         bitness: [64]  # 32, 64
         include:
           - os: windows-latest
