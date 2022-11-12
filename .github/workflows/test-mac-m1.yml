@@ -1,0 +1,33 @@
+name: Test main lib (Rust crate)
+on:
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: [self-hosted]
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@master
+
+      - name: Setup Rust dependencies
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+      - name: Cache Rust files
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ matrix.os }}-${{ matrix.bitness }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
+
+      - name: Test
+        run: cargo test
