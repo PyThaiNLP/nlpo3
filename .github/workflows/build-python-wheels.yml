@@ -152,6 +152,8 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.9.0
 
       - name: Build Python wheels
         uses: pypa/cibuildwheel@v2.11.2
@@ -175,7 +177,21 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: >
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
           CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
-
+        if: matrix.os != 'self-hosted'
+      - name: Build wheels
+        run: |
+          cd nlpo3-python/
+          python -m cibuildwheel --output-dir ../wheelhouse
+        env:
+          CIBW_ARCHS_MACOS: "arm64"
+          CIBW_TEST_SKIP: "*_arm64"
+          CIBW_BUILD: "${{ matrix.python_build_version }}-macosx_arm64"
+          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.15
+                                  PATH="$HOME/.cargo/bin:$PATH"
+                                  CC=/usr/bin/clang
+                                  CXX=/usr/bin/clang++
+          CIBW_BUILD_FRONTEND: pip
+        if: matrix.os == 'self-hosted'
       - name: Store artifacts
         uses: actions/upload-artifact@v2
         with:
