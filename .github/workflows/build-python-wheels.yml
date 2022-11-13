@@ -61,7 +61,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, self-hosted]
-        python: [cp36, cp37, cp38, cp39]  # pp37
+        python: [cp38, cp39, cp310]  # pp37
         bitness: [32, 64]
         manylinux_image: [manylinux2014]
         include:
@@ -93,6 +93,8 @@ jobs:
             pip-path: ~\AppData\Local\pip\Cache
         exclude:
           - os: macos-latest
+            bitness: 32
+          - os: self-hosted
             bitness: 32
 #          - python: pp37
 #            bitness: 32
@@ -137,7 +139,7 @@ jobs:
             ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
 #        with:
 #          python-version: "3.8"
       - name: Update pip
