@@ -27,7 +27,7 @@ use crate::four_bytes_str::custom_string::{
     rfind_space_char_index, CustomString,
     BYTES_PER_CHAR,
 };
-use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern,replace_tcc_symbol};
+use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern};
 use anyhow::Result as AnyResult;
 use binary_heap_plus::{BinaryHeap, MinComparator};
 use lazy_static::lazy_static;
