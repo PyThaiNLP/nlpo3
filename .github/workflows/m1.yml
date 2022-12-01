@@ -17,6 +17,7 @@ jobs:
 
       - name: Build wheels - py38
         run: |
+            source ~/miniconda3/etc/profile.d/conda.sh
             conda init zsh
             cd nlpo3-python
             conda activate python38
@@ -29,6 +30,7 @@ jobs:
         shell: zsh {0}
       - name: Build wheels - py39
         run: |
+            source ~/miniconda3/etc/profile.d/conda.sh
             conda init zsh
             cd nlpo3-python
             conda activate python39
@@ -41,6 +43,7 @@ jobs:
         shell: zsh {0}
       - name: Build wheels - py310
         run: |
+            source ~/miniconda3/etc/profile.d/conda.sh
             conda init zsh
             cd nlpo3-python
             conda activate python310
