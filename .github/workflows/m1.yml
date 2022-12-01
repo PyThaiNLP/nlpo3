@@ -54,6 +54,6 @@ jobs:
             conda deactivate
             cd ..
         shell: zsh {0}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v2
         with:
           path: ./nlpo3-python/target/wheels/*.whl
