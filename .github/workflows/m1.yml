@@ -1,0 +1,41 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build_wheels_macos:
+    name: Build wheels on macos-11
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust dependencies
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: 1.65.0
+
+      - name: Cache Rust files
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ matrix.os }}-${{ matrix.bitness }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
+      - name: Test
+        run: cargo test
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.11.2
+        with:
+          package-dir: nlpo3-python
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_MACOS: x86_64 arm64
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
