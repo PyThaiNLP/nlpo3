@@ -38,8 +38,8 @@ jobs:
           package-dir: nlpo3-python
           output-dir: wheelhouse
         env:
-          CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_BUILD: ["cp38-macosx_universal2"]
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_BUILD: "cp38-macosx_universal2"
 
       - uses: actions/upload-artifact@v3
         with:
