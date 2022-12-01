@@ -8,10 +8,10 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Rust dependencies
-        uses: ATiltedTree/setup-rust@v1
-        with:
-          rust-version: 1.65.0
+      #- name: Setup Rust dependencies
+      #  uses: ATiltedTree/setup-rust@v1
+      #  with:
+      #    rust-version: 1.65.0
       - name: Test
         run: cargo test
 
