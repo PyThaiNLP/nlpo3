@@ -17,6 +17,7 @@ jobs:
 
       - name: Build wheels
         run: |
+            conda init zsh
             cd nlpo3-python
             conda activate python38
             pip install maturin
