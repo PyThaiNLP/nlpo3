@@ -19,7 +19,7 @@ jobs:
         run: |
             conda init zsh
             cd nlpo3-python
-            conda activate python38 || true
+            $CONDA/bin/activate python38
             python -V
             python -m pip install maturin
             python -m pip list
@@ -31,7 +31,7 @@ jobs:
         run: |
             conda init zsh
             cd nlpo3-python
-            conda activate python39 || true
+            $CONDA/bin/activate python39
             python -V
             python -m pip install maturin
             python -m pip list
@@ -43,7 +43,7 @@ jobs:
         run: |
             conda init zsh
             cd nlpo3-python
-            conda activate python310 || true
+            $CONDA/bin/activate python310
             python -V
             python -m pip install maturin
             python -m pip list
