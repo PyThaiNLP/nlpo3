@@ -5,7 +5,7 @@ on: [push]
 jobs:
   build_wheels_macos:
     name: Build wheels on macos-11
-    runs-on: macos-11
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust dependencies
