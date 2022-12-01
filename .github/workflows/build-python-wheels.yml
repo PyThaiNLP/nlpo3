@@ -116,7 +116,10 @@ jobs:
       - name: Setup Rust dependencies
         uses: actions-rs/toolchain@v1
         with:
-          rust-version: 1.65.0
+          override: true
+          profile: minimal
+          toolchain: stable
+        if: ${{ !startsWith(matrix.os, 'windows') && matrix.bitness != '32' }}
 
       - name: Cache Rust files
         uses: actions/cache@v2
