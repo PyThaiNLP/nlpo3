@@ -60,17 +60,14 @@ jobs:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, self-hosted]
-        python: [cp38, cp39, cp310]  # pp37
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python: [cp36, cp37, cp38, cp39, cp310]  # pp37
         bitness: [32, 64]
         manylinux_image: [manylinux2014]
         include:
           - os: macos-latest
             bitness: 64
             platform_id: macosx_x86_64
-          - os: self-hosted
-            bitness: 64
-            platform_id: macosx_arm64
           - os: ubuntu-latest
             bitness: 64
             platform_id: manylinux_x86_64
@@ -85,16 +82,12 @@ jobs:
             platform_id: win32
           - os: macos-latest
             pip-path: ~/Library/Caches/pip
-          - os: self-hosted
-            pip-path: ~/Library/Caches/pip
           - os: ubuntu-latest
             pip-path: ~/.cache/pip
           - os: windows-latest
             pip-path: ~\AppData\Local\pip\Cache
         exclude:
           - os: macos-latest
-            bitness: 32
-          - os: self-hosted
             bitness: 32
 #          - python: pp37
 #            bitness: 32
@@ -121,9 +114,9 @@ jobs:
         if: startsWith(matrix.os, 'windows') && matrix.bitness == '32'
 
       - name: Setup Rust dependencies
-        uses: ATiltedTree/setup-rust@v1
+        uses: actions-rs/cargo@v1
         with:
-          rust-version: 1.65.0
+          command: check
 
       - name: Cache Rust files
         uses: actions/cache@v2
@@ -139,12 +132,10 @@ jobs:
             ${{ matrix.os }}-${{ matrix.bitness }}-cargo-
 
       - name: Setup Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v2
 #        with:
 #          python-version: "3.8"
-      - name: Update pip
-        run: |
-          python -m pip install -U pip
+
       - name: Cache Python files
         uses: actions/cache@v2
         with:
@@ -152,11 +143,9 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.bitness }}-pip-${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.9.0
 
       - name: Build Python wheels
-        uses: pypa/cibuildwheel@v2.11.2
+        uses: pypa/cibuildwheel@v1.12.0
         with:
           package-dir: nlpo3-python
           output-dir: wheelhouse
@@ -177,21 +166,7 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: >
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
           CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
-        if: matrix.os != 'self-hosted'
-      - name: Build wheels
-        run: |
-          cd nlpo3-python/
-          python -m cibuildwheel --output-dir ../wheelhouse
-        env:
-          CIBW_ARCHS_MACOS: "arm64"
-          CIBW_TEST_SKIP: "*_arm64"
-          CIBW_BUILD: "${{ matrix.python_build_version }}-macosx_arm64"
-          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.15
-                                  PATH="$HOME/.cargo/bin:$PATH"
-                                  CC=/usr/bin/clang
-                                  CXX=/usr/bin/clang++
-          CIBW_BUILD_FRONTEND: pip
-        if: matrix.os == 'self-hosted'
+
       - name: Store artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -221,6 +196,61 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           path: nlpo3-python/dist/*.tar.gz
+  build_wheels_macos:
+    name: Build wheels on M1
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      #- name: Setup Rust dependencies
+      #  uses: ATiltedTree/setup-rust@v1
+      #  with:
+      #    rust-version: 1.65.0
+      - name: Test
+        run: cargo test
+
+      - name: Build wheels - py38
+        run: |
+            source ~/miniconda3/etc/profile.d/conda.sh
+            conda init zsh
+            cd nlpo3-python
+            conda activate python38
+            python -V
+            python -m pip install maturin
+            python -m pip list
+            python -m maturin build
+            conda deactivate
+            cd ..
+        shell: zsh {0}
+      - name: Build wheels - py39
+        run: |
+            source ~/miniconda3/etc/profile.d/conda.sh
+            conda init zsh
+            cd nlpo3-python
+            conda activate python39
+            python -V
+            python -m pip install maturin
+            python -m pip list
+            python -m maturin build
+            conda deactivate
+            cd ..
+        shell: zsh {0}
+      - name: Build wheels - py310
+        run: |
+            source ~/miniconda3/etc/profile.d/conda.sh
+            conda init zsh
+            cd nlpo3-python
+            conda activate python310
+            python -V
+            python -m pip install maturin
+            python -m pip list
+            python -m maturin build
+            conda deactivate
+            cd ..
+        shell: zsh {0}
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./nlpo3-python/target/wheels/*.whl
 
   publish_pypi:
     name: Publish Python package to PyPI
