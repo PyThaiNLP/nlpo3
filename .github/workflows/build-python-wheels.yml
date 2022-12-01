@@ -222,7 +222,7 @@ jobs:
             python -V
             python -m pip install maturin
             python -m pip list
-            python -m maturin build
+            python -m pip wheel . -w build
             conda deactivate
             cd ..
         shell: zsh {0}
@@ -235,7 +235,7 @@ jobs:
             python -V
             python -m pip install maturin
             python -m pip list
-            python -m maturin build
+            python -m pip wheel . -w build
             conda deactivate
             cd ..
         shell: zsh {0}
@@ -248,14 +248,14 @@ jobs:
             python -V
             python -m pip install maturin
             python -m pip list
-            python -m maturin build
+            python -m pip wheel . -w build
             conda deactivate
             cd ..
         shell: zsh {0}
       - name: Store artifacts
         uses: actions/upload-artifact@v2
         with:
-          path: ./nlpo3-python/target/wheels/*.whl
+          path: ./nlpo3-python/build/*.whl
 
   publish_pypi:
     name: Publish Python package to PyPI

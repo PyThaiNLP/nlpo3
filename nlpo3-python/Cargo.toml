@@ -1,6 +1,6 @@
 [package]
 name = "nlpo3-python"
-version = "1.2.5"
+version = "1.2.6"
 edition = "2018"
 license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
