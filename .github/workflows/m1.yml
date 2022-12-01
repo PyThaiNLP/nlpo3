@@ -8,7 +8,7 @@ jobs:
     runs-on: self-hosted
     strategy:
       matrix:
-        python: [cp38]
+        python-version: ["3.8"]
         bitness: [64]
     steps:
       - uses: actions/checkout@v3
