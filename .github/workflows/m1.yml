@@ -15,7 +15,7 @@ jobs:
       - name: Test
         run: cargo test
 
-      - name: Build wheels
+      - name: Build wheels - py38
         run: |
             conda init zsh
             cd nlpo3-python
@@ -24,11 +24,23 @@ jobs:
             python -m pip list
             python -m maturin build
             conda deactivate
+            cd ..
+        shell: zsh {0}
+      - name: Build wheels - py39
+        run: |
+            conda init zsh
+            cd nlpo3-python
             conda activate python39
             python -m pip install maturin
             python -m pip list
             python -m maturin build
             conda deactivate
+            cd ..
+        shell: zsh {0}
+      - name: Build wheels - py310
+        run: |
+            conda init zsh
+            cd nlpo3-python
             conda activate python310
             python -m pip install maturin
             python -m pip list
@@ -36,7 +48,6 @@ jobs:
             conda deactivate
             cd ..
         shell: zsh {0}
-
       - uses: actions/upload-artifact@v3
         with:
           path: ./nlpo3-python/target/wheels/*.whl
