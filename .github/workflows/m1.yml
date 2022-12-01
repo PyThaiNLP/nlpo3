@@ -20,19 +20,19 @@ jobs:
             conda init zsh
             cd nlpo3-python
             conda activate python38
-            pip install maturin
-            pip list
-            maturin build
+            python -m pip install maturin
+            python -m pip list
+            python -m maturin build
             conda deactivate
             conda activate python39
-            pip install maturin
-            pip list
-            maturin build
+            python -m pip install maturin
+            python -m pip list
+            python -m maturin build
             conda deactivate
             conda activate python310
-            pip install maturin
-            pip list
-            maturin build
+            python -m pip install maturin
+            python -m pip list
+            python -m maturin build
             conda deactivate
             cd ..
         shell: zsh {0}
