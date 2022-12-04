@@ -2,6 +2,7 @@
 // which translates normal, human readable thai regex
 // into 4-bytes zero-left-pad bytes regex pattern string
 
+use crate::tokenizer::tcc_rules::replace_tcc_symbol;
 use anyhow::{Error as AnyError, Result};
 use regex_syntax::{
     hir::{Anchor, Class, Group, Literal as LiteralEnum, Repetition},
@@ -9,7 +10,6 @@ use regex_syntax::{
     is_meta_character, Parser,
 };
 use std::{error::Error, fmt::Display};
-use crate::tokenizer::tcc_rules::replace_tcc_symbol;
 trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
 }
@@ -389,5 +389,3 @@ pub fn regex_pattern_to_custom_pattern(regex_pattern: &str) -> Result<String> {
     let hir = Parser::new().parse(regex_pattern)?;
     hir.to_custom_byte_repr()
 }
-
-

@@ -14,9 +14,6 @@ Rust Borrow Checker and this author's (Thanathip) little experience.
 Rust Code: Thanathip Suntorntip (Gorlph)
 */
 
-
-
-
 #[derive(Debug)]
 struct TrieNode {
     children: HashMap<char, Self>,
@@ -126,29 +123,27 @@ impl TrieChar {
 
     pub fn remove(&mut self, word: &CustomString) {
         let stripped_word = word.trim();
-        if !stripped_word.is_empty() {
-            if self.words.contains(stripped_word.raw_content()) {
-                self.remove_word_from_set(&stripped_word);
-                self.root.remove_word(&stripped_word); // remove from node
-            }
+        if !stripped_word.is_empty() && self.words.contains(stripped_word.raw_content()) {
+            self.remove_word_from_set(&stripped_word);
+            self.root.remove_word(&stripped_word); // remove from node
         }
     }
-
+    #[allow(dead_code)]
     pub fn contain(&self, word: &CustomString) -> bool {
         self.words.contains(word.raw_content())
     }
-
+    #[allow(dead_code)]
     pub fn iterate(&self) -> std::collections::hash_set::Iter<'_, Vec<u8>> {
         self.words.iter()
     }
-
+    #[allow(dead_code)]
     pub fn amount_of_words(&self) -> usize {
         self.words.len()
     }
 
-    pub fn prefix_ref<'p, 't>(
+    pub fn prefix_ref<'p>(
         prefix: &'p CustomString,
-        dict_trie: &'t Self,
+        dict_trie: & Self,
     ) -> Vec<&'p CustomStringBytesSlice> {
         let mut result: Vec<&[u8]> = Vec::with_capacity(100);
         let prefix_cpy = prefix;

@@ -30,13 +30,12 @@ use regex::bytes::Regex;
 // ก็
 // อึ
 // หึ
-
 pub fn replace_tcc_symbol(tcc_pattern: &str) -> String {
     tcc_pattern
-        .replace("k", "(cc?[dิ]?[์])?")
+        .replace('k', "(cc?[dิ]?[์])?")
         .replace('c', "[ก-ฮ]")
         .replace('t', "[่-๋]?")
-        .replace("d", &"อูอุ".replace("อ", ""))
+        .replace('d', &"อูอุ".replace('อ', ""))
 }
 lazy_static! {
     pub static ref NON_LOOKAHEAD_TCC: Regex = Regex::new(
@@ -70,12 +69,10 @@ lazy_static! {
             r"^หึ",
             r"^(เccีtย)[เ-ไก-ฮ]k",           // look ahead 1
             r"^(เc[ิีุู]tย)[เ-ไก-ฮ]k", // look ahead 2
-        ]
-           .map(|pattern| {
+        ].map(|pattern| {
                 regex_pattern_to_custom_pattern(&replace_tcc_symbol(pattern)).unwrap()
             }).join("|")
-    )
-    .unwrap();
+    ).unwrap();
     pub static ref LOOKAHEAD_TCC: Regex = Regex::new(
         &[
     r"^(เccีtย)[เ-ไก-ฮ]k",           //เccีtย(?=[เ-ไก-ฮ]|$)
@@ -113,7 +110,7 @@ fn tcc_regex_test_cases() {
     // โctะ 21
     // [เ-ไ]ct 22
 
-    let case_1 = replace_tcc_symbol("^เc็c");
+    let case_1 = replace_tcc_symbol("^เc็ck");
     let case_2 = replace_tcc_symbol("^เcctาะ");
     let case_3 = replace_tcc_symbol("^เccีtยะ");
     let case_4 = replace_tcc_symbol("^เcc็c");
@@ -135,10 +132,11 @@ fn tcc_regex_test_cases() {
     let case_20 = replace_tcc_symbol("^แccc์");
     let case_21 = replace_tcc_symbol("^โctะ");
     let case_22 = replace_tcc_symbol("^[เ-ไ]ct");
-    // ([ก-ฮ][ก-ฮ]?[ูุ]?[์])?
+    
+    // This is the only Karan case.
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_1).unwrap(),
-        r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ]"
+        r"^\x00เ\x00[ก-ฮ]\x00็\x00[ก-ฮ](\x00[ก-ฮ](\x00[ก-ฮ])?(\x00[ิุ-ู])?\x00[์])?"
     );
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_2).unwrap(),

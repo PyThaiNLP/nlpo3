@@ -1,3 +1,9 @@
+use super::tcc_rules::{LOOKAHEAD_TCC, NON_LOOKAHEAD_TCC};
+
+use crate::four_bytes_str::custom_string::{
+    CustomStringBytesSlice, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
+};
+use rustc_hash::FxHashSet as HashSet;
 /**
 The implementation of tokenizer according to Thai Character Clusters (TCCs)
 rules purposed by `Theeramunkong et al. 2000. \
@@ -12,14 +18,7 @@ Credits:
 */
 
 
-use rustc_hash::FxHashSet as HashSet;
-
-use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern};
-use crate::four_bytes_str::custom_string::{
-    CustomStringBytesSlice, FixedCharsLengthByteSlice, BYTES_PER_CHAR,
-};
-use super::tcc_rules::{L,NON_LOOKAHEAD_TCC};
-
+/// Returns a set of "character" indice to cut 
 pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
     let mut set: HashSet<usize> = HashSet::default();
     set.reserve(custom_text_type.chars_len() / 10);
@@ -31,18 +30,20 @@ pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
             let match_length = matched.len();
             if LOOKAHEAD_TCC.is_match(matched) {
                 // trim one more char to the right.
-                let end_bytes_index = match_length - (1 * BYTES_PER_CHAR);
-                matched = &matched[0..end_bytes_index];
+                let end_bytes_index = match_length - BYTES_PER_CHAR;
+                let end_char_index = end_bytes_index / BYTES_PER_CHAR;
+                matched = matched.slice_by_char_indice(0, end_char_index);
                 let segment_size = matched.chars_len();
                 position += segment_size;
                 set.insert(position);
-                txt = &txt[end_bytes_index..];
+                txt = txt.slice_by_char_indice(end_char_index, txt.chars_len());
             } else {
                 let segment_size = matched.chars_len();
                 position += segment_size;
                 set.insert(position);
                 let end_bytes_index = match_length;
-                txt = &txt[end_bytes_index..];
+                let end_char_index = end_bytes_index / BYTES_PER_CHAR;
+                txt = txt.slice_by_char_indice(end_char_index, txt.chars_len());
             }
         } else {
             // not thai
@@ -55,7 +56,33 @@ pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
     }
     set
 }
-
-// pub fn tcc_pos_p(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
-
-// }
+#[test]
+fn test_cluster_karan() {
+    use crate::four_bytes_str::custom_string::CustomString;
+    let kr_result = tcc_pos(CustomString::new("พิสูจน์ได้ค่ะ").raw_content());
+    // ends at พิ
+    assert!(kr_result.contains(&2));
+    //สูจน์
+    assert!(kr_result.contains(&7));
+    //ได้
+    assert!(kr_result.contains(&10));
+    //ค่ะ
+    assert!(kr_result.contains(&13));
+}
+// เรือน้อยลอยอยู่
+#[test]
+///
+fn test_cluster_general_case() {
+    use crate::four_bytes_str::custom_string::CustomString;
+    let gen_result = tcc_pos(CustomString::new("เรือน้อยลอยอยู่").raw_content());
+    //expected cluster ['เรือ', 'น้', 'อ', 'ย', 'ล', 'อ', 'ย', 'อ', 'ยู่']
+    assert!(gen_result.contains(&4));
+    assert!(gen_result.contains(&6));
+    assert!(gen_result.contains(&7));
+    assert!(gen_result.contains(&8));
+    assert!(gen_result.contains(&9));
+    assert!(gen_result.contains(&10));
+    assert!(gen_result.contains(&11));
+    assert!(gen_result.contains(&12));
+    assert!(gen_result.contains(&15));
+}
