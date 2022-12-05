@@ -1,21 +1,25 @@
+///This module is meant to be a direct implementation of Dict Trie in PythaiNLP.
+///
+///Many functions are implemented as a recursive function because of the limits imposed by
+///Rust Borrow Checker and this author's (Thanathip) little experience.
+///
+///Rust Code: Thanathip Suntorntip (Gorlph)
+///
+/// For basic information of trie, visit this wikipedia page https://en.wikipedia.org/wiki/Trie
+
+
+
+
 use crate::four_bytes_str::custom_string::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
-    BYTES_PER_CHAR,
 };
 
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 use std::borrow::BorrowMut;
-/**
-This module is meant to be a direct implementation of Dict Trie in PythaiNLP.
-
-Many functions are implemented as a recursive function because of the limits imposed by
-Rust Borrow Checker and this author's (Thanathip) little experience.
-
-Rust Code: Thanathip Suntorntip (Gorlph)
-*/
 
 #[derive(Debug)]
 struct TrieNode {
+    ///
     children: HashMap<char, Self>,
     end: bool,
 }
@@ -60,7 +64,7 @@ impl TrieNode {
             return;
         }
         self.children
-            .entry(*input_word.get_chars_content().get(0).unwrap())
+            .entry(*input_word.get_chars_content().first().unwrap())
             .or_insert_with(TrieNode::new)
             .add_word(&input_word.substring(1, input_word.chars_len()));
     }
@@ -70,7 +74,7 @@ impl TrieNode {
         let char_count = word.chars_len();
         // if has at least 1 char
         if char_count >= 1 {
-            let character = word.get_chars_content().get(0).unwrap();
+            let character = word.get_chars_content().first().unwrap();
             if let Some(child) = self.find_mut_child(character) {
                 // move 1 character
                 let substring_of_word = word.substring(1, word.chars_len());
@@ -88,8 +92,8 @@ impl TrieNode {
 }
 
 #[derive(Debug)]
-// This version of Trie still stores custom bytes vector as words,
-// but prefix operation and its node uses char instead.
+/// This version of Trie still stores custom bytes vector as words,
+/// but prefix operation and its node uses char instead.
 pub struct TrieChar {
     words: HashSet<CustomStringBytesVec>,
     root: TrieNode,
@@ -140,12 +144,12 @@ impl TrieChar {
     pub fn amount_of_words(&self) -> usize {
         self.words.len()
     }
-
+    /// Returns a vec of substring (as reference) as produced by words stored in dict_trie.
     pub fn prefix_ref<'p>(
         prefix: &'p CustomString,
-        dict_trie: & Self,
+        dict_trie: &Self,
     ) -> Vec<&'p CustomStringBytesSlice> {
-        let mut result: Vec<&[u8]> = Vec::with_capacity(100);
+        let mut result: Vec<&[u8]> = vec![];
         let prefix_cpy = prefix;
         let mut current_index = 0;
         let mut current_node_wrap = Some(&dict_trie.root);

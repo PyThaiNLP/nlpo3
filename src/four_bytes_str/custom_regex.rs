@@ -2,7 +2,6 @@
 // which translates normal, human readable thai regex
 // into 4-bytes zero-left-pad bytes regex pattern string
 
-use crate::tokenizer::tcc_rules::replace_tcc_symbol;
 use anyhow::{Error as AnyError, Result};
 use regex_syntax::{
     hir::{Anchor, Class, Group, Literal as LiteralEnum, Repetition},

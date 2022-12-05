@@ -15,7 +15,7 @@ use std::{collections::VecDeque, error::Error, fmt::Display, path::PathBuf};
 
 use super::{
     dict_reader::{create_dict_trie, DictSource},
-    tcc,
+    tcc::tcc_tokenizer,
     tokenizer_trait::Tokenizer,
     trie_char::TrieChar as Trie,
 };
@@ -90,7 +90,7 @@ impl Display for BFSSearchError {
         write!(
             f,
             "Cannot find goal position {} with start position {} with graph {:?}",
-            self.goal, self.start, self.goal
+            self.goal, self.start, self.graph
         )
     }
 }
@@ -165,9 +165,9 @@ impl NewmmTokenizer {
         Err(BFSSearchError::new(graph, start, goal).into())
     }
 
-    fn one_cut<'a, 'b>(
+    fn one_cut<'a>(
         input: &'a CustomString,
-        custom_dict: &'b Trie,
+        custom_dict: & Trie,
     ) -> AnyResult<Vec<&'a CustomStringBytesSlice>> {
         let text = input;
         let input_char_len = text.chars_len();
@@ -178,7 +178,7 @@ impl NewmmTokenizer {
         let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
-        let valid_position = tcc::tcc_pos(text.raw_content());
+        let valid_position = tcc_tokenizer::tcc_pos(text.raw_content());
         let text_length = input_char_len;
         let mut position_list: BinaryHeap<CharacterIndex, MinComparator> = BinaryHeap::new_min();
         let mut existing_candidate: HashSet<CharacterIndex> = HashSet::default();
@@ -396,7 +396,7 @@ impl NewmmTokenizer {
                         let words = Self::one_cut(bind_part, custom_dict)?;
                         Ok(words
                             .into_par_iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
+                            .map(CustomString::convert_raw_bytes_to_std_string)
                             .collect::<Vec<String>>())
                     })
                     .flatten()
