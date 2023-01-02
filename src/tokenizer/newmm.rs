@@ -11,31 +11,24 @@ with heuristic graph size limit added to avoid exponential wait time.
 
 Rust implementation: ["Thanathip Suntorntip"]
 */
-
-
-use std::{fmt::Display, error::Error, collections::VecDeque, path::PathBuf};
+use std::{collections::VecDeque, error::Error, fmt::Display, path::PathBuf};
 
 use super::{
     dict_reader::{create_dict_trie, DictSource},
-    tcc,
+    tcc::tcc_tokenizer,
     tokenizer_trait::Tokenizer,
     trie_char::TrieChar as Trie,
 };
 use crate::four_bytes_str::custom_string::{CustomStringBytesSlice, FixedCharsLengthByteSlice};
 
-use crate::four_bytes_str::custom_string::{
-    rfind_space_char_index, CustomString,
-    BYTES_PER_CHAR,
-};
-use crate::four_bytes_str::custom_regex::{regex_pattern_to_custom_pattern,replace_tcc_symbol};
+use crate::four_bytes_str::custom_regex::regex_pattern_to_custom_pattern;
+use crate::four_bytes_str::custom_string::{rfind_space_char_index, CustomString, BYTES_PER_CHAR};
 use anyhow::Result as AnyResult;
 use binary_heap_plus::{BinaryHeap, MinComparator};
 use lazy_static::lazy_static;
 use rayon::prelude::*;
 use regex::bytes::Regex;
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-
-
 
 const MAX_GRAPH_SIZE: usize = 50;
 const USE_MULTITHREAD_THRESHOLD: usize = 10000;
@@ -49,23 +42,26 @@ const TEXT_SCAN_END: usize = TEXT_SCAN_POINT + TEXT_SCAN_RIGHT;
 
 type CharacterIndex = usize;
 
-const NON_THAI_READABLE_PATTERN:&[&str;5] = &[
+const NON_THAI_READABLE_PATTERN: &[&str; 5] = &[
     r"(?x)^[-a-zA-Z]+",
     r"(?x)^[0-9]+([,\.][0-9]+)*",
     r"(?x)^[๐-๙]+([,\.][๐-๙]+)*",
     r"(?x)^[\ \t]+",
-    r"(?x)^\r?\n"
+    r"(?x)^\r?\n",
 ];
 
 lazy_static! {
     static ref NON_THAI_PATTERN: Regex = Regex::new(
-        &NON_THAI_READABLE_PATTERN.map(|p| {regex_pattern_to_custom_pattern(p).unwrap()}).join("|")
+        &NON_THAI_READABLE_PATTERN
+            .map(|p| { regex_pattern_to_custom_pattern(p).unwrap() })
+            .join("|")
     )
     .unwrap();
 }
 
 lazy_static! {
-    static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(&regex_pattern_to_custom_pattern(r"^[ก-ฮ]{0,2}$").unwrap()).unwrap();
+    static ref THAI_TWOCHARS_PATTERN: Regex =
+        Regex::new(&regex_pattern_to_custom_pattern(r"^[ก-ฮ]{0,2}$").unwrap()).unwrap();
 }
 
 #[derive(Clone, Debug)]
@@ -94,7 +90,7 @@ impl Display for BFSSearchError {
         write!(
             f,
             "Cannot find goal position {} with start position {} with graph {:?}",
-            self.goal, self.start, self.goal
+            self.goal, self.start, self.graph
         )
     }
 }
@@ -169,9 +165,9 @@ impl NewmmTokenizer {
         Err(BFSSearchError::new(graph, start, goal).into())
     }
 
-    fn one_cut<'a, 'b>(
+    fn one_cut<'a>(
         input: &'a CustomString,
-        custom_dict: &'b Trie,
+        custom_dict: & Trie,
     ) -> AnyResult<Vec<&'a CustomStringBytesSlice>> {
         let text = input;
         let input_char_len = text.chars_len();
@@ -182,7 +178,7 @@ impl NewmmTokenizer {
         let mut result_str: Vec<&CustomStringBytesSlice> = Vec::with_capacity(input_char_len / 10);
 
         // all position should be refered as character index
-        let valid_position = tcc::tcc_pos(text.raw_content());
+        let valid_position = tcc_tokenizer::tcc_pos(text.raw_content());
         let text_length = input_char_len;
         let mut position_list: BinaryHeap<CharacterIndex, MinComparator> = BinaryHeap::new_min();
         let mut existing_candidate: HashSet<CharacterIndex> = HashSet::default();
@@ -400,7 +396,7 @@ impl NewmmTokenizer {
                         let words = Self::one_cut(bind_part, custom_dict)?;
                         Ok(words
                             .into_par_iter()
-                            .map(|word| CustomString::convert_raw_bytes_to_std_string(word))
+                            .map(CustomString::convert_raw_bytes_to_std_string)
                             .collect::<Vec<String>>())
                     })
                     .flatten()

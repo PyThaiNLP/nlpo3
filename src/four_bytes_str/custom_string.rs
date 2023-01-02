@@ -324,12 +324,12 @@ impl CustomString {
     pub fn trim(&self) -> Self {
         let mut new_content: &[u8] = &self.content;
 
-        while (new_content.len() > 0) && is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
+        while !new_content.is_empty() && is_whitespace(&new_content[0..BYTES_PER_CHAR]) {
             // trim left
             new_content = &new_content[BYTES_PER_CHAR..];
         }
 
-        while (new_content.len() > 0)
+        while !new_content.is_empty()
             && is_whitespace(&new_content[(new_content.len() - BYTES_PER_CHAR)..])
         {
             // trim right
@@ -472,10 +472,10 @@ fn test_bytes() {
 
 #[test]
 fn test_trim() {
-    assert_eq!(CustomString::new(" ").trim().is_empty(), true);
-    assert_eq!(CustomString::new("  ").trim().is_empty(), true);
-    assert_eq!(CustomString::new("\n").trim().is_empty(), true);
-    assert_eq!(CustomString::new("  \t\n ").trim().is_empty(), true);
+    assert!(CustomString::new(" ").trim().is_empty());
+    assert!(CustomString::new("  ").trim().is_empty());
+    assert!(CustomString::new("\n").trim().is_empty());
+    assert!(CustomString::new("  \t\n ").trim().is_empty());
     assert_eq!(CustomString::new(" abc ").trim().chars_len(), 3);
     assert_eq!(CustomString::new(" aก  ").trim().full_string_bytes_len(), 8); // 2 chars * 4 bytes
 }

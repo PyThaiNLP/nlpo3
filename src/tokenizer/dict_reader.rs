@@ -50,6 +50,6 @@ fn test_trie() {
         "aง|.%".to_string(),
     ];
     let trie = create_dict_trie(DictSource::WordList(test_word_list)).unwrap();
-    assert_eq!(trie.contain(&CustomString::new("กาแฟ")), true);
+    assert!(trie.contain(&CustomString::new("กาแฟ")));
     assert_eq!(trie.amount_of_words(), 5);
 }
