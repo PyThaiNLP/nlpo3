@@ -48,6 +48,7 @@ const NON_THAI_READABLE_PATTERN: &[&str; 5] = &[
     r"(?x)^[๐-๙]+([,\.][๐-๙]+)*",
     r"(?x)^[\ \t]+",
     r"(?x)^\r?\n",
+    r"(?x)^[\u0E00-\u0E7F  \t\r\n]",
 ];
 
 lazy_static! {
