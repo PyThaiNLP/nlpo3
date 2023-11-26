@@ -42,7 +42,7 @@ const TEXT_SCAN_END: usize = TEXT_SCAN_POINT + TEXT_SCAN_RIGHT;
 
 type CharacterIndex = usize;
 
-const NON_THAI_READABLE_PATTERN: &[&str; 5] = &[
+const NON_THAI_READABLE_PATTERN: &[&str; 6] = &[
     r"(?x)^[-a-zA-Z]+",
     r"(?x)^[0-9]+([,\.][0-9]+)*",
     r"(?x)^[๐-๙]+([,\.][๐-๙]+)*",
