@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 
 # nlpO3
 
+[![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
+[![crates.io](https://img.shields.io/crates/v/nlpo3-cli.svg "crates.io")](https://crates.io/crates/nlpo3-cli/)
+[![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
+
 Thai natural language processing library in Rust,
 with Python and Node bindings. Formerly oxidized-thainlp.
 
@@ -147,7 +151,7 @@ See the [root](/) directory.
 
 ### Command-line interface
 
-[![Crates](https://img.shields.io/crates/v/nlpo3-cli.svg "Crates")](https://crates.io/crates/nlpo3-cli/)
+[![crates.io](https://img.shields.io/crates/v/nlpo3-cli.svg "crates.io")](https://crates.io/crates/nlpo3-cli/)
 
 #### Install
 
