@@ -1,15 +1,18 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
 /**
-Dictionary-based maximal matching word segmentation, constrained with
-Thai Character Cluster (TCC) boundaries.
-
-The code is based on the notebooks created by Korakot Chaovavanich,
-with heuristic graph size limit added to avoid exponential wait time.
-
-:See Also:
-    * \
-        https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/tokenize/newmm.py
-
-Rust implementation: ["Thanathip Suntorntip"]
+ * Dictionary-based maximal matching word segmentation, constrained with
+ * Thai Character Cluster (TCC) boundaries.
+ * 
+ * The code is based on the notebooks created by Korakot Chaovavanich,
+ * with heuristic graph size limit added to avoid exponential wait time.
+ * 
+ * :See Also:
+ *  * \
+ *   https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/tokenize/newmm.py
+ * 
+ * Rust implementation: ["Thanathip Suntorntip"]
 */
 use std::{collections::VecDeque, error::Error, fmt::Display, path::PathBuf};
 
@@ -167,7 +170,7 @@ impl NewmmTokenizer {
 
     fn one_cut<'a>(
         input: &'a CustomString,
-        custom_dict: & Trie,
+        custom_dict: &Trie,
     ) -> AnyResult<Vec<&'a CustomStringBytesSlice>> {
         let text = input;
         let input_char_len = text.chars_len();

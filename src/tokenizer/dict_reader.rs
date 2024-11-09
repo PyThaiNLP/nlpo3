@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Dictionary reader.
+*/
 use crate::four_bytes_str::custom_string::CustomString;
 
 use super::trie_char::TrieChar as Trie;

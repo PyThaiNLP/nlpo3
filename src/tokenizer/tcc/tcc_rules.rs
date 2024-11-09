@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Rules for TCC (Thai Character Cluster) tokenization.
+*/
 use crate::four_bytes_str::custom_regex::regex_pattern_to_custom_pattern;
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
@@ -132,7 +138,7 @@ fn tcc_regex_test_cases() {
     let case_20 = replace_tcc_symbol("^แccc์");
     let case_21 = replace_tcc_symbol("^โctะ");
     let case_22 = replace_tcc_symbol("^[เ-ไ]ct");
-    
+
     // This is the only Karan case.
     assert_eq!(
         regex_pattern_to_custom_pattern(&case_1).unwrap(),

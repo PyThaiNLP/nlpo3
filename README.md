@@ -1,15 +1,19 @@
+---
+SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+SPDX-License-Identifier: Apache-2.0
+---
+
 # nlpO3
 
-Thai Natural Language Processing library in Rust,
+Thai natural language processing library in Rust,
 with Python and Node bindings. Formerly oxidized-thainlp.
 
 ## Features
 
 - Thai word tokenizer
-  - use maximal-matching dictionary-based tokenization algorithm and honor Thai Character Cluster boundaries
+  - Use maximal-matching dictionary-based tokenization algorithm and honor Thai Character Cluster boundaries
     - [2.5x faster](https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb) than similar pure Python implementation (PyThaiNLP's newmm)
-  - load a dictionary from a plain text file (one word per line) or from `Vec<String>`
-
+  - Load a dictionary from a plain text file (one word per line) or from `Vec<String>`
 
 ## Dictionary file
 
@@ -18,7 +22,6 @@ with Python and Node bindings. Formerly oxidized-thainlp.
 - For tokenization dictionary, try
   - [words_th.tx](https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt) from [PyThaiNLP](https://github.com/PyThaiNLP/pythainlp/) - around 62,000 words (CC0)
   - [word break dictionary](https://github.com/tlwg/libthai/tree/master/data) from [libthai](https://github.com/tlwg/libthai/) - consists of dictionaries in different categories, with make script (LGPL-2.1)
-
 
 ## Usage
 
@@ -31,6 +34,7 @@ echo "ฉันกินข้าว" | nlpo3 segment
 ```
 
 ### Bindings
+
 - [Node.js](nlpo3-nodejs/)
 - [Python](nlpo3-python/) <a href="https://pypi.python.org/pypi/nlpo3"><img alt="pypi" src="https://img.shields.io/pypi/v/nlpo3.svg"/></a>
 
@@ -42,6 +46,7 @@ segment("สวัสดีครับ", "dict_name")
 ```
 
 ### As Rust library
+
 <a href="https://crates.io/crates/nlpo3/"><img alt="crates.io" src="https://img.shields.io/crates/v/nlpo3.svg"/></a>
 
 In `Cargo.toml`:
@@ -54,6 +59,7 @@ nlpo3 = "1.3.2"
 
 Create a tokenizer using a dictionary from file,
 then use it to tokenize a string (safe mode = true, and parallel mode = false):
+
 ```rust
 use nlpo3::tokenizer::newmm::NewmmTokenizer;
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
@@ -63,17 +69,20 @@ let tokens = tokenizer.segment("ห้องสมุดประชาชน", 
 ```
 
 Create a tokenizer using a dictionary from a vector of Strings:
+
 ```rust
 let words = vec!["ปาลิเมนต์".to_string(), "คอนสติติวชั่น".to_string()];
 let tokenizer = NewmmTokenizer::from_word_list(words);
 ```
 
 Add words to an existing tokenizer:
+
 ```rust
 tokenizer.add_word(&["มิวเซียม"]);
 ```
 
 Remove words from an existing tokenizer:
+
 ```rust
 tokenizer.remove_word(&["กระเพรา", "ชานชลา"]);
 ```
@@ -87,22 +96,24 @@ tokenizer.remove_word(&["กระเพรา", "ชานชลา"]);
 ### Steps
 
 Generic test:
+
 ```bash
 cargo test
 ```
 
 Build API document and open it to check:
+
 ```bash
 cargo doc --open
 ```
 
 Build (remove `--release` to keep debug information):
+
 ```bash
 cargo build --release
 ```
 
 Check `target/` for build artifacts.
-
 
 ## Development documents
 
@@ -110,4 +121,4 @@ Check `target/` for build artifacts.
 
 ## Issues
 
-Please report issues at https://github.com/PyThaiNLP/nlpo3/issues
+Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>

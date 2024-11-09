@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * TCC (Thai Character Cluster) tokenizer.
+*/
 use super::tcc_rules::{LOOKAHEAD_TCC, NON_LOOKAHEAD_TCC};
 
 use crate::four_bytes_str::custom_string::{
@@ -16,7 +22,6 @@ Credits:
     * Python code: Korakot Chaovavanich
     * Rust Code Translation: Thanathip Suntorntip
 */
-
 
 /// Returns a set of "character" indice at the end of each token
 pub fn tcc_pos(custom_text_type: &CustomStringBytesSlice) -> HashSet<usize> {
