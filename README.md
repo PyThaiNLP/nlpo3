@@ -6,8 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 # nlpO3
 
 [![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
-[![crates.io](https://img.shields.io/crates/v/nlpo3-cli.svg "crates.io")](https://crates.io/crates/nlpo3-cli/)
-[![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
 
 Thai natural language processing library in Rust,
 with Python and Node bindings. Formerly oxidized-thainlp.
@@ -72,6 +70,8 @@ See [nlpo3-nodejs](./nlpo3-nodejs/).
 
 ### Python binding
 
+[![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
+
 Example:
 
 ```python
@@ -84,6 +84,8 @@ segment("สวัสดีครับ", "dict_name")
 See more at [nlpo3-python](./nlpo3-python/).
 
 ### Rust library
+
+[![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
 
 #### Install
 
@@ -132,6 +134,8 @@ tokenizer.remove_word(&["กระเพรา", "ชานชลา"]);
 ```
 
 ### Command-line interface
+
+[![crates.io](https://img.shields.io/crates/v/nlpo3-cli.svg "crates.io")](https://crates.io/crates/nlpo3-cli/)
 
 Example:
 
