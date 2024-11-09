@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
 import * as nativeModule from './rust_mod'
 /**
  * Load dict from dictionary file and store in hash map with key = dictName for ***segment*** function to use.

@@ -1,11 +1,15 @@
-//! Python-binding for nlpO3, an natural language process library.
-//!
-//! Provides a tokenizer.
-//!
-//! Authors:
-//! Thanathip Suntorntip
-//! Arthit Suriyawongkul
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
 
+/**
+ * Python-binding for nlpO3, an natural language process library.
+ *
+ * Provides a tokenizer.
+ *
+ * Authors:
+ * Thanathip Suntorntip
+ * Arthit Suriyawongkul
+ */
 use std::sync::Mutex;
 
 use ahash::AHashMap as HashMap;
@@ -68,7 +72,7 @@ fn load_dict(file_path: &str, dict_name: &str) -> PyResult<(String, bool)> {
     }
 }
 
-/* 
+/*
 /// Add words to existing dictionary
 #[pyfunction]
 fn add_word(dict_name: &str, words: Vec<&str>) -> PyResult<(String, bool)> {

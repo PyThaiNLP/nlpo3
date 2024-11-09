@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+# SPDX-License-Identifier: Apache-2.0
+
 from setuptools import find_packages, setup
 from setuptools_rust import Binding, RustExtension, Strip
 

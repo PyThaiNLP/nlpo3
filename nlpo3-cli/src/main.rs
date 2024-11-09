@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
 use clap::Clap;
 use nlpo3::tokenizer::newmm_custom::Newmm;
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
