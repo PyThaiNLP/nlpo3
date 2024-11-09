@@ -5,6 +5,8 @@ edition = "2018"
 license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
 exclude = ["index.node"]
+keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
+categories = ["text-processing"]
 
 [lib]
 crate-type = ["cdylib"]

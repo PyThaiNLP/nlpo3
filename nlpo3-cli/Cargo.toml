@@ -9,7 +9,8 @@ homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-cli/"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
 readme = "README.md"
 keywords = ["thai", "tokenizer", "nlp", "word-segmentation", "cli"]
-categories = ["text-processing"]
+categories = ["text-processing", "command-line-utilities"]
+
 license = "Apache-2.0"
 
 [[bin]]
