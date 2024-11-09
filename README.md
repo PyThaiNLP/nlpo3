@@ -8,6 +8,14 @@ SPDX-License-Identifier: Apache-2.0
 Thai natural language processing library in Rust,
 with Python and Node bindings. Formerly oxidized-thainlp.
 
+```shell
+cargo install nlpo3
+```
+
+```shell
+pip install nlpo3
+```
+
 ## Table of contents
 
 - [Features](#features)
