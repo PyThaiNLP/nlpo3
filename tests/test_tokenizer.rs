@@ -1,3 +1,9 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Test the NewmmTokenizer with the default dictionary.
+ */
 use nlpo3::tokenizer::newmm::NewmmTokenizer;
 use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 

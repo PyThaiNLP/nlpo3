@@ -1,7 +1,13 @@
-// This is a result of an attempt to create a formatter
-// which translates normal, human readable thai regex
-// into 4-bytes zero-left-pad bytes regex pattern string
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
 
+/**
+ * Regex for a custom four-byte string.
+ * 
+ * This is a result of an attempt to create a formatter
+ * which translates normal, human readable thai regex
+ * into 4-bytes zero-left-pad bytes regex pattern string
+*/
 use anyhow::{Error as AnyError, Result};
 use regex_syntax::{
     hir::{Anchor, Class, Group, Literal as LiteralEnum, Repetition},

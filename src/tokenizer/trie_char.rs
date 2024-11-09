@@ -1,15 +1,18 @@
-///This module is meant to be a direct implementation of Dict Trie in PythaiNLP.
-///
-///Many functions are implemented as a recursive function because of the limits imposed by
-///Rust Borrow Checker and this author's (Thanathip) little experience.
-///
-///Rust Code: Thanathip Suntorntip (Gorlph)
-///
-/// For basic information of trie, visit this wikipedia page https://en.wikipedia.org/wiki/Trie
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
 
-
-
-
+/**
+ * This module is meant to be a direct implementation of Dict Trie in PyThaiNLP.
+ * 
+ * Many functions are implemented as a recursive function
+ * because of the limits imposed by Rust Borrow Checker and
+ * this author's (Thanathip) little experience.
+ * 
+ * Rust Code: Thanathip Suntorntip (Gorlph)
+ * 
+ * For basic information of trie, visit this wikipedia page
+ * https://en.wikipedia.org/wiki/Trie
+*/
 use crate::four_bytes_str::custom_string::{
     CustomString, CustomStringBytesSlice, CustomStringBytesVec, FixedCharsLengthByteSlice,
 };

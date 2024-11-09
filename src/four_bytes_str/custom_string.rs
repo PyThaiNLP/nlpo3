@@ -1,5 +1,10 @@
-/// Functions dealing with a custom four-byte string.
-/// For more details, see src/NOTE_ON_STRING.md
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * Functions dealing with a custom four-byte string.
+ * For more details, see src/NOTE_ON_STRING.md
+*/
 use std::{
     error::{self, Error},
     fmt::Display,

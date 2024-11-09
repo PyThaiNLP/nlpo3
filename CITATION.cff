@@ -1,0 +1,30 @@
+cff-version: "1.2.0"
+title: "nlpO3"
+message: >-
+  If you use this software, please cite it using these
+  metadata.
+type: software
+authors:
+  - family-names: Suntorntip
+    given-names: Thanathip
+repository-code: "https://github.com/PyThaiNLP/nlpo3/"
+repository: "https://github.com/PyThaiNLP/nlpo3/"
+url: "https://github.com/PyThaiNLP/nlpo3/"
+abstract: "Thai natural language processing library in Rust, with Python and Node bindings. Formerly oxidized-thainlp."
+keywords:
+  - "tokenizer"
+  - "tokenization"
+  - "Thai"
+  - "natural language processing"
+  - "NLP"
+  - "Rust"
+  - "Node.js"
+  - "Node"
+  - "Python"
+  - "text processing"
+  - "word segmentation"
+  - "Thai language"
+  - "Thai NLP"
+license: Apache-2.0
+version: v1.3.2
+date-released: "2023-04-14"
