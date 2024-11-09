@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-License-Identifier: Apache-2.0
+
 use std::sync::Mutex;
 
 use ahash::AHashMap as HashMap;
@@ -6,7 +9,8 @@ use neon::prelude::*;
 use nlpo3::tokenizer::{newmm::NewmmTokenizer, tokenizer_trait::Tokenizer};
 
 lazy_static! {
-    static ref  DICT_COLLECTION:Mutex<HashMap<String,Box<NewmmTokenizer>>> = Mutex::new(HashMap::new());
+    static ref DICT_COLLECTION: Mutex<HashMap<String, Box<NewmmTokenizer>>> =
+        Mutex::new(HashMap::new());
 }
 
 fn load_dict(mut cx: FunctionContext) -> JsResult<JsString> {

@@ -44,7 +44,7 @@ pip install nlpo3
     or from `Vec<String>`
 
 [tcc]: https://dl.acm.org/doi/10.1145/355214.355225
-[benchmark]: https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb
+[benchmark]: ./nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb
 
 ## Dictionary file
 
@@ -110,7 +110,7 @@ In `Cargo.toml`:
 ```toml
 [dependencies]
 # ...
-nlpo3 = "1.3.2"
+nlpo3 = "1.4.0"
 ```
 
 #### Example

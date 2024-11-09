@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+# SPDX-License-Identifier: Apache-2.0
+
 # Python-binding for nlpO3, an natural language process library.
 #
 # Provides a tokenizer.
