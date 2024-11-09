@@ -25,8 +25,8 @@ pip install nlpo3
 - [Features](#features)
 - [Dictionary file](#dictionary-file)
 - [Usage](#usage)
-  - [Python binding](#python-binding)
   - [Node.js binding](#nodejs-binding)
+  - [Python binding](#python-binding)
   - [Rust library](#rust-library)
   - [Command-line interface](#command-line-interface)
 - [Build](#build)
@@ -68,21 +68,11 @@ pip install nlpo3
 
 ### Node.js binding
 
-#### Source code
-
-See [nlpo3-nodejs](./nlpo3-nodejs/) directory.
+See [nlpo3-nodejs](./nlpo3-nodejs/).
 
 ### Python binding
 
-[![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
-
-#### Install
-
-```shell
-pip install nlpo3
-```
-
-#### Example
+Example:
 
 ```python
 from nlpo3 import load_dict, segment
@@ -91,13 +81,9 @@ load_dict("path/to/dict.file", "dict_name")
 segment("สวัสดีครับ", "dict_name")
 ```
 
-#### Source code
-
-See [nlpo3-python](./nlpo3-python/) directory.
+See more at [nlpo3-python](./nlpo3-python/).
 
 ### Rust library
-
-[![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
 
 #### Install
 
@@ -145,35 +131,15 @@ Remove words from an existing tokenizer:
 tokenizer.remove_word(&["กระเพรา", "ชานชลา"]);
 ```
 
-#### Source code
-
-See the [root](/) directory.
-
 ### Command-line interface
 
-[![crates.io](https://img.shields.io/crates/v/nlpo3-cli.svg "crates.io")](https://crates.io/crates/nlpo3-cli/)
-
-#### Install
-
-```shell
-cargo install nlpo3-cli
-```
-
-#### Usage
-
-```shell
-nlpo3 help
-```
-
-#### Example
+Example:
 
 ```bash
 echo "ฉันกินข้าว" | nlpo3 segment
 ```
 
-#### Source code
-
-See [nlpo3-cli](./nlpo3-cli/) directory.
+See more at [nlpo3-cli](./nlpo3-cli/).
 
 ## Build
 
