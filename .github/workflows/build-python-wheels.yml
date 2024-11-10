@@ -56,7 +56,7 @@ jobs:
       # To trigger the build steps, add "[cd build]" to commit message
 
   build_wheels:
-    name: Build Python wheel for ${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}
+    name: Build Python wheel for ${{ matrix.python }}-${{ matrix.platform_id }}
     runs-on: ${{ matrix.os }}
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
@@ -65,19 +65,36 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python: [cp39, cp310, cp311, cp312, cp313]
+        python: [cp39, cp310, cp311, cp312, cp313, pp39, pp310]
         bitness: [32, 64]
-        manylinux_image: [manylinux2014]
         include:
         - os: macos-latest
           bitness: 64
           platform_id: macosx_x86_64
+        - os: macos-latest
+          bitness: 64
+          platform_id: macosx_arm64
+        - os: macos-latest
+          bitness: 64
+          platform_id: macosx_universal2
         - os: ubuntu-latest
           bitness: 64
           platform_id: manylinux_x86_64
         - os: ubuntu-latest
           bitness: 32
           platform_id: manylinux_i686
+        - os: ubuntu-latest
+          bitness: 64
+          platform_id: musllinux_x86_64
+        - os: ubuntu-latest
+          bitness: 32
+          platform_id: musllinux_i686
+        - os: ubuntu-latest
+          bitness: 64
+          platform_id: manylinux_aarch64
+        - os: ubuntu-latest
+          bitness: 64
+          platform_id: musllinux_aarch64
         - os: windows-latest
           bitness: 64
           platform_id: win_amd64
@@ -87,6 +104,18 @@ jobs:
         exclude:
         - os: macos-latest
           bitness: 32
+        - python: pp39
+          platform_id: macosx_universal2
+        - python: pp310
+          platform_id: macosx_universal2
+        - python: pp39
+          platform_id: musllinux_x86_64
+        - python: pp310
+          platform_id: musllinux_x86_64
+        - python: pp39
+          platform_id: win32
+        - python: pp310
+          platform_id: win32
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
@@ -110,17 +139,10 @@ jobs:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.platform_id }}
         CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
-        CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.13
+        CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.9
                                 PATH="$HOME/.cargo/bin:$PATH"
                                 CC=/usr/bin/clang
                                 CXX=/usr/bin/clang++
-        CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
-        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
-        CIBW_MANYLINUX_PYPY_I686_IMAGE: ${{ matrix.manylinux_image }}
-        CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ${{ matrix.manylinux_image }}
-        CIBW_BEFORE_BUILD_LINUX: >
-          curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain=stable --profile=minimal -y
-        CIBW_BEFORE_BUILD_WINDOWS: 'rustup default stable'
     - name: Store artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -147,44 +169,10 @@ jobs:
       with:
         path: nlpo3-python/dist/*.tar.gz
 
-  # May consider remove this job if no longer needed
-  # GitHub runners now have arm64 architecture
-  build_wheels_macos_on_self_hosted:
-    name: Build wheels on M1
-    runs-on: self-hosted
-    needs: check_build_trigger
-    if: needs.check_build_trigger.outputs.build
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@v4
-    - name: Test
-      run: cargo test
-    - name: Build wheels
-      run: |
-        source ~/miniconda3/etc/profile.d/conda.sh
-        conda init zsh
-        cd nlpo3-python
-        conda create --name python${{ matrix.python-version }} python=${{ matrix.python-version }} -y
-        conda activate python${{ matrix.python-version }}
-        python -V
-        python -m pip install maturin
-        python -m pip list
-        python -m pip wheel . -w build
-        conda deactivate
-        cd ..
-      shell: zsh {0}
-    - name: Store artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        path: ./nlpo3-python/build/*.whl
-
   publish_pypi:
     name: Publish Python package to PyPI
     runs-on: ubuntu-latest
-    needs: [build_wheels, build_sdist, build_wheels_macos_on_self_hosted]
+    needs: [build_wheels, build_sdist]
     # Upload to PyPI on every tag starting with 'v'
     #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
     # Alternatively, to publish when a GitHub Release is created, use the following rule:
