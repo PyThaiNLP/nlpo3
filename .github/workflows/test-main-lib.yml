@@ -38,4 +38,6 @@ jobs:
       uses: actions-rust-lang/setup-rust-toolchain@v1
 
     - name: Test
+      env:
+        RUSTFLAGS: "-A unreachable_code"
       run: cargo test
