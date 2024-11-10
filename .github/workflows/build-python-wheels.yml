@@ -151,6 +151,8 @@ jobs:
   build_wheels_macos_on_self_hosted:
     name: Build wheels on M1
     runs-on: self-hosted
+    needs: check_build_trigger
+    if: needs.check_build_trigger.outputs.build
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
