@@ -63,6 +63,8 @@ jobs:
     strategy:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
+      # For build identier, see:
+      # https://cibuildwheel.pypa.io/en/stable/options/#build-skip
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python: [cp39, cp310, cp311, cp312, cp313, pp39, pp310]
