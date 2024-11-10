@@ -83,12 +83,6 @@ jobs:
         - os: windows-latest
           bitness: 32
           platform_id: win32
-        - os: macos-latest
-          pip-path: ~/Library/Caches/pip
-        - os: ubuntu-latest
-          pip-path: ~/.cache/pip
-        - os: windows-latest
-          pip-path: ~\AppData\Local\pip\Cache
         exclude:
         - os: macos-latest
           bitness: 32
