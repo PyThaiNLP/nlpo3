@@ -56,7 +56,7 @@ jobs:
       # To trigger the build steps, add "[cd build]" to commit message
 
   build_wheels:
-    name: Build Python wheel for ${{ matrix.python }}-${{ matrix.platform_id }}
+    name: Build ${{ matrix.python }}-${{ matrix.platform_id }}
     runs-on: ${{ matrix.os }}
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
@@ -82,18 +82,18 @@ jobs:
         - os: ubuntu-latest
           bitness: 32
           platform_id: manylinux_i686
-        - os: ubuntu-latest
-          bitness: 64
-          platform_id: musllinux_x86_64
-        - os: ubuntu-latest
-          bitness: 32
-          platform_id: musllinux_i686
-        - os: ubuntu-latest
-          bitness: 64
-          platform_id: manylinux_aarch64
-        - os: ubuntu-latest
-          bitness: 64
-          platform_id: musllinux_aarch64
+        # - os: ubuntu-latest
+        #   bitness: 64
+        #   platform_id: musllinux_x86_64
+        # - os: ubuntu-latest
+        #   bitness: 32
+        #   platform_id: musllinux_i686
+        # - os: ubuntu-latest
+        #   bitness: 64
+        #   platform_id: manylinux_aarch64
+        # - os: ubuntu-latest
+        #   bitness: 64
+        #   platform_id: musllinux_aarch64
         - os: windows-latest
           bitness: 64
           platform_id: win_amd64
