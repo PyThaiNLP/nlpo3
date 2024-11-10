@@ -53,6 +53,7 @@ jobs:
     - id: check_build_trigger
       name: Check build trigger
       run: bash build_tools/github/check_build_trigger.sh
+      # To trigger the build steps, add "[cd build]" to commit message
 
   build_wheels:
     name: Build Python wheel for ${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}
@@ -184,9 +185,9 @@ jobs:
     name: Publish Python package to PyPI
     runs-on: ubuntu-latest
     needs: [build_wheels, build_sdist, build_wheels_macos_on_self_hosted]
-    # upload to PyPI on every tag starting with 'v'
+    # Upload to PyPI on every tag starting with 'v'
     #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
-    # alternatively, to publish when a GitHub Release is created, use the following rule:
+    # Alternatively, to publish when a GitHub Release is created, use the following rule:
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
     - name: Retrieve artifacts
