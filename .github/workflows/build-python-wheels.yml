@@ -76,9 +76,6 @@ jobs:
         - os: macos-latest
           bitness: 64
           platform_id: macosx_arm64
-        - os: macos-latest
-          bitness: 64
-          platform_id: macosx_universal2
         - os: ubuntu-latest
           bitness: 64
           platform_id: manylinux_x86_64
@@ -107,17 +104,9 @@ jobs:
         - os: macos-latest
           bitness: 32
         - python: pp39
-          platform_id: macosx_universal2
+          bitness: 32
         - python: pp310
-          platform_id: macosx_universal2
-        - python: pp39
-          platform_id: musllinux_x86_64
-        - python: pp310
-          platform_id: musllinux_x86_64
-        - python: pp39
-          platform_id: win32
-        - python: pp310
-          platform_id: win32
+          bitness: 32
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
