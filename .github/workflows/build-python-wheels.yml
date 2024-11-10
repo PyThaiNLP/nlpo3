@@ -150,7 +150,9 @@ jobs:
       with:
         path: nlpo3-python/dist/*.tar.gz
 
-  build_wheels_macos:
+  # May consider remove this job if no longer needed
+  # GitHub runners now have arm64 architecture
+  build_wheels_macos_on_self_hosted:
     name: Build wheels on M1
     runs-on: self-hosted
     strategy:
@@ -183,7 +185,7 @@ jobs:
   publish_pypi:
     name: Publish Python package to PyPI
     runs-on: ubuntu-latest
-    needs: [build_wheels, build_sdist, build_wheels_macos]
+    needs: [build_wheels, build_sdist, build_wheels_macos_on_self_hosted]
     # upload to PyPI on every tag starting with 'v'
     #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
     # alternatively, to publish when a GitHub Release is created, use the following rule:
