@@ -11,6 +11,7 @@ on:
     - 'nlpo3-python/**'
     - '!nlpo3-python/**.md'
     - '!nlpo3-python/notebooks/**'
+    - '.github/workflows/build-python-wheels.yml'
   pull_request:
     branches:
     - main
@@ -18,6 +19,7 @@ on:
     - 'nlpo3-python/**'
     - '!nlpo3-python/**.md'
     - '!nlpo3-python/notebooks/**'
+    - '.github/workflows/build-python-wheels.yml'
   release:
     types: [published]
   # Manual run
