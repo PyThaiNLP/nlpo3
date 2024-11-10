@@ -30,7 +30,7 @@ Python binding for nlpO3, a Thai natural language processing library in Rust.
   user would like to use, and it does not come with a dictionary.
 - A dictionary is needed for the dictionary-based word tokenizer.
 - For tokenization dictionary, try
-  - [words_th.tx][dict-pythainlp] from [PyThaiNLP][pythainlp]
+  - [words_th.txt][dict-pythainlp] from [PyThaiNLP][pythainlp]
     - ~62,000 words
     - CC0-1.0
   - [word break dictionary][dict-libthai] from [libthai][libthai]
