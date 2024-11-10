@@ -5,12 +5,12 @@ edition = "2018"
 license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
 description = "Thai natural language processing library, with Python and Node bindings"
-keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
-categories = ["text-processing"]
 homepage = "https://github.com/PyThaiNLP/nlpo3/"
-documentation = "https://github.com/PyThaiNLP/nlpo3/"
+documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/README.md"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
 readme = "README.md"
+keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
+categories = ["text-processing"]
 exclude = [
     ".gitignore",
     ".github/*",
@@ -34,14 +34,14 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-anyhow = "1.0.45"
-binary-heap-plus = "0.4.1"
-bytecount = "0.6.2"
-lazy_static = "1.4.0"
-rayon = "1.5.1"
-regex = "1.5.4"
+anyhow = "1.0.93"
+binary-heap-plus = "0.5.0"
+bytecount = "0.6.8"
+lazy_static = "1.5.0"
+rayon = "1.10.0"
+regex = "1.11.1"
 rustc-hash = "1.1.0"
-regex-syntax = "0.6.25"
+regex-syntax = "0.6.29"
 
 [[test]]
 name = "basic"

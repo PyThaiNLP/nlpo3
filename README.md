@@ -10,9 +10,13 @@ SPDX-License-Identifier: Apache-2.0
 Thai natural language processing library in Rust,
 with Python and Node bindings. Formerly oxidized-thainlp.
 
+To use as a library in a Rust project:
+
 ```shell
-cargo install nlpo3
+cargo add nlpo3
 ```
+
+To use as a library in a Python project:
 
 ```shell
 pip install nlpo3
@@ -87,13 +91,15 @@ See more at [nlpo3-python](./nlpo3-python/).
 
 [![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
 
-#### Install
+#### Add to dependency
+
+To use as a library in a Rust project:
 
 ```shell
-cargo install nlpo3
+cargo add nlpo3
 ```
 
-In `Cargo.toml`:
+It will add "nlpo3" to `Cargo.toml`:
 
 ```toml
 [dependencies]
