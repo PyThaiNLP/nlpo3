@@ -3,7 +3,7 @@
 
 /**
  * Regex for a custom four-byte string.
- * 
+ *
  * This is a result of an attempt to create a formatter
  * which translates normal, human readable thai regex
  * into 4-bytes zero-left-pad bytes regex pattern string
@@ -15,6 +15,7 @@ use regex_syntax::{
     is_meta_character, Parser,
 };
 use std::{error::Error, fmt::Display};
+
 trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
 }
@@ -28,6 +29,7 @@ enum UnsupportedCustomRegexParserError {
     AnchorStartLine,
     AnchorEndLine,
 }
+
 enum IterableHirKind {
     Alternation(Vec<Hir>),
     Concat(Vec<Hir>),
@@ -56,6 +58,7 @@ impl Display for UnsupportedCustomRegexParserError {
         }
     }
 }
+
 impl Error for UnsupportedCustomRegexParserError {}
 
 impl ToCustomStringRepr for Hir {
@@ -63,6 +66,7 @@ impl ToCustomStringRepr for Hir {
         self.kind().to_custom_byte_repr()
     }
 }
+
 impl ToCustomStringRepr for HirKind {
     fn to_custom_byte_repr(&self) -> Result<String> {
         match self {
@@ -80,6 +84,7 @@ impl ToCustomStringRepr for HirKind {
         }
     }
 }
+
 impl ToCustomStringRepr for Anchor {
     fn to_custom_byte_repr(&self) -> Result<String> {
         match self {
@@ -90,16 +95,18 @@ impl ToCustomStringRepr for Anchor {
         }
     }
 }
+
 impl ToCustomStringRepr for LiteralEnum {
     fn to_custom_byte_repr(&self) -> Result<String> {
         match self {
             LiteralEnum::Unicode(a) => Ok(a.to_four_byte_string()),
-            LiteralEnum::Byte(b) => Err(AnyError::new(
+            LiteralEnum::Byte(_b) => Err(AnyError::new(
                 UnsupportedCustomRegexParserError::ByteLiteral,
             )),
         }
     }
 }
+
 impl ToCustomStringRepr for Class {
     fn to_custom_byte_repr(&self) -> Result<String> {
         match self {
@@ -108,6 +115,7 @@ impl ToCustomStringRepr for Class {
         }
     }
 }
+
 impl ToCustomStringRepr for Repetition {
     fn to_custom_byte_repr(&self) -> Result<String> {
         let symbol: Result<String> = match &self.kind {
@@ -143,6 +151,7 @@ impl ToCustomStringRepr for Repetition {
         }
     }
 }
+
 impl ToCustomStringRepr for IterableHirKind {
     fn to_custom_byte_repr(&self) -> Result<String> {
         match self {
@@ -251,6 +260,7 @@ impl ToCustomStringRepr for IterableHirKind {
         }
     }
 }
+
 impl ToCustomStringRepr for Group {
     fn to_custom_byte_repr(&self) -> Result<String> {
         let recur = match self.hir.kind() {
@@ -288,6 +298,7 @@ enum UTFBytesLength {
     Three,
     Four,
 }
+
 fn char_class(character: char) -> UTFBytesLength {
     let mut bytes_buffer: [u8; 4] = [0; 4];
 
@@ -307,6 +318,7 @@ fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
 trait PadLeftZeroFourBytesRep {
     fn to_four_byte_string(&self) -> String;
 }
+
 fn escape_meta_character(c: char) -> String {
     if is_meta_character(c) {
         format!(r"\{}", c)
@@ -316,6 +328,7 @@ fn escape_meta_character(c: char) -> String {
         c.to_string()
     }
 }
+
 impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
     fn to_four_byte_string(&self) -> String {
         let urange = self;
@@ -363,6 +376,7 @@ impl PadLeftZeroFourBytesRep for &[ClassUnicodeRange] {
         }
     }
 }
+
 impl PadLeftZeroFourBytesRep for char {
     fn to_four_byte_string(&self) -> String {
         let character = self;
