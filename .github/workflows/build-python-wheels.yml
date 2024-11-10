@@ -39,6 +39,7 @@ jobs:
   check_build_trigger:
     name: Check build trigger
     runs-on: ubuntu-latest
+    # Not for forks
     if: github.repository == 'pythainlp/nlpo3'
     outputs:
       build: ${{ steps.check_build_trigger.outputs.build }}
@@ -61,7 +62,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python: [ccp39, cp310, cp311, cp312, cp318]
+        python: [cp39, cp310, cp311, cp312, cp313]
         bitness: [32, 64]
         manylinux_image: [manylinux2014]
         include:
@@ -89,8 +90,6 @@ jobs:
         exclude:
         - os: macos-latest
           bitness: 32
-#          - python: pp37
-#            bitness: 32
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
@@ -154,49 +153,27 @@ jobs:
   build_wheels_macos:
     name: Build wheels on M1
     runs-on: self-hosted
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
     - name: Test
       run: cargo test
-    - name: Build wheels - py39
+    - name: Build wheels
       run: |
-          source ~/miniconda3/etc/profile.d/conda.sh
-          conda init zsh
-          cd nlpo3-python
-          conda activate python39
-          python -V
-          python -m pip install maturin
-          python -m pip list
-          python -m pip wheel . -w build
-          conda deactivate
-          cd ..
-      shell: zsh {0}
-    - name: Build wheels - py310
-      run: |
-          source ~/miniconda3/etc/profile.d/conda.sh
-          conda init zsh
-          cd nlpo3-python
-          conda activate python310
-          python -V
-          python -m pip install maturin
-          python -m pip list
-          python -m pip wheel . -w build
-          conda deactivate
-          cd ..
-      shell: zsh {0}
-    - name: Build wheels - py311
-      run: |
-          source ~/miniconda3/etc/profile.d/conda.sh
-          conda init zsh
-          cd nlpo3-python
-          conda activate python311
-          python -V
-          python -m pip install maturin
-          python -m pip list
-          python -m pip wheel . -w build
-          conda deactivate
-          cd ..
+        source ~/miniconda3/etc/profile.d/conda.sh
+        conda init zsh
+        cd nlpo3-python
+        conda create --name python${{ matrix.python-version }} python=${{ matrix.python-version }} -y
+        conda activate python${{ matrix.python-version }}
+        python -V
+        python -m pip install maturin
+        python -m pip list
+        python -m pip wheel . -w build
+        conda deactivate
+        cd ..
       shell: zsh {0}
     - name: Store artifacts
       uses: actions/upload-artifact@v4
