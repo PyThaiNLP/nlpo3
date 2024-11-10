@@ -26,7 +26,7 @@ lazy_static! {
 }
 
 /// Break text into tokens.
-/// Use newmm algorithhm.
+/// Use newmm algorithm.
 /// Can use multithreading, but takes a lot of memory.
 /// returns list of valid utf-8 bytes list
 /// signature: (text: str, dict_name: str, safe: boolean = false, parallel: boolean = false) -> List[List[u8]]
