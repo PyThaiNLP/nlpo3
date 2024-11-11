@@ -88,6 +88,8 @@ jobs:
           bitness: 32
         - os: macos-latest
           python-version: "3.7"
+        - os: macos-latest
+          python-version: "pypy3.7"
         # - python-version: "pypy3.10"
         #   bitness: 32
         # - python-version: "pypy3.9"
@@ -145,9 +147,6 @@ jobs:
       run: |
         CP_VER=${{ env.CP_VER }}
         CIBW_BUILD="$CP_VER-manylinux_i686"
-        if [[ "$CP_VER" != pp* ]]; then
-          CIBW_BUILD="$CIBW_BUILD $CP_VER-musllinux_i686"
-        fi
         echo "CIBW_BUILD: $CIBW_BUILD"
         echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_ENV
 
@@ -176,11 +175,13 @@ jobs:
         CIBW_BUILD_VERBOSITY: 1
         # See build selector name at:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
+        CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
         CIBW_ENVIRONMENT_MACOS: |
           MACOSX_DEPLOYMENT_TARGET=10.9
           PATH="$HOME/.cargo/bin:$PATH"
           CC=/usr/bin/clang
           CXX=/usr/bin/clang++
+        CIBW_ARCHS_LINUX: "auto aarch64"
         CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
         CIBW_BEFORE_BUILD_LINUX: |
           pip install --upgrade setuptools-rust
