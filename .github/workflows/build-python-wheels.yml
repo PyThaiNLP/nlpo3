@@ -148,9 +148,13 @@ jobs:
         cache: "pip"
     - name: Setup Rust toolchain
       uses: actions-rust-lang/setup-rust-toolchain@v1
-    - name: Update pip
+    - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        pip install --upgrade pip
+        pip install --upgrade setuptools-rust
+#    - name: Install dependecies (Ubuntu)
+#      if: startsWith(matrix.os, 'ubuntu-')
+#      run: sudo apt-get install python3-dev
     - name: Build Python wheels
       uses: pypa/cibuildwheel@v2.21.3
       with:
