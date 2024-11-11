@@ -152,7 +152,6 @@ jobs:
       run: |
         echo "$PATH"
         ls "$HOME/.cargo/bin"
-        ls "$HOME/.cargo/env"
     - name: Install dependencies
       run: |
         pip install --upgrade pip
