@@ -2,22 +2,22 @@ name: Test nlpo3-python
 on:
   push:
     branches:
-      - main
+    - main
     paths:
-      - 'nlpo3-python/**'
-      exclude:
-        - 'notebooks/'
-        - 'LICENSE'
-        - '*.md'
+    - 'nlpo3-python/**'
+    paths-ignore:
+    - 'notebooks/'
+    - 'LICENSE'
+    - '*.md'
   pull_request:
     branches:
-      - main
+    - main
     paths:
-      - 'nlpo3-python/**'
-      exclude:
-        - 'notebooks/'
-        - 'LICENSE'
-        - '*.md'
+    - 'nlpo3-python/**'
+    paths-ignore:
+    - 'notebooks/'
+    - 'LICENSE'
+    - '*.md'
 
 defaults:
   run:
