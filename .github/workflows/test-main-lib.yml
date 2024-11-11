@@ -38,4 +38,6 @@ jobs:
       uses: actions-rust-lang/setup-rust-toolchain@v1
 
     - name: Test
-      run: cargo test
+      run: |
+        echo "$HOME/.cargo/bin"
+        cargo test
