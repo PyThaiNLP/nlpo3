@@ -31,5 +31,9 @@ keywords:
   - "Thai language"
   - "Thai NLP"
 license: Apache-2.0
+identifiers:
+  - description: This is the collection of archived snapshots of all versions of the software.
+    type: doi
+    value: "10.5281/zenodo.14082448"
 version: v1.3.1
 date-released: "2024-11-11"
