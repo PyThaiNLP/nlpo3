@@ -172,7 +172,7 @@ jobs:
         CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
         CIBW_BEFORE_BUILD_LINUX: |
           pip install --upgrade setuptools-rust
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     - name: Store artifacts
       uses: actions/upload-artifact@v3
       with:
