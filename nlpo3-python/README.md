@@ -11,6 +11,22 @@ SPDX-License-Identifier: Apache-2.0
 
 Python binding for nlpO3, a Thai natural language processing library in Rust.
 
+To install:
+
+```bash
+pip install nlpo3
+```
+
+## Table of Contents
+
+- [Features](#features)
+- [Use](#use)
+  - [Dictionary](#dictionary)
+- [Build](#build)
+- [Issues](#issues)
+- [License](#license)
+- [Binary wheels](#binary-wheels)
+
 ## Features
 
 - Thai word tokenizer
@@ -24,31 +40,7 @@ Python binding for nlpO3, a Thai natural language processing library in Rust.
 [tcc]: https://dl.acm.org/doi/10.1145/355214.355225
 [benchmark]: ./notebooks/nlpo3_segment_benchmarks.ipynb
 
-## Dictionary file
-
-- For the interest of library size, nlpO3 does not assume what dictionary the
-  user would like to use, and it does not come with a dictionary.
-- A dictionary is needed for the dictionary-based word tokenizer.
-- For tokenization dictionary, try
-  - [words_th.txt][dict-pythainlp] from [PyThaiNLP][pythainlp]
-    - ~62,000 words
-    - CC0-1.0
-  - [word break dictionary][dict-libthai] from [libthai][libthai]
-    - consists of dictionaries in different categories, with a make script
-    - LGPL-2.1
-
-[pythainlp]: https://github.com/PyThaiNLP/pythainlp
-[libthai]: https://github.com/tlwg/libthai/
-[dict-pythainlp]: https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt
-[dict-libthai]: https://github.com/tlwg/libthai/tree/master/data
-
-## Install
-
-```bash
-pip install nlpo3
-```
-
-## Usage
+## Use
 
 Load file `path/to/dict.file` to memory
 and assign a name `dict_name` to it.
@@ -83,6 +75,24 @@ for text with lots of ambiguous word boundaries:
 segment("สวัสดีครับ", dict_name="dict_name", safe=True)
 ```
 
+### Dictionary
+
+- For the interest of library size, nlpO3 does not assume what dictionary the
+  user would like to use, and it does not come with a dictionary.
+- A dictionary is needed for the dictionary-based word tokenizer.
+- For tokenization dictionary, try
+  - [words_th.txt][dict-pythainlp] from [PyThaiNLP][pythainlp]
+    - ~62,000 words
+    - CC0-1.0
+  - [word break dictionary][dict-libthai] from [libthai][libthai]
+    - consists of dictionaries in different categories, with a make script
+    - LGPL-2.1
+
+[pythainlp]: https://github.com/PyThaiNLP/pythainlp
+[libthai]: https://github.com/tlwg/libthai/
+[dict-pythainlp]: https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt
+[dict-libthai]: https://github.com/tlwg/libthai/tree/master/data
+
 ## Build
 
 ### Requirements
@@ -111,9 +121,9 @@ To install a wheel from a local directory:
 pip install dist/nlpo3-1.3.1-cp311-cp311-macosx_12_0_x86_64.whl 
 ```
 
-## Test
+### Test
 
-To run the Python unit test:
+To run a Python unit test:
 
 ```bash
 cd tests
@@ -129,3 +139,85 @@ Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
 nlpO3 Python binding is copyrighted by its authors
 and licensed under terms of the Apache Software License 2.0 (Apache-2.0).
 See file [LICENSE](./LICENSE) for details.
+
+## Binary wheels
+
+A pre-built binary package is available from [PyPI][pypi] for these platforms:
+
+[pypi]: https://pypi.org/project/nlpo3/
+
+|Python|OS|Architecture|Has binary wheel?|
+|-|-|-|-|
+|3.13|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
+|3.12|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
+|3.11|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
+|3.10|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
+|3.9|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
+|3.8|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
+|3.7|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|❌|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
+|PyPy 3.10|Windows|x86|❌|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+|PyPy 3.9|Windows|x86|❌|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+|PyPy 3.8|Windows|x86|❌|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+|PyPy 3.7|Windows|x86|❌|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|❌|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|

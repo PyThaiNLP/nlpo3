@@ -25,14 +25,14 @@ pip install nlpo3
 ## Table of contents
 
 - [Features](#features)
-- [Dictionary file](#dictionary-file)
-- [Usage](#usage)
+- [Use](#use)
   - [Node.js binding](#nodejs-binding)
   - [Python binding](#python-binding)
   - [Rust library](#rust-library)
   - [Command-line interface](#command-line-interface)
+  - [Dictionary](#dictionary)
 - [Build](#build)
-- [Development](#development)
+- [Develop](#develop)
 - [License](#license)
 
 ## Features
@@ -48,25 +48,7 @@ pip install nlpo3
 [tcc]: https://dl.acm.org/doi/10.1145/355214.355225
 [benchmark]: ./nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb
 
-## Dictionary file
-
-- For the interest of library size, nlpO3 does not assume what dictionary the
-  user would like to use, and it does not come with a dictionary.
-- A dictionary is needed for the dictionary-based word tokenizer.
-- For tokenization dictionary, try
-  - [words_th.tx][dict-pythainlp] from [PyThaiNLP][pythainlp]
-    - ~62,000 words
-    - CC0-1.0
-  - [word break dictionary][dict-libthai] from [libthai][libthai]
-    - consists of dictionaries in different categories, with a make script
-    - LGPL-2.1
-
-[pythainlp]: https://github.com/PyThaiNLP/pythainlp
-[libthai]: https://github.com/tlwg/libthai/
-[dict-pythainlp]: https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt
-[dict-libthai]: https://github.com/tlwg/libthai/tree/master/data
-
-## Usage
+## Use
 
 ### Node.js binding
 
@@ -151,6 +133,24 @@ echo "ฉันกินข้าว" | nlpo3 segment
 
 See more at [nlpo3-cli](./nlpo3-cli/).
 
+### Dictionary
+
+- For the interest of library size, nlpO3 does not assume what dictionary the
+  user would like to use, and it does not come with a dictionary.
+- A dictionary is needed for the dictionary-based word tokenizer.
+- For tokenization dictionary, try
+  - [words_th.tx][dict-pythainlp] from [PyThaiNLP][pythainlp]
+    - ~62,000 words
+    - CC0-1.0
+  - [word break dictionary][dict-libthai] from [libthai][libthai]
+    - consists of dictionaries in different categories, with a make script
+    - LGPL-2.1
+
+[pythainlp]: https://github.com/PyThaiNLP/pythainlp
+[libthai]: https://github.com/tlwg/libthai/
+[dict-pythainlp]: https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt
+[dict-libthai]: https://github.com/tlwg/libthai/tree/master/data
+
 ## Build
 
 ### Requirements
@@ -179,13 +179,13 @@ cargo build --release
 
 Check `target/` for build artifacts.
 
-## Development
+## Develop
 
-Development document:
+### Development document
 
 - [Notes on custom string](src/NOTE_ON_STRING.md)
 
-Issues:
+### Issues
 
 - Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
 
