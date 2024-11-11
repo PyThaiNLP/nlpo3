@@ -7,7 +7,7 @@ name = "nlpo3"
 version = "1.3.1"
 description = "Python binding for nlpO3 Thai language processing library in Rust"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 license = { text = "Apache-2.0" }
 keywords = ["thai", "tokenizer", "nlp", "word-segmentation", "pythainlp"]
 authors = [
@@ -18,7 +18,6 @@ authors = [
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.6",
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
@@ -38,7 +37,7 @@ homepage = "https://github.com/PyThaiNLP/nlpo3/"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

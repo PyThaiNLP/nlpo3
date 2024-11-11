@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 # nlpO3 Python binding
 
 [![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg "Python 3.6")](https://www.python.org/downloads/)
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg "Python 3.7")](https://www.python.org/downloads/)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 
 Python binding for nlpO3, a Thai natural language processing library in Rust.
@@ -86,7 +86,7 @@ segment("สวัสดีครับ", dict_name="dict_name", safe=True)
 ### Requirements
 
 - [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
-- Python 3.6 or newer
+- Python 3.7 or newer (PyO3's minimum supported version)
 - Python Development Headers
   - Ubuntu: `sudo apt-get install python3-dev`
   - macOS: No action needed
