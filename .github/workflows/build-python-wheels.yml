@@ -115,7 +115,7 @@ jobs:
         # It is needed to install Rust for Linux,
         # because cibuildwheel on Linux runs inside a container
         # and the container does not have Rust.
-        CIBW_ARCHS_WINDOWS: "AMD64 x86 ARM64"
+        CIBW_ARCHS_WINDOWS: "AMD64 x86"
 
     - name: Store artifacts
       uses: actions/upload-artifact@v3
