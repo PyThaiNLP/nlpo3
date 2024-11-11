@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 [![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg "Python 3.7")](https://www.python.org/downloads/)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
 Python binding for nlpO3, a Thai natural language processing library in Rust.
 

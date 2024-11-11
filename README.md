@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 # nlpO3
 
 [![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
+[![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
 Thai natural language processing library in Rust,
 with Python and Node bindings. Formerly oxidized-thainlp.
