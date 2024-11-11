@@ -1,0 +1,35 @@
+cff-version: "1.2.0"
+title: "nlpO3 Python binding"
+message: >-
+  If you use this software, please cite it using these
+  metadata.
+type: software
+authors:
+  - family-names: Suntorntip
+    given-names: Thanathip
+  - family-names: Suriyawongkul
+    given-names: Arthit
+    orcid: "https://orcid.org/0000-0002-9698-1899"
+  - family-names: Phatthiyaphaibun
+    given-names: Wannaphong
+    orcid: "https://orcid.org/0000-0002-4153-4354"
+repository-code: "https://github.com/PyThaiNLP/nlpo3/"
+repository: "https://github.com/PyThaiNLP/nlpo3/"
+url: "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-python"
+abstract: "Python binding for nlpO3, a Thai natural language processing library in Rust."
+keywords:
+  - "tokenizer"
+  - "tokenization"
+  - "Thai"
+  - "natural language processing"
+  - "NLP"
+  - "Python"
+  - "Python binding"
+  - "Rust"
+  - "text processing"
+  - "word segmentation"
+  - "Thai language"
+  - "Thai NLP"
+license: Apache-2.0
+version: v1.3.1
+date-released: "2024-11-11"
