@@ -9,5 +9,5 @@ COMMIT_MSG=$(git log --no-merges -1 --oneline)
 if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ||
       "$GITHUB_EVENT_NAME" == "release" ||
       "$COMMIT_MSG" =~ "[cd build]" ]]; then
-    echo "::set-output name=build::true"
+    echo "build=true" >> $GITHUB_OUTPUT
 fi
