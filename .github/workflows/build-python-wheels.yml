@@ -151,7 +151,8 @@ jobs:
     - name: Print env
       run: |
         echo "$PATH"
-        ls "$HOME/.cargo"
+        ls "$HOME/.cargo/bin"
+        ls "$HOME/.cargo/env"
     - name: Install dependencies
       run: |
         pip install --upgrade pip
@@ -169,7 +170,7 @@ jobs:
         # See build selector name at:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
         CIBW_BUILD: ${{ env.CP_VER }}-${{ matrix.platform_id }}
-        CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/env:$PATH"
+        CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
         CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.9
                                 PATH="$HOME/.cargo/bin:$PATH"
                                 CC=/usr/bin/clang
