@@ -39,5 +39,5 @@ jobs:
 
     - name: Test
       run: |
-        echo "$HOME/.cargo/bin"
+        ls "$HOME/.cargo/bin"
         cargo test
