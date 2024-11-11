@@ -63,89 +63,13 @@ jobs:
     strategy:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
-      # For build identier, see:
-      # https://cibuildwheel.pypa.io/en/stable/options/#build-skip
       matrix:
-        # See more build combinations at "Make CIBW_BUILD list" steps below
         os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ["3.13"]
-        # python-version: ["3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7", "pypy3.10", "pypy3.9", "pypy3.8", "pypy3.7"]
-        # bitness: [64, 32]
-        # include:
-        # - os: windows-latest
-        #   bitness: 64
-        #   platform_id: win_amd64
-        # - os: windows-latest
-        #   bitness: 32
-        #   platform_id: win32
-        # exclude:
-        # - os: macos-latest
-        #   bitness: 32
-        # - os: macos-latest
-        #   python-version: "3.7"
-        # - os: macos-latest
-        #   python-version: "pypy3.7"
     env:
-      CP_VER: ""
-      CIBW_BUILD: ""  # let cibuildwheel cover the supported platforms
+      CIBW_BUILD: ""  # blank, let cibuildwheel build all supported platforms
 
     steps:
-    # cibuildwheel needs a specific Python implementation ID
-    - name: Make Python implementation ID (non-Windows)
-      id: convert-version-id
-      if: startsWith(matrix.os, 'windows-') == false
-      run: |
-        PYTHON_VERSION=${{ matrix.python-version }}
-        if [[ "$PYTHON_VERSION" == pypy* ]]; then
-          CP_VER="pp${PYTHON_VERSION:4}"
-          CP_VER="${CP_VER//./}"
-        else
-          CP_VER="cp${PYTHON_VERSION//./}"
-        fi
-        echo "Python version: $CP_VER"
-        echo "CP_VER=$CP_VER" >> $GITHUB_ENV
-
-    - name: Make Python implementation ID (Windows)
-      id: convert-version-id-win
-      if: startsWith(matrix.os, 'windows-')
-      shell: powershell
-      run: |
-        $PYTHON_VERSION = "${{ matrix.python-version }}"
-        if ($PYTHON_VERSION -like "pypy*") {
-          $CP_VER = "pp" + $PYTHON_VERSION.Substring(4).Replace(".", "")
-        } else {
-          $CP_VER = "cp" + $PYTHON_VERSION.Replace(".", "")
-        }
-        echo "Python version: $CP_VER"
-        echo "CP_VER=$CP_VER" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-    # - name: Make CIBW_BUILD list (macOS)
-    #   if: startsWith(matrix.os, 'macos-')
-    #   run: echo "CIBW_BUILD=${{ env.CP_VER }}-macosx*" >> $GITHUB_ENV
-
-    # - name: Make CIBW_BUILD list (Linux 64-bit)
-    #   if: startsWith(matrix.os, 'ubuntu-') && matrix.bitness == 64
-    #   run: |
-    #     CP_VER=${{ env.CP_VER }}
-    #     CIBW_BUILD="$CP_VER-manylinux_x86_64"
-    #     if [[ "$CP_VER" != pp* ]]; then
-    #       CIBW_BUILD="$CIBW_BUILD $CP_VER-musllinux_x86_64"
-    #     fi
-    #     echo "CIBW_BUILD: $CIBW_BUILD"
-    #     echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_ENV
-      
-    # - name: Make CIBW_BUILD list (Linux 32-bit)
-    #   if: startsWith(matrix.os, 'ubuntu-') && matrix.bitness == 32
-    #   run: |
-    #     CP_VER=${{ env.CP_VER }}
-    #     CIBW_BUILD="$CP_VER-manylinux_i686"
-    #     echo "CIBW_BUILD: $CIBW_BUILD"
-    #     echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_ENV
-
-    # - name: Make CIBW_BUILD list (Windows)
-    #   if: startsWith(matrix.os, 'windows-')
-    #   run: CIBW_BUILD=${{ env.CP_VER }}-${{ matrix.platform_id }}" >> $GITHUB_ENV
-
     - name: Checkout source code
       uses: actions/checkout@v4
 
@@ -174,8 +98,9 @@ jobs:
         output-dir: wheelhouse
       env:
         CIBW_BUILD_VERBOSITY: 1
-        # See CIBW_ARCHS and other build selectors at:
+        # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
+        CIBW_SKIP: "cp37-musllinux_i686"
         CIBW_ARCHS_MACOS: "x86_64 arm64"
         CIBW_ENVIRONMENT_MACOS: |
           MACOSX_DEPLOYMENT_TARGET=10.9
