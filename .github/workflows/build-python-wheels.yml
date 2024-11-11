@@ -71,12 +71,6 @@ jobs:
         python-version: ["3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7", "pypy3.10", "pypy3.9", "pypy3.8", "pypy3.7"]
         bitness: [64, 32]
         include:
-        - os: macos-latest
-          bitness: 64
-          platform_id: macosx_x86_64
-        - os: macos-latest
-          bitness: 64
-          platform_id: macosx_arm64
         - os: windows-latest
           bitness: 64
           platform_id: win_amd64
@@ -90,10 +84,6 @@ jobs:
           python-version: "3.7"
         - os: macos-latest
           python-version: "pypy3.7"
-        # - python-version: "pypy3.10"
-        #   bitness: 32
-        # - python-version: "pypy3.9"
-        #   bitness: 32
     env:
       CP_VER: ""
       CIBW_BUILD: ""
@@ -113,6 +103,7 @@ jobs:
         fi
         echo "Python version: $CP_VER"
         echo "CP_VER=$CP_VER" >> $GITHUB_ENV
+
     - name: Make Python implementation ID (Windows)
       id: convert-version-id-win
       if: startsWith(matrix.os, 'windows-')
@@ -127,9 +118,9 @@ jobs:
         echo "Python version: $CP_VER"
         echo "CP_VER=$CP_VER" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-    - name: Make CIBW_BUILD list (non-Linux)
-      if: startsWith(matrix.os, 'ubuntu-') == false
-      run: echo "CIBW_BUILD=${{ env.CP_VER }}-${{ matrix.platform_id }}" >> $GITHUB_ENV
+    - name: Make CIBW_BUILD list (macOS)
+      if: startsWith(matrix.os, 'macos-')
+      run: echo "CIBW_BUILD=${{ env.CP_VER }}-macosx*" >> $GITHUB_ENV
 
     - name: Make CIBW_BUILD list (Linux 64-bit)
       if: startsWith(matrix.os, 'ubuntu-') && matrix.bitness == 64
@@ -149,6 +140,10 @@ jobs:
         CIBW_BUILD="$CP_VER-manylinux_i686"
         echo "CIBW_BUILD: $CIBW_BUILD"
         echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_ENV
+
+    - name: Make CIBW_BUILD list (Windows)
+      if: startsWith(matrix.os, 'windows-')
+      run: echo "CIBW_BUILD=${{ env.CP_VER }}-${{ matrix.platform_id }}" >> $GITHUB_ENV
 
     - name: Checkout source code
       uses: actions/checkout@v4
