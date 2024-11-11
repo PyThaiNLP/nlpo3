@@ -50,7 +50,9 @@ pip install nlpo3
 
 ## Usage
 
-Load file `path/to/dict.file` to memory and assign a name `dict_name` to it.
+Load file `path/to/dict.file` to memory
+and assign a name `dict_name` to it.
+
 Then tokenize a text with the `dict_name` dictionary:
 
 ```python
@@ -90,7 +92,7 @@ segment("สวัสดีครับ", dict_name="dict_name", safe=True)
 - Python Development Headers
   - Ubuntu: `sudo apt-get install python3-dev`
   - macOS: No action needed
-- [PyO3](https://github.com/PyO3/pyo3) - already included in Cargo.toml
+- [PyO3](https://github.com/PyO3/pyo3) - already included in `Cargo.toml`
 - [setuptools-rust](https://github.com/PyO3/setuptools-rust)
 
 ### Steps
