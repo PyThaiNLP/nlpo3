@@ -5,11 +5,19 @@ on:
       - main
     paths:
       - 'nlpo3-python/**'
+      exclude:
+        - 'notebooks/'
+        - 'LICENSE'
+        - '*.md'
   pull_request:
     branches:
       - main
     paths:
       - 'nlpo3-python/**'
+      exclude:
+        - 'notebooks/'
+        - 'LICENSE'
+        - '*.md'
 
 defaults:
   run:
@@ -49,7 +57,9 @@ jobs:
           python -m build --wheel
 
       - name: Install wheel
-        run: pip install --no-index --find-links=build/dist nlpo3
+        run: pip install --no-index --find-links=dist nlpo3
+      # Since we don't know the exact name of the wheel from previous step,
+      # use --find-links instead.
 
       - name: Test
         run: |
