@@ -3,6 +3,7 @@ name = "nlpo3"
 version = "1.4.0"
 edition = "2018"
 license = "Apache-2.0"
+license-file = "LICENSE"
 authors = ["Thanathip Suntorntip Gorlph"]
 description = "Thai natural language processing library, with Python and Node bindings"
 homepage = "https://github.com/PyThaiNLP/nlpo3/"
