@@ -103,6 +103,27 @@ python -m build
 This should generate a wheel file, in `dist/` directory,
 which can be installed by pip.
 
+To install a wheel from a local directory:
+
+```bash
+pip install dist/nlpo3-1.3.1-cp311-cp311-macosx_12_0_x86_64.whl 
+```
+
+## Test
+
+To run the Python unit test:
+
+```bash
+cd tests
+python -m unittest
+```
+
 ## Issues
 
 Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
+
+## License
+
+nlpO3 Python binding is copyrighted by its authors
+and licensed under terms of the Apache Software License 2.0 (Apache-2.0).
+See file [LICENSE](./LICENSE) for details.
