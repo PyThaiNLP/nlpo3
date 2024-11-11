@@ -3,14 +3,14 @@ name = "nlpo3"
 version = "1.4.0"
 edition = "2018"
 license = "Apache-2.0"
-authors = ["Thanathip Suntorntip Gorlph"]
+authors = ["Thanathip Suntorntip Gorlph", "Arthit Suriyawongkul"]
 description = "Thai natural language processing library, with Python and Node bindings"
-homepage = "https://github.com/PyThaiNLP/nlpo3/"
-documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/README.md"
-repository = "https://github.com/PyThaiNLP/nlpo3/"
-readme = "README.md"
-keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
 categories = ["text-processing"]
+keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
+homepage = "https://github.com/PyThaiNLP/nlpo3/"
+repository = "https://github.com/PyThaiNLP/nlpo3/"
+documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/README.md"
+readme = "README.md"
 exclude = [
     ".gitignore",
     ".github/*",

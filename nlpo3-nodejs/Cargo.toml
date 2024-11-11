@@ -5,12 +5,12 @@ edition = "2018"
 license = "Apache-2.0"
 authors = ["Thanathip Suntorntip Gorlph"]
 description = "Node binding for nlpO3 Thai language processing library"
-documentation = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-nodejs/README.md"
-homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-nodejs/"
-repository = "https://github.com/PyThaiNLP/nlpo3/"
-readme = "README.md"
 keywords = ["thai", "tokenizer", "nlp", "word-segmentation"]
 categories = ["text-processing"]
+homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-nodejs/"
+repository = "https://github.com/PyThaiNLP/nlpo3/"
+documentation = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-nodejs/README.md"
+readme = "README.md"
 exclude = ["index.node"]
 
 [lib]
