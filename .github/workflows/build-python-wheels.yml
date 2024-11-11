@@ -82,18 +82,18 @@ jobs:
         - os: ubuntu-latest
           bitness: 32
           platform_id: manylinux_i686
-        # - os: ubuntu-latest
-        #   bitness: 64
-        #   platform_id: musllinux_x86_64
-        # - os: ubuntu-latest
-        #   bitness: 32
-        #   platform_id: musllinux_i686
-        # - os: ubuntu-latest
-        #   bitness: 64
-        #   platform_id: manylinux_aarch64
-        # - os: ubuntu-latest
-        #   bitness: 64
-        #   platform_id: musllinux_aarch64
+        - os: ubuntu-latest
+          bitness: 64
+          platform_id: musllinux_x86_64
+        - os: ubuntu-latest
+          bitness: 32
+          platform_id: musllinux_i686
+        - os: ubuntu-latest
+          bitness: 64
+          platform_id: manylinux_aarch64
+        - os: ubuntu-latest
+          bitness: 64
+          platform_id: musllinux_aarch64
         - os: windows-latest
           bitness: 64
           platform_id: win_amd64
