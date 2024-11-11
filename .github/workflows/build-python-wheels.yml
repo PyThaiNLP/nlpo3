@@ -173,7 +173,7 @@ jobs:
         output-dir: wheelhouse
       env:
         CIBW_BUILD_VERBOSITY: 1
-        # See build selector name at:
+        # See CIBW_ARCHS and other build selectors at:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
         CIBW_ARCHS_MACOS: "x86_64 universal2 arm64"
         CIBW_ENVIRONMENT_MACOS: |
