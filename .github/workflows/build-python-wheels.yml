@@ -148,17 +148,12 @@ jobs:
         cache: "pip"
     - name: Setup Rust toolchain
       uses: actions-rust-lang/setup-rust-toolchain@v1
-    - name: Print env
-      run: |
-        echo "$PATH"
-        ls "$HOME/.cargo/bin"
+    - name: Set path
+      if: startsWith(matrix.os, 'windows-') == false
+      run: export PATH="$HOME/.cargo/bin:$PATH"
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install --upgrade setuptools-rust
-#    - name: Install dependencies (Ubuntu)
-#      if: startsWith(matrix.os, 'ubuntu-')
-#      run: sudo apt-get install python3-dev
     - name: Build Python wheels
       uses: pypa/cibuildwheel@v2.21.3
       with:
@@ -169,11 +164,15 @@ jobs:
         # See build selector name at:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
         CIBW_BUILD: ${{ env.CP_VER }}-${{ matrix.platform_id }}
+        CIBW_ENVIRONMENT_MACOS: |
+          MACOSX_DEPLOYMENT_TARGET=10.9
+          PATH="$HOME/.cargo/bin:$PATH"
+          CC=/usr/bin/clang
+          CXX=/usr/bin/clang++
         CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
-        CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.9
-                                PATH="$HOME/.cargo/bin:$PATH"
-                                CC=/usr/bin/clang
-                                CXX=/usr/bin/clang++
+        CIBW_BEFORE_BUILD_LINUX: |
+          pip install --upgrade setuptools-rust
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     - name: Store artifacts
       uses: actions/upload-artifact@v3
       with:
