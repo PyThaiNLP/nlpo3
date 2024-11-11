@@ -1,4 +1,4 @@
-name: Test main lib (Rust crate)
+name: Test main lib
 on:
   push:
     branches:
@@ -19,8 +19,6 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -29,6 +27,8 @@ jobs:
         include:
         - os: windows-latest
           bitness: 32
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout source code

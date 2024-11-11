@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 # nlpO3 Python binding
 
 [![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg "Python 3.6")](https://www.python.org/downloads/)
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg "Python 3.7")](https://www.python.org/downloads/)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 
 Python binding for nlpO3, a Thai natural language processing library in Rust.
@@ -86,7 +86,7 @@ segment("สวัสดีครับ", dict_name="dict_name", safe=True)
 ### Requirements
 
 - [Rust 2018 Edition](https://www.rust-lang.org/tools/install)
-- Python 3.6 or newer
+- Python 3.7 or newer (PyO3's minimum supported version)
 - Python Development Headers
   - Ubuntu: `sudo apt-get install python3-dev`
   - macOS: No action needed
@@ -103,6 +103,27 @@ python -m build
 This should generate a wheel file, in `dist/` directory,
 which can be installed by pip.
 
+To install a wheel from a local directory:
+
+```bash
+pip install dist/nlpo3-1.3.1-cp311-cp311-macosx_12_0_x86_64.whl 
+```
+
+## Test
+
+To run the Python unit test:
+
+```bash
+cd tests
+python -m unittest
+```
+
 ## Issues
 
 Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
+
+## License
+
+nlpO3 Python binding is copyrighted by its authors
+and licensed under terms of the Apache Software License 2.0 (Apache-2.0).
+See file [LICENSE](./LICENSE) for details.

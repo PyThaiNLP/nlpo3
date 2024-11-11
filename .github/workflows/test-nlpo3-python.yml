@@ -1,0 +1,69 @@
+name: Test nlpo3-python
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'nlpo3-python/**'
+    - '!notebooks/'
+    - '!LICENSE'
+    - '!*.md'
+  pull_request:
+    branches:
+    - main
+    paths:
+    - 'nlpo3-python/**'
+    - '!notebooks/'
+    - '!LICENSE'
+    - '!*.md'
+
+defaults:
+  run:
+    working-directory: nlpo3-python
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ["3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7"]
+        bitness: [64]  # 32, 64
+        include:
+          - os: windows-latest
+            python-version: "3.9"
+            bitness: 32
+        exclude:
+          - os: macos-latest
+            python-version: "3.7"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Build wheel
+        run: |
+          pip install -U pip
+          pip install -U build setuptools setuptools-rust wheel
+          python -m build --wheel
+
+      - name: Install wheel
+        run: pip install --no-index --find-links=dist nlpo3
+      # Since we don't know the exact name of the wheel from previous step,
+      # use --find-links instead.
+
+      - name: Test
+        run: |
+          cd tests
+          python -m unittest

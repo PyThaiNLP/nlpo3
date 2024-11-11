@@ -7,6 +7,12 @@ type: software
 authors:
   - family-names: Suntorntip
     given-names: Thanathip
+  - family-names: Suriyawongkul
+    given-names: Arthit
+    orcid: "https://orcid.org/0000-0002-9698-1899"
+  - family-names: Phatthiyaphaibun
+    given-names: Wannaphong
+    orcid: "https://orcid.org/0000-0002-4153-4354"
 repository-code: "https://github.com/PyThaiNLP/nlpo3/"
 repository: "https://github.com/PyThaiNLP/nlpo3/"
 url: "https://github.com/PyThaiNLP/nlpo3/"

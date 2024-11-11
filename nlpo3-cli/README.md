@@ -27,3 +27,9 @@ nlpo3 help
 ```bash
 echo "ฉันกินข้าว" | nlpo3 segment
 ```
+
+## License
+
+nlpo3-cli is copyrighted by its authors
+and licensed under terms of the Apache Software License 2.0 (Apache-2.0).
+See file [LICENSE](./LICENSE) for details.

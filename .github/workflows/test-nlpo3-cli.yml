@@ -1,4 +1,4 @@
-name: Test nlpo3-cli (command line)
+name: Test nlpo3-cli
 on:
   push:
     branches:
@@ -17,8 +17,6 @@ defaults:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -28,9 +26,11 @@ jobs:
           - os: windows-latest
             bitness: 32
 
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout source code
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
 
       - name: Setup Rust toolchain - non-win32
         uses: actions-rs/toolchain@v1
