@@ -31,6 +31,7 @@ lazy_static! {
 /// returns list of valid utf-8 bytes list
 /// signature: (text: str, dict_name: str, safe: boolean = false, parallel: boolean = false) -> List[List[u8]]
 #[pyfunction]
+#[pyo3(signature = (text, dict_name, safe=false, parallel=false))]
 fn segment(text: &PyString, dict_name: &str, safe: bool, parallel: bool) -> PyResult<Vec<String>> {
     if let Some(loaded_dict) = DICT_COLLECTION.lock().unwrap().get(dict_name) {
         let result = loaded_dict.segment_to_string(text.to_str()?, safe, parallel);
@@ -48,6 +49,7 @@ fn segment(text: &PyString, dict_name: &str, safe: bool, parallel: bool) -> PyRe
 /// returns a tuple of string of loading result and a boolean
 /// signature: (file_path: str, dict_name: str) -> (str, boolean)
 #[pyfunction]
+#[pyo3(signature = (file_path, dict_name))]
 fn load_dict(file_path: &str, dict_name: &str) -> PyResult<(String, bool)> {
     let mut dict_col_lock = DICT_COLLECTION.lock().unwrap();
     if dict_col_lock.get(dict_name).is_some() {
