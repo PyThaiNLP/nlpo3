@@ -46,45 +46,44 @@ pub fn replace_tcc_symbol(tcc_pattern: &str) -> String {
 lazy_static! {
     pub static ref NON_LOOKAHEAD_TCC: Regex = Regex::new(
         &[
-            r"^เc็ck",                //1
-            r"^เcctาะk",            //2
-            r"^เccีtยะk",         //3
-            r"^เcc็ck",               //4
-            r"^เcิc์ck",            //5
-            r"^เcิtck",               //6
-            r"^เcีtยะ?k",         //7
-            r"^เcืtอะ?k",         //8
-            r"^เctา?ะ?k",           //9
-            r"^cัtวะk",             //10
-            r"^c[ัื]tc[ุิะ]?k", //11
-            r"^c[ิุู]์k",         //12
-            r"^c[ะ-ู]tk",             //13
-            r"^cรรc์ ็",          //14
-            r"^c็",                     //15
-            r"^ct[ะาำ]?k",          //16
-            r"^ck",                       //17
-            r"^แc็c",                 //18
-            r"^แcc์",                 //19
-            r"^แctะ",                 //20
-            r"^แcc็c",                //21
-            r"^แccc์",                //22
-            r"^โctะ",                 //23
-            r"^[เ-ไ]ct",              //24
+            r"^เc็ck",  // 1
+            r"^เcctาะk",  // 2
+            r"^เccีtยะk",  // 3
+            r"^เcc็ck",  // 4
+            r"^เcิc์ck",  // 5
+            r"^เcิtck",  // 6
+            r"^เcีtยะ?k",  // 7
+            r"^เcืtอะ?k",  // 8
+            r"^เctา?ะ?k",  // 9
+            r"^cัtวะk",  // 10
+            r"^c[ัื]tc[ุิะ]?k",  // 11
+            r"^c[ิุู]์k",  // 12
+            r"^c[ะ-ู]tk",  // 13
+            r"^cรรc์ ็",  // 14
+            r"^c็",  // 15
+            r"^ct[ะาำ]?k",  // 16
+            r"^ck",  // 17
+            r"^แc็c",  // 18
+            r"^แcc์",  // 19
+            r"^แctะ",  // 20
+            r"^แcc็c",  // 21
+            r"^แccc์",  // 22
+            r"^โctะ",  // 23
+            r"^[เ-ไ]ct",  // 24
             r"^ก็",
             r"^อึ",
             r"^หึ",
-            r"^(เccีtย)[เ-ไก-ฮ]k",           // look ahead 1
-            r"^(เc[ิีุู]tย)[เ-ไก-ฮ]k", // look ahead 2
+            r"^(เccีtย)[เ-ไก-ฮ]k",  // look ahead 1
+            r"^(เc[ิีุู]tย)[เ-ไก-ฮ]k",  // look ahead 2
         ].map(|pattern| {
                 regex_pattern_to_custom_pattern(&replace_tcc_symbol(pattern)).unwrap()
             }).join("|")
     ).unwrap();
     pub static ref LOOKAHEAD_TCC: Regex = Regex::new(
         &[
-    r"^(เccีtย)[เ-ไก-ฮ]k",           //เccีtย(?=[เ-ไก-ฮ]|$)
-    r"^(เc[ิีุู]tย)[เ-ไก-ฮ]k" //เc[ิีุู]tย(?=[เ-ไก-ฮ]|$)
-]
-            .map(|pattern| {
+            r"^(เccีtย)[เ-ไก-ฮ]k",  //เccีtย(?=[เ-ไก-ฮ]|$)
+            r"^(เc[ิีุู]tย)[เ-ไก-ฮ]k"  //เc[ิีุู]tย(?=[เ-ไก-ฮ]|$)
+        ].map(|pattern| {
                 regex_pattern_to_custom_pattern(&replace_tcc_symbol(pattern)).unwrap()
             }).join("|")
     )
