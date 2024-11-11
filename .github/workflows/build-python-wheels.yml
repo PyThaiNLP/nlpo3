@@ -56,7 +56,7 @@ jobs:
       # To trigger the build steps, add "[cd build]" to commit message
 
   build_wheels:
-    name: Build ${{ matrix.python-version }}-${{ matrix.platform_id }}
+    name: Build ${{ matrix.python-version }} on ${{ matrix.os }} ${{ matrix.bitness }}-bit
     runs-on: ${{ matrix.os }}
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
@@ -66,8 +66,9 @@ jobs:
       # For build identier, see:
       # https://cibuildwheel.pypa.io/en/stable/options/#build-skip
       matrix:
+        # See more build combinations at "Make CIBW_BUILD list" steps below
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ["3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7", "pypy3.10", "pypy3.9"]
+        python-version: ["3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7", "pypy3.10", "pypy3.9", "pypy3.8", "pypy3.7"]
         bitness: [64, 32]
         include:
         - os: macos-latest
@@ -76,24 +77,6 @@ jobs:
         - os: macos-latest
           bitness: 64
           platform_id: macosx_arm64
-        - os: ubuntu-latest
-          bitness: 64
-          platform_id: manylinux_x86_64
-        - os: ubuntu-latest
-          bitness: 32
-          platform_id: manylinux_i686
-        - os: ubuntu-latest
-          bitness: 64
-          platform_id: musllinux_x86_64
-        - os: ubuntu-latest
-          bitness: 32
-          platform_id: musllinux_i686
-        - os: ubuntu-latest
-          bitness: 64
-          platform_id: manylinux_aarch64
-        - os: ubuntu-latest
-          bitness: 64
-          platform_id: musllinux_aarch64
         - os: windows-latest
           bitness: 64
           platform_id: win_amd64
@@ -105,15 +88,17 @@ jobs:
           bitness: 32
         - os: macos-latest
           python-version: "3.7"
-        - python-version: "pypy3.10"
-          bitness: 32
-        - python-version: "pypy3.9"
-          bitness: 32
+        # - python-version: "pypy3.10"
+        #   bitness: 32
+        # - python-version: "pypy3.9"
+        #   bitness: 32
     env:
       CP_VER: ""
+      CIBW_BUILD: ""
+
     steps:
     # cibuildwheel needs a specific Python implementation ID
-    - name: Make Python implementation ID
+    - name: Make Python implementation ID (non-Windows)
       id: convert-version-id
       if: startsWith(matrix.os, 'windows-') == false
       run: |
@@ -139,19 +124,49 @@ jobs:
         }
         echo "Python version: $CP_VER"
         echo "CP_VER=$CP_VER" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Make CIBW_BUILD list (non-Linux)
+      if: startsWith(matrix.os, 'ubuntu-') == false
+      run: echo "CIBW_BUILD=${{ env.CP_VER }}-${{ matrix.platform_id }}" >> $GITHUB_ENV
+
+    - name: Make CIBW_BUILD list (Linux 64-bit)
+      if: startsWith(matrix.os, 'ubuntu-') && matrix.bitness == 64
+      run: |
+        CP_VER=${{ env.CP_VER }}
+        CIBW_BUILD="$CP_VER-manylinux_x86_64 $CP_VER-manylinux_aarch64"
+        if [[ "$CP_VER" != pp* ]]; then
+          CIBW_BUILD="$CIBW_BUILD $CP_VER-musllinux_x86_64 $CP_VER-musllinux_aarch64"
+        fi
+        echo "CIBW_BUILD: $CIBW_BUILD"
+        echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_ENV
+      
+    - name: Make CIBW_BUILD list (Linux 32-bit)
+      if: startsWith(matrix.os, 'ubuntu-') && matrix.bitness == 32
+      run: |
+        CP_VER=${{ env.CP_VER }}
+        CIBW_BUILD="$CP_VER-manylinux_i686"
+        if [[ "$CP_VER" != pp* ]]; then
+          CIBW_BUILD="$CIBW_BUILD $CP_VER-musllinux_i686"
+        fi
+        echo "CIBW_BUILD: $CIBW_BUILD"
+        echo "CIBW_BUILD=$CIBW_BUILD" >> $GITHUB_ENV
+
     - name: Checkout source code
       uses: actions/checkout@v4
+
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         cache: "pip"
+    - name: Install Python dependencies
+      run: python -m pip install --upgrade pip
+
     - name: Setup Rust toolchain
       if: startsWith(matrix.os, 'ubuntu-') == false
       uses: actions-rust-lang/setup-rust-toolchain@v1
       # For Linux, Rust will be installed inside a cibuildwheel container later
-    - name: Install Python dependencies
-      run: python -m pip install --upgrade pip
+
     - name: Build Python wheels
       uses: pypa/cibuildwheel@v2.21.3
       with:
@@ -161,7 +176,6 @@ jobs:
         CIBW_BUILD_VERBOSITY: 1
         # See build selector name at:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
-        CIBW_BUILD: ${{ env.CP_VER }}-${{ matrix.platform_id }}
         CIBW_ENVIRONMENT_MACOS: |
           MACOSX_DEPLOYMENT_TARGET=10.9
           PATH="$HOME/.cargo/bin:$PATH"
@@ -174,6 +188,7 @@ jobs:
         # It is needed to install Rust for Linux,
         # because cibuildwheel on Linux runs inside a container
         # and the container does not have Rust.
+
     - name: Store artifacts
       uses: actions/upload-artifact@v3
       with:
