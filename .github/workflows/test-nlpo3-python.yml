@@ -5,19 +5,17 @@ on:
     - main
     paths:
     - 'nlpo3-python/**'
-    paths-ignore:
-    - 'notebooks/'
-    - 'LICENSE'
-    - '*.md'
+    - '!notebooks/'
+    - '!LICENSE'
+    - '!*.md'
   pull_request:
     branches:
     - main
     paths:
     - 'nlpo3-python/**'
-    paths-ignore:
-    - 'notebooks/'
-    - 'LICENSE'
-    - '*.md'
+    - '!notebooks/'
+    - '!LICENSE'
+    - '!*.md'
 
 defaults:
   run:
