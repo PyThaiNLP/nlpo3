@@ -112,26 +112,28 @@ jobs:
     env:
       CP_VER: ""
     steps:
-    - name: Convert Python version to cp/pp format
+    # cibuildwheel needs a specific Python implementation ID
+    - name: Make Python implementation ID
       id: convert-version-id
       if: startsWith(matrix.os, 'windows-') == false
       run: |
         PYTHON_VERSION=${{ matrix.python-version }}
         if [[ "$PYTHON_VERSION" == pypy* ]]; then
-          CP_VER="pp${PYTHON_VERSION//./}"
+          CP_VER="pp${PYTHON_VERSION:4}"
+          CP_VER="${CP_VER//./}"
         else
           CP_VER="cp${PYTHON_VERSION//./}"
         fi
         echo "Python version: $CP_VER"
         echo "CP_VER=$CP_VER" >> $GITHUB_ENV
-    - name: Convert Python version to cp/pp format (Windows)
+    - name: Make Python implementation ID (Windows)
       id: convert-version-id-win
       if: startsWith(matrix.os, 'windows-')
       shell: powershell
       run: |
         $PYTHON_VERSION = "${{ matrix.python-version }}"
         if ($PYTHON_VERSION -like "pypy*") {
-          $CP_VER = "pp" + $PYTHON_VERSION.Replace(".", "")
+          $CP_VER = "pp" + $PYTHON_VERSION.Substring(4).Replace(".", "")
         } else {
           $CP_VER = "cp" + $PYTHON_VERSION.Replace(".", "")
         }
@@ -165,7 +167,7 @@ jobs:
                                 CC=/usr/bin/clang
                                 CXX=/usr/bin/clang++
     - name: Store artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         path: ./wheelhouse/*.whl
 
@@ -187,7 +189,7 @@ jobs:
         cd nlpo3-python
         bash ../build_tools/github/build_source.sh
     - name: Store artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         path: nlpo3-python/dist/*.tar.gz
 
@@ -201,7 +203,7 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
     - name: Retrieve artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v3
       with:
         name: artifact
         path: dist
