@@ -171,8 +171,9 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: |
           pip install --upgrade setuptools-rust
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        # It is needed to install Rust for Linux, because cibuildwheel on Linux
-        # runs inside a container and the container does not have Rust.
+        # It is needed to install Rust for Linux,
+        # because cibuildwheel on Linux runs inside a container
+        # and the container does not have Rust.
     - name: Store artifacts
       uses: actions/upload-artifact@v3
       with:
