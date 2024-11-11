@@ -175,7 +175,7 @@ class TestTokenizePackage(unittest.TestCase):
         )
 
     def test_segment(self):
-        DICT_FILENAME = "tests/data/test_dict.txt"
+        DICT_FILENAME = "data/test_dict.txt"
         DICT_NAME = "test_dict"
         load_dict(DICT_FILENAME, DICT_NAME)
 
