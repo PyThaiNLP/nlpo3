@@ -41,10 +41,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
-      - name: Test Rust part
-        run: cargo test
 
-      - name: Test Python part
+      - name: Build wheel
+        run: |
+          pip install -U pip
+          pip install -U build setuptools setuptools-rust wheel
+          python -m build --wheel
+
+      - name: Install wheel
+        run: pip install --no-index --find-links=build/dist mapscript
+
+      - name: Test
         run: |
           cd tests
           python -m unittest
