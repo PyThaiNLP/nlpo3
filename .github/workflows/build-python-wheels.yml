@@ -22,8 +22,7 @@ on:
     - '.github/workflows/build-python-wheels.yml'
   release:
     types: [published]
-  # Manual run
-  workflow_dispatch: {}
+  workflow_dispatch: {}  # manual run
 
 jobs:
   echo_github_env:
