@@ -29,8 +29,8 @@ jobs:
         echo "github.event.action   : ${{ github.event.action }}"
         echo "github.event_name     : ${{ github.event_name }}"
         echo "github.ref            : ${{ github.ref }}"
+        echo "github.ref_type       : ${{ github.ref_type }}"
         echo "github.event.ref      : ${{ github.event.ref }}"
-        echo "github.event.ref_type : ${{ github.event.ref_type }}"
 
   # Check whether to build the wheels and the source tarball
   check_build_trigger:
