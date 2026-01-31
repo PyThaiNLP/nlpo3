@@ -8,7 +8,7 @@ version = "1.3.2-dev"
 description = "Python binding for nlpO3 Thai language processing library in Rust"
 readme = "README.md"
 requires-python = ">=3.7"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
 keywords = ["thai", "tokenizer", "nlp", "word-segmentation", "pythainlp"]
 authors = [
   { name = "Thanathip Suntorntip" },
@@ -28,7 +28,6 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: Apache Software License",
   "Natural Language :: Thai",
   "Topic :: Text Processing :: Linguistic",
   "Topic :: Software Development :: Libraries :: Python Modules",
