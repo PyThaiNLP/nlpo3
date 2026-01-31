@@ -10,7 +10,8 @@ SPDX-License-Identifier: Apache-2.0
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
-Python binding for nlpO3, a Thai natural language processing library in Rust.
+Python binding for nlpO3,
+a Thai natural language processing library written in Rust.
 
 To install:
 
@@ -43,10 +44,9 @@ pip install nlpo3
 
 ## Use
 
-Load file `path/to/dict.file` to memory
-and assign a name `dict_name` to it.
+Load a dictionary file and assign it a name (for example, `dict_name`).
 
-Then tokenize a text with the `dict_name` dictionary:
+Then tokenize text using the named dictionary:
 
 ```python
 from nlpo3 import load_dict, segment
@@ -55,22 +55,22 @@ load_dict("path/to/dict.file", "custom_dict")
 segment("สวัสดีครับ", "dict_name")
 ```
 
-it will return a list of strings:
+The function returns a list of strings, for example:
 
 ```python
 ['สวัสดี', 'ครับ']
 ```
 
-(result depends on words included in the dictionary)
+The result depends on the words included in the dictionary.
 
-Use multithread mode, also use the `dict_name` dictionary:
+Use multithread mode using the `dict_name` dictionary:
 
 ```python
 segment("สวัสดีครับ", dict_name="dict_name", parallel=True)
 ```
 
-Use safe mode to avoid long waiting time in some edge cases
-for text with lots of ambiguous word boundaries:
+Use safe mode to avoid long run times for inputs with many ambiguous
+word boundaries:
 
 ```python
 segment("สวัสดีครับ", dict_name="dict_name", safe=True)
@@ -78,10 +78,9 @@ segment("สวัสดีครับ", dict_name="dict_name", safe=True)
 
 ### Dictionary
 
-- For the interest of library size, nlpO3 does not assume what dictionary the
-  user would like to use, and it does not come with a dictionary.
-- A dictionary is needed for the dictionary-based word tokenizer.
-- For tokenization dictionary, try
+- To keep the library small, nlpO3 does not include a dictionary.
+  Users must provide a dictionary when using the dictionary-based tokenizer.
+- For tokenization dictionaries, try
   - [words_th.txt][dict-pythainlp] from [PyThaiNLP][pythainlp]
     - ~62,000 words
     - CC0-1.0

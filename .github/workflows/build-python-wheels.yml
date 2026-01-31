@@ -126,8 +126,8 @@ jobs:
           path: ./wheelhouse/*.whl
           name: ${{ github.job }}-wheelhouse-${{ matrix.os }}-${{ github.run_id }}
           if-no-files-found: warn
-          retention-days: 1
           overwrite: true
+          retention-days: 1
 
   build_sdist:
     name: Build source distribution
@@ -159,8 +159,8 @@ jobs:
         with:
           path: nlpo3-python/dist/*.tar.gz
           name: sdist
-          retention-days: 1
           overwrite: true
+          retention-days: 1
 
   publish_pypi:
     name: Publish to PyPI

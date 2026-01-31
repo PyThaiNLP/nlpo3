@@ -9,16 +9,16 @@ SPDX-License-Identifier: Apache-2.0
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
-A Thai natural language processing library written in Rust,
-with optional Python and Node.js bindings. Formerly known as `oxidized-thainlp`.
+A Thai natural language processing library written in Rust with optional
+Python and Node.js bindings. Formerly known as `oxidized-thainlp`.
 
-To use as a library in a Rust project:
+Using in a Rust project
 
 ```shell
 cargo add nlpo3
 ```
 
-To use as a library in a Python project:
+Using in a Python project
 
 ```shell
 pip install nlpo3
@@ -75,26 +75,25 @@ See more at [nlpo3-python](./nlpo3-python/).
 
 [![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
 
-#### Add to dependency
+#### Add as a dependency
 
-To use as a library in a Rust project:
+To add `nlpo3` to your project's dependencies:
 
 ```shell
 cargo add nlpo3
 ```
 
-It will add "nlpo3" to `Cargo.toml`:
+This updates `Cargo.toml` with:
 
 ```toml
 [dependencies]
-# ...
 nlpo3 = "1.4.0"
 ```
 
 #### Example
 
-Create a tokenizer using a dictionary from file,
-then use it to tokenize a string (safe mode = true, and parallel mode = false):
+Create a tokenizer from a dictionary file and use it to tokenize a string
+(safe mode = true, parallel mode = false):
 
 ```rust
 use nlpo3::tokenizer::newmm::NewmmTokenizer;
@@ -104,7 +103,7 @@ let tokenizer = NewmmTokenizer::new("path/to/dict.file");
 let tokens = tokenizer.segment("ห้องสมุดประชาชน", true, false).unwrap();
 ```
 
-Create a tokenizer using a dictionary from a vector of Strings:
+Create a tokenizer from a vector of strings:
 
 ```rust
 let words = vec!["ปาลิเมนต์".to_string(), "คอนสติติวชั่น".to_string()];
