@@ -148,96 +148,96 @@ A pre-built binary package is available from [PyPI][pypi] for these platforms:
 
 | Python     | OS        | Architecture | Binary wheel  |
 | ---------- | --------- | ------------ | ------------- |
-| 3.14       | Windows   | x86          | ✅            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ❌            |
-|            | musllinux | x86_64       | ✅            |
-| 3.14t      | Windows   | x86          | ✅            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ❌            |
-|            | musllinux | x86_64       | ✅            |
-| 3.13       | Windows   | x86          | ✅            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ✅            |
-|            | musllinux | x86_64       | ✅            |
-| 3.12       | Windows   | x86          | ✅            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ✅            |
-|            | musllinux | x86_64       | ✅            |
-| 3.11       | Windows   | x86          | ✅            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ✅            |
-|            | musllinux | x86_64       | ✅            |
-| 3.10       | Windows   | x86          | ✅            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ✅ (v1.3.1)   |
-|            | musllinux | x86_64       | ✅            |
-| 3.9        | Windows   | x86          | ✅            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ✅ (v1.3.1)   |
-|            | musllinux | x86_64       | ✅            |
-| 3.8        | Windows   | x86          | ✅ (v1.3.1)   |
-|            |           | AMD64        | ✅ (v1.3.1)   |
-|            | macOS     | x86_64       | ✅ (v1.3.1)   |
-|            |           | arm64        | ✅ (v1.3.1)   |
-|            | manylinux | x86_64       | ✅ (v1.3.1)   |
-|            |           | i686         | ✅ (v1.3.1)   |
-|            | musllinux | x86_64       | ✅ (v1.3.1)   |
-| 3.7        | Windows   | x86          | ✅ (v1.3.1)   |
-|            |           | AMD64        | ✅ (v1.3.1)   |
-|            | macOS     | x86_64       | ✅ (v1.3.1)   |
-|            |           | arm64        | ❌            |
-|            | manylinux | x86_64       | ✅ (v1.3.1)   |
-|            |           | i686         | ✅ (v1.3.1)   |
-|            | musllinux | x86_64       | ✅ (v1.3.1)   |
-| PyPy 3.11  | Windows   | x86          | ❌            |
-|            |           | AMD64        | ✅            |
-|            | macOS     | x86_64       | ✅            |
-|            |           | arm64        | ✅            |
-|            | manylinux | x86_64       | ✅            |
-|            |           | i686         | ❌            |
-| PyPy 3.10  | Windows   | x86          | ❌            |
-|            |           | AMD64        | ✅ (v1.3.1)   |
-|            | macOS     | x86_64       | ✅ (v1.3.1)   |
-|            |           | arm64        | ✅ (v1.3.1)   |
-|            | manylinux | x86_64       | ✅ (v1.3.1)   |
-|            |           | i686         | ✅ (v1.3.1)   |
-| PyPy 3.9   | Windows   | x86          | ❌            |
-|            |           | AMD64        | ✅ (v1.3.1)   |
-|            | macOS     | x86_64       | ✅ (v1.3.1)   |
-|            |           | arm64        | ✅ (v1.3.1)   |
-|            | manylinux | x86_64       | ✅ (v1.3.1)   |
-|            |           | i686         | ✅ (v1.3.1)   |
-| PyPy 3.8   | Windows   | x86          | ❌            |
-|            |           | AMD64        | ✅ (v1.3.1)   |
-|            | macOS     | x86_64       | ✅ (v1.3.1)   |
-|            |           | arm64        | ✅ (v1.3.1)   |
-|            | manylinux | x86_64       | ✅ (v1.3.1)   |
-|            |           | i686         | ✅ (v1.3.1)   |
-| PyPy 3.7   | Windows   | x86          | ❌            |
-|            |           | AMD64        | ✅ (v1.3.1)   |
-|            | macOS     | x86_64       | ✅ (v1.3.1)   |
-|            |           | arm64        | ❌            |
-|            | manylinux | x86_64       | ✅ (v1.3.1)   |
-|            |           | i686         | ✅ (v1.3.1)   |
+| 3.14       | Windows   | x86          | ✓             |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+|            | musllinux | x86_64       | ✓             |
+| 3.14t      | Windows   | x86          | ✓             |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+|            | musllinux | x86_64       | ✓             |
+| 3.13       | Windows   | x86          | ✓             |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+|            | musllinux | x86_64       | ✓             |
+| 3.12       | Windows   | x86          | ✓             |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+|            | musllinux | x86_64       | ✓             |
+| 3.11       | Windows   | x86          | ✓             |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+|            | musllinux | x86_64       | ✓             |
+| 3.10       | Windows   | x86          | ✓             |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+|            | musllinux | x86_64       | ✓             |
+| 3.9        | Windows   | x86          | ✓             |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+|            | musllinux | x86_64       | ✓             |
+| 3.8        | Windows   | x86          | ✓ (v1.3.1)    |
+|            |           | AMD64        | ✓ (v1.3.1)    |
+|            | macOS     | x86_64       | ✓ (v1.3.1)    |
+|            |           | arm64        | ✓ (v1.3.1)    |
+|            | manylinux | x86_64       | ✓ (v1.3.1)    |
+|            |           | i686         | ✓ (v1.3.1)    |
+|            | musllinux | x86_64       | ✓ (v1.3.1)    |
+| 3.7        | Windows   | x86          | ✓ (v1.3.1)    |
+|            |           | AMD64        | ✓ (v1.3.1)    |
+|            | macOS     | x86_64       | ✓ (v1.3.1)    |
+|            |           | arm64        |               |
+|            | manylinux | x86_64       | ✓ (v1.3.1)    |
+|            |           | i686         | ✓ (v1.3.1)    |
+|            | musllinux | x86_64       | ✓ (v1.3.1)    |
+| PyPy 3.11  | Windows   | x86          |               |
+|            |           | AMD64        | ✓             |
+|            | macOS     | x86_64       | ✓             |
+|            |           | arm64        | ✓             |
+|            | manylinux | x86_64       | ✓             |
+|            |           | i686         | ✓             |
+| PyPy 3.10  | Windows   | x86          |               |
+|            |           | AMD64        | ✓ (v1.3.1)    |
+|            | macOS     | x86_64       | ✓ (v1.3.1)    |
+|            |           | arm64        | ✓ (v1.3.1)    |
+|            | manylinux | x86_64       | ✓ (v1.3.1)    |
+|            |           | i686         | ✓ (v1.3.1)    |
+| PyPy 3.9   | Windows   | x86          |               |
+|            |           | AMD64        | ✓ (v1.3.1)    |
+|            | macOS     | x86_64       | ✓ (v1.3.1)    |
+|            |           | arm64        | ✓ (v1.3.1)    |
+|            | manylinux | x86_64       | ✓ (v1.3.1)    |
+|            |           | i686         | ✓ (v1.3.1)    |
+| PyPy 3.8   | Windows   | x86          |               |
+|            |           | AMD64        | ✓ (v1.3.1)    |
+|            | macOS     | x86_64       | ✓ (v1.3.1)    |
+|            |           | arm64        | ✓ (v1.3.1)    |
+|            | manylinux | x86_64       | ✓ (v1.3.1)    |
+|            |           | i686         | ✓ (v1.3.1)    |
+| PyPy 3.7   | Windows   | x86          |               |
+|            |           | AMD64        | ✓ (v1.3.1)    |
+|            | macOS     | x86_64       | ✓ (v1.3.1)    |
+|            |           | arm64        |               |
+|            | manylinux | x86_64       | ✓ (v1.3.1)    |
+|            |           | i686         | ✓ (v1.3.1)    |
