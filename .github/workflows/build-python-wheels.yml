@@ -42,7 +42,7 @@ jobs:
       build: ${{ steps.check_build_trigger.outputs.build }}
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - id: check_build_trigger
@@ -66,10 +66,10 @@ jobs:
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -113,12 +113,11 @@ jobs:
           CIBW_ARCHS_WINDOWS: "AMD64 x86"
 
       - name: Store artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
           name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}
           if-no-files-found: warn
-          overwrite: true
 
   build_sdist:
     name: Build source distribution
@@ -127,9 +126,9 @@ jobs:
     if: needs.check_build_trigger.outputs.build
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.14" # Check with PyO3's maximum supported version
           cache: "pip"
@@ -138,9 +137,10 @@ jobs:
           cd nlpo3-python
           bash ../build_tools/github/build_source.sh
       - name: Store artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           path: nlpo3-python/dist/*.tar.gz
+          name: sdist
 
   publish_pypi:
     name: Publish to PyPI
@@ -151,11 +151,11 @@ jobs:
     # Alternatively, upload to PyPI on every tag starting with 'v':
     #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
     steps:
-      - name: Retrieve artifacts
-        uses: actions/download-artifact@v6
+      - name: Retrieve all artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: artifact
           path: dist
+          merge-multiple: true
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
