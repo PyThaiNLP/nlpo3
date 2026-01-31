@@ -128,7 +128,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v6
       with:
-        python-version: "3.14"
+        python-version: "3.13" # Check with PyO3's maximum supported version
         cache: "pip"
     - name: Build source distribution
       run: |

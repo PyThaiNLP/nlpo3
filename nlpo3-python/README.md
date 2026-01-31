@@ -149,13 +149,6 @@ A pre-built binary package is available from [PyPI][pypi] for these platforms:
 
 |Python|OS|Architecture|Has binary wheel?|
 |-|-|-|-|
-|3.14|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
 |3.13|Windows|x86|✅|
 ||Windows|AMD64|✅|
 ||macOS|x86_64|✅|
