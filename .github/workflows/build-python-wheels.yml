@@ -44,7 +44,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - id: check_build_trigger
         name: Check build trigger
         run: bash build_tools/github/check_build_trigger.sh
@@ -61,8 +61,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ["3.14"] # Check with PyO3's maximum supported version
-    env:
-      CIBW_BUILD: "cp* pp*" # Build for CPython and PyPy
+        # cibuildwheel will manage multiple Python versions internally
 
     steps:
       - name: Checkout source code
@@ -92,9 +91,10 @@ jobs:
           package-dir: nlpo3-python
           output-dir: wheelhouse
         env:
-          CIBW_BUILD_VERBOSITY: 1
           # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
           # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
+          CIBW_BUILD: "cp* pp*" # Build for CPython and PyPy
+          CIBW_BUILD_VERBOSITY: 1
           CIBW_SKIP: "*-musllinux_i686"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ENVIRONMENT_MACOS: |
@@ -113,11 +113,20 @@ jobs:
           CIBW_ARCHS_WINDOWS: "AMD64 x86"
 
       - name: Store artifacts
+        run: |
+          echo "Files to upload (binary wheels):"
+          ls -lah ./wheelhouse || true
+          echo "Matching wheel files:"
+          find ./wheelhouse -maxdepth 1 -type f -name '*.whl' -print || true
+          echo "Count: $(find ./wheelhouse -maxdepth 1 -type f -name '*.whl' -print | wc -l || true)"
+        shell: bash
+      - name: Store artifacts
         uses: actions/upload-artifact@v6
         with:
           path: ./wheelhouse/*.whl
-          name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}
+          name: ${{ github.job }}-wheelhouse-${{ matrix.os }}
           if-no-files-found: warn
+          retention-days: 1
 
   build_sdist:
     name: Build source distribution
@@ -130,17 +139,26 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14" # Check with PyO3's maximum supported version
+          python-version: "3.14" # Ideally matches with the python-version in build_wheels
           cache: "pip"
       - name: Build source distribution
         run: |
           cd nlpo3-python
           bash ../build_tools/github/build_source.sh
+      - name: List sdist files
+        run: |
+          echo "Files to upload (sdist):"
+          ls -lah nlpo3-python/dist || true
+          echo "Matching sdist files:"
+          find nlpo3-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print || true
+          echo "Count: $(find nlpo3-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print | wc -l || true)"
+        shell: bash
       - name: Store artifacts
         uses: actions/upload-artifact@v6
         with:
           path: nlpo3-python/dist/*.tar.gz
           name: sdist
+          retention-days: 1
 
   publish_pypi:
     name: Publish to PyPI
