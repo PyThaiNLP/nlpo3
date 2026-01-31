@@ -116,6 +116,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           path: ./wheelhouse/*.whl
+          name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}
+          if-no-files-found: warn
+          overwrite: true
 
   build_sdist:
     name: Build source distribution
