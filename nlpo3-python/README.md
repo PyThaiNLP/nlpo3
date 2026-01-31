@@ -44,7 +44,7 @@ pip install nlpo3
 
 ## Use
 
-Load a dictionary file and assign it a name (for example, `dict_name`).
+Load a dictionary file and assign it a name (for example, `custom_dict`).
 
 Then tokenize text using the named dictionary:
 
@@ -52,7 +52,7 @@ Then tokenize text using the named dictionary:
 from nlpo3 import load_dict, segment
 
 load_dict("path/to/dict.file", "custom_dict")
-segment("สวัสดีครับ", "dict_name")
+segment("สวัสดีครับ", "custom_dict")
 ```
 
 The function returns a list of strings, for example:
