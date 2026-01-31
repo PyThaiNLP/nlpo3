@@ -66,10 +66,10 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         cache: "pip"
@@ -87,7 +87,7 @@ jobs:
       # For cross-compile x86 on GitHub arm64 runner
 
     - name: Build Python wheels
-      uses: pypa/cibuildwheel@v2.21.3
+      uses: pypa/cibuildwheel@v3
       with:
         package-dir: nlpo3-python
         output-dir: wheelhouse
@@ -113,7 +113,7 @@ jobs:
         CIBW_ARCHS_WINDOWS: "AMD64 x86"
 
     - name: Store artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v6
       with:
         path: ./wheelhouse/*.whl
 
@@ -124,9 +124,9 @@ jobs:
     if: needs.check_build_trigger.outputs.build
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.13"
         cache: "pip"
@@ -135,7 +135,7 @@ jobs:
         cd nlpo3-python
         bash ../build_tools/github/build_source.sh
     - name: Store artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v6
       with:
         path: nlpo3-python/dist/*.tar.gz
 
@@ -149,12 +149,12 @@ jobs:
     #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
     steps:
     - name: Retrieve artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v6
       with:
         name: artifact
         path: dist
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1.12.2
+      uses: pypa/gh-action-pypi-publish@v1
       with:
         skip-existing: true
         user: __token__
