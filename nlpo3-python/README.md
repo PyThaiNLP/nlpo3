@@ -44,15 +44,15 @@ pip install nlpo3
 
 ## Use
 
-Load a dictionary file and assign it a name (for example, `custom_dict`).
+Load a dictionary file and assign it a name (for example, `dict_name`).
 
 Then tokenize text using the named dictionary:
 
 ```python
 from nlpo3 import load_dict, segment
 
-load_dict("path/to/dict.file", "custom_dict")
-segment("สวัสดีครับ", "custom_dict")
+load_dict("path/to/dict.file", "dict_name")
+segment("สวัสดีครับ", "dict_name")
 ```
 
 The function returns a list of strings, for example:

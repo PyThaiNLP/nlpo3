@@ -56,7 +56,7 @@ jobs:
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
     strategy:
-      fail-fast: true # If false, all jobs continue even if one fails
+      fail-fast: false # If false, all jobs continue even if one fails
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ["3.14"] # Check with PyO3's maximum supported version
@@ -92,8 +92,8 @@ jobs:
         env:
           # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
           # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
-          CIBW_ENABLE: "pypy" # Enable PyPy builds
-          CIBW_BUILD: "cp* pp*" # Build for CPython and PyPy
+          CIBW_ENABLE: "graalpy pypy" # Enable GraalPy and PyPy builds
+          CIBW_BUILD: "cp* gp* pp*" # Build for CPython, GraalPy and PyPy
           CIBW_BUILD_VERBOSITY: 1
           CIBW_SKIP: "*-musllinux_i686"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
