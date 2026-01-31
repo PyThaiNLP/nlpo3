@@ -87,7 +87,7 @@ jobs:
         # For cross-compile x86 on GitHub arm64 runner
 
       - name: Build Python wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: nlpo3-python
           output-dir: wheelhouse
@@ -154,7 +154,7 @@ jobs:
           name: artifact
           path: dist
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@v1
+        uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           skip-existing: true
           user: __token__
