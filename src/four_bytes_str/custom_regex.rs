@@ -20,6 +20,7 @@ trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 enum UnsupportedCustomRegexParserError {
     ByteLiteral,
@@ -44,17 +45,20 @@ impl Display for UnsupportedCustomRegexParserError {
             UnsupportedCustomRegexParserError::ByteClass => {
                 write!(f, "Byte class is not supported")
             }
-            UnsupportedCustomRegexParserError::DifferentRanges(a, b) => {
-                write!(
-                    f,
-                    "Different byte length range is not supported {} {}",
-                    a, b
-                )
+            UnsupportedCustomRegexParserError::DifferentRanges(a, b) => write!(
+                f,
+                "Different byte length range is not supported: {} {}",
+                a, b
+            ),
+            UnsupportedCustomRegexParserError::RepetitionRange => {
+                write!(f, "Repetition range is not supported")
             }
-            UnsupportedCustomRegexParserError::RepetitionRange => todo!(),
-            UnsupportedCustomRegexParserError::ByteLiteral => todo!(),
-            UnsupportedCustomRegexParserError::AnchorStartLine => todo!(),
-            UnsupportedCustomRegexParserError::AnchorEndLine => todo!(),
+            UnsupportedCustomRegexParserError::AnchorStartLine => {
+                write!(f, "Anchor start-of-line is not supported")
+            }
+            UnsupportedCustomRegexParserError::AnchorEndLine => {
+                write!(f, "Anchor end-of-line is not supported")
+            }
         }
     }
 }
@@ -311,6 +315,7 @@ fn char_class(character: char) -> UTFBytesLength {
     }
 }
 
+#[allow(dead_code)]
 fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
     value >= range.0 && value <= range.1
 }

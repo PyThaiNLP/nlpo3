@@ -85,6 +85,7 @@ impl InvalidCustomStringByteError {
 
 impl Error for InvalidCustomStringByteError {}
 
+#[allow(dead_code)]
 pub trait FixedCharsLengthByteSlice {
     fn slice_by_char_indice(&self, start: usize, end: usize) -> Self;
     fn chars_len(&self) -> usize;
@@ -254,6 +255,7 @@ fn trim_to_std_utf8(
 }
 
 /// This name is WIP
+#[allow(dead_code)]
 pub trait FixedLengthCustomString<T: Sized + FixedLengthCustomString<T>> {
     /// start and end are character index.
     fn substring(&self, start: usize, end: usize) -> T;
@@ -308,6 +310,7 @@ impl CustomString {
             .slice_by_char_indice(self.start, self.end)
     }
 
+    #[allow(dead_code)]
     pub fn is_full_string(&self) -> bool {
         self.start == 0 && self.end == self.content.len() / BYTES_PER_CHAR
     }
@@ -318,6 +321,7 @@ impl CustomString {
     }
 
     /// Returns underlying full string bytes length.
+    #[allow(dead_code)]
     pub fn full_string_bytes_len(&self) -> usize {
         self.content.len()
     }
@@ -398,6 +402,7 @@ impl CustomString {
         output
     }
 
+    #[allow(dead_code)]
     pub fn convert_raw_bytes_to_utf8_bytes(input: &[u8]) -> Vec<u8> {
         let mut output_content: Vec<u8> = Vec::with_capacity(input.len() / 100);
         for index in 0..input.chars_len() {
