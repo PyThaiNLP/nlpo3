@@ -87,7 +87,7 @@ jobs:
         # For cross-compile x86 on GitHub arm64 runner
 
       - name: Build Python wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: nlpo3-python
           output-dir: wheelhouse
@@ -98,7 +98,7 @@ jobs:
           CIBW_SKIP: "*-musllinux_i686"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ENVIRONMENT_MACOS: |
-            MACOSX_DEPLOYMENT_TARGET=10.9
+            MACOSX_DEPLOYMENT_TARGET=10.12
             PATH="$HOME/.cargo/bin:$PATH"
             CC=/usr/bin/clang
             CXX=/usr/bin/clang++
@@ -116,6 +116,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           path: ./wheelhouse/*.whl
+          name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}
+          if-no-files-found: warn
+          overwrite: true
 
   build_sdist:
     name: Build source distribution
@@ -154,7 +157,7 @@ jobs:
           name: artifact
           path: dist
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@v1
+        uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           skip-existing: true
           user: __token__
