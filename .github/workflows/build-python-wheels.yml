@@ -92,6 +92,7 @@ jobs:
         env:
           # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
           # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
+          CIBW_ENABLE: "pypy" # Enable PyPy builds
           CIBW_BUILD: "cp* pp*" # Build for CPython and PyPy
           CIBW_BUILD_VERBOSITY: 1
           CIBW_SKIP: "*-musllinux_i686"
