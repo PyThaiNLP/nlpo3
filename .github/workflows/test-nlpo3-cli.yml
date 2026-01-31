@@ -34,7 +34,7 @@ jobs:
 
       - name: Setup Rust toolchain - non-win32
         uses: actions-rust-lang/setup-rust-toolchain@v1
-        if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
+        if: "!startsWith(matrix.os, 'windows') || matrix.bitness != '32'"
 
       - name: Setup Rust toolchain - win32
         uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -44,7 +44,7 @@ jobs:
 
       - name: Test - non-win32
         run: cargo test
-        if: ${{ !startsWith(matrix.os, 'windows') || matrix.bitness != '32' }}
+        if: "!startsWith(matrix.os, 'windows') || matrix.bitness != '32'"
 
       - name: Test - win32
         run: cargo test --target i686-pc-windows-msvc
