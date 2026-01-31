@@ -1,5 +1,5 @@
 ---
-SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+SPDX-FileCopyrightText: 2024-2026 PyThaiNLP Project
 SPDX-License-Identifier: Apache-2.0
 ---
 
@@ -9,8 +9,8 @@ SPDX-License-Identifier: Apache-2.0
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
-Thai natural language processing library in Rust,
-with Python and Node bindings. Formerly oxidized-thainlp.
+A Thai natural language processing library written in Rust,
+with optional Python and Node.js bindings. Formerly known as `oxidized-thainlp`.
 
 To use as a library in a Rust project:
 
@@ -40,10 +40,10 @@ pip install nlpo3
 ## Features
 
 - Thai word tokenizer
-  - Use maximal-matching dictionary-based tokenization algorithm
-    and honor [Thai Character Cluster][tcc] boundaries
-    - [2.5x faster][benchmark]
-      than similar pure Python implementation (PyThaiNLP's newmm)
+  - Uses a maximal-matching, dictionary-based tokenization algorithm
+    and respects [Thai Character Cluster][tcc] boundaries.
+    - Approximately [2.5× faster][benchmark] than the comparable pure-Python
+      implementation (PyThaiNLP's `newmm`).
   - Load a dictionary from a plain text file (one word per line)
     or from `Vec<String>`
 
@@ -137,9 +137,9 @@ See more at [nlpo3-cli](./nlpo3-cli/).
 
 ### Dictionary
 
-- For the interest of library size, nlpO3 does not assume what dictionary the
-  user would like to use, and it does not come with a dictionary.
-- A dictionary is needed for the dictionary-based word tokenizer.
+- To keep the library small, `nlpO3` does not include a dictionary; users should
+  provide one when using the dictionary-based tokenizer.
+  - A dictionary is required for the dictionary-based word tokenizer.
 - For tokenization dictionary, try
   - [words_th.tx][dict-pythainlp] from [PyThaiNLP][pythainlp]
     - ~62,000 words

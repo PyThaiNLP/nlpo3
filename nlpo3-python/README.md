@@ -149,6 +149,13 @@ A pre-built binary package is available from [PyPI][pypi] for these platforms:
 
 |Python|OS|Architecture|Has binary wheel?|
 |-|-|-|-|
+|3.14|Windows|x86|✅|
+||Windows|AMD64|✅|
+||macOS|x86_64|✅|
+||macOS|arm64|✅|
+||manylinux|x86_64|✅|
+||manylinux|i686|✅|
+||musllinux|x86_64|✅|
 |3.13|Windows|x86|✅|
 ||Windows|AMD64|✅|
 ||macOS|x86_64|✅|
@@ -184,14 +191,14 @@ A pre-built binary package is available from [PyPI][pypi] for these platforms:
 ||manylinux|x86_64|✅|
 ||manylinux|i686|✅|
 ||musllinux|x86_64|✅|
-|3.8|Windows|x86|✅|
+|3.8 (nlpO3 1.3.1)|Windows|x86|✅|
 ||Windows|AMD64|✅|
 ||macOS|x86_64|✅|
 ||macOS|arm64|✅|
 ||manylinux|x86_64|✅|
 ||manylinux|i686|✅|
 ||musllinux|x86_64|✅|
-|3.7|Windows|x86|✅|
+|3.7 (nlpO3 1.3.1)|Windows|x86|✅|
 ||Windows|AMD64|✅|
 ||macOS|x86_64|✅|
 ||macOS|arm64|❌|
@@ -210,13 +217,13 @@ A pre-built binary package is available from [PyPI][pypi] for these platforms:
 ||macOS|arm64|✅|
 ||manylinux|x86_64|✅|
 ||manylinux|i686|✅|
-|PyPy 3.8|Windows|x86|❌|
+|PyPy 3.8 (nlpO3 1.3.1)|Windows|x86|❌|
 ||Windows|AMD64|✅|
 ||macOS|x86_64|✅|
 ||macOS|arm64|✅|
 ||manylinux|x86_64|✅|
 ||manylinux|i686|✅|
-|PyPy 3.7|Windows|x86|❌|
+|PyPy 3.7 (nlpO3 1.3.1)|Windows|x86|❌|
 ||Windows|AMD64|✅|
 ||macOS|x86_64|✅|
 ||macOS|arm64|❌|

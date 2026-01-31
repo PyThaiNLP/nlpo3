@@ -6,31 +6,31 @@ name: Build wheels
 on:
   push:
     branches:
-    - main
+      - main
     paths:
-    - 'nlpo3-python/**'
-    - '.github/workflows/build-python-wheels.yml'
+      - "nlpo3-python/**"
+      - ".github/workflows/build-python-wheels.yml"
   pull_request:
     branches:
-    - main
+      - main
     paths:
-    - 'nlpo3-python/**'
-    - '.github/workflows/build-python-wheels.yml'
+      - "nlpo3-python/**"
+      - ".github/workflows/build-python-wheels.yml"
   release:
     types: [published]
-  workflow_dispatch: {}  # manual run
+  workflow_dispatch: {} # manual run
 
 jobs:
   echo_github_env:
     name: Echo env variables
     runs-on: ubuntu-latest
     steps:
-    - run: |
-        echo "github.event.action   : ${{ github.event.action }}"
-        echo "github.event_name     : ${{ github.event_name }}"
-        echo "github.ref            : ${{ github.ref }}"
-        echo "github.ref_type       : ${{ github.ref_type }}"
-        echo "github.event.ref      : ${{ github.event.ref }}"
+      - run: |
+          echo "github.event.action   : ${{ github.event.action }}"
+          echo "github.event_name     : ${{ github.event_name }}"
+          echo "github.ref            : ${{ github.ref }}"
+          echo "github.ref_type       : ${{ github.ref_type }}"
+          echo "github.event.ref      : ${{ github.event.ref }}"
 
   # Check whether to build the wheels and the source tarball
   check_build_trigger:
@@ -41,14 +41,14 @@ jobs:
     outputs:
       build: ${{ steps.check_build_trigger.outputs.build }}
     steps:
-    - name: Checkout source code
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-    - id: check_build_trigger
-      name: Check build trigger
-      run: bash build_tools/github/check_build_trigger.sh
-      # To trigger the build steps, add "[cd build]" to commit message
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - id: check_build_trigger
+        name: Check build trigger
+        run: bash build_tools/github/check_build_trigger.sh
+        # To trigger the build steps, add "[cd build]" to commit message
 
   build_wheels:
     name: Build ${{ matrix.os }}
@@ -60,62 +60,62 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ["3.13"]
+        python-version: ["3.14"] # Check with PyO3's maximum supported version
     env:
-      CIBW_BUILD: ""  # blank, let cibuildwheel build all supported platforms
+      CIBW_BUILD: "" # blank, let cibuildwheel build all supported platforms
 
     steps:
-    - name: Checkout source code
-      uses: actions/checkout@v6
+      - name: Checkout source code
+        uses: actions/checkout@v6
 
-    - name: Setup Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: "pip"
-    - name: Install Python dependencies
-      run: python -m pip install --upgrade pip
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip
 
-    - name: Setup Rust toolchain
-      if: startsWith(matrix.os, 'ubuntu-') == false
-      uses: actions-rust-lang/setup-rust-toolchain@v1
-      # For Linux, Rust will be installed inside a cibuildwheel container later
+      - name: Setup Rust toolchain
+        if: startsWith(matrix.os, 'ubuntu-') == false
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        # For Linux, Rust will be installed inside a cibuildwheel container later
 
-    - name: Setup rustup target
-      if: startsWith(matrix.os, 'macos-')
-      run: rustup target add x86_64-apple-darwin
-      # For cross-compile x86 on GitHub arm64 runner
+      - name: Setup rustup target
+        if: startsWith(matrix.os, 'macos-')
+        run: rustup target add x86_64-apple-darwin
+        # For cross-compile x86 on GitHub arm64 runner
 
-    - name: Build Python wheels
-      uses: pypa/cibuildwheel@v3
-      with:
-        package-dir: nlpo3-python
-        output-dir: wheelhouse
-      env:
-        CIBW_BUILD_VERBOSITY: 1
-        # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
-        # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
-        CIBW_SKIP: "*-musllinux_i686"
-        CIBW_ARCHS_MACOS: "x86_64 arm64"
-        CIBW_ENVIRONMENT_MACOS: |
-          MACOSX_DEPLOYMENT_TARGET=10.9
-          PATH="$HOME/.cargo/bin:$PATH"
-          CC=/usr/bin/clang
-          CXX=/usr/bin/clang++
-        CIBW_ARCHS_LINUX: "auto"
-        CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
-        CIBW_BEFORE_BUILD_LINUX: |
-          pip install --upgrade setuptools-rust
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        # It is needed to install Rust for Linux,
-        # because cibuildwheel on Linux runs inside a container
-        # and the container does not have Rust.
-        CIBW_ARCHS_WINDOWS: "AMD64 x86"
+      - name: Build Python wheels
+        uses: pypa/cibuildwheel@v3
+        with:
+          package-dir: nlpo3-python
+          output-dir: wheelhouse
+        env:
+          CIBW_BUILD_VERBOSITY: 1
+          # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
+          # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
+          CIBW_SKIP: "*-musllinux_i686"
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ENVIRONMENT_MACOS: |
+            MACOSX_DEPLOYMENT_TARGET=10.9
+            PATH="$HOME/.cargo/bin:$PATH"
+            CC=/usr/bin/clang
+            CXX=/usr/bin/clang++
+          CIBW_ARCHS_LINUX: "auto"
+          CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
+          CIBW_BEFORE_BUILD_LINUX: |
+            pip install --upgrade setuptools-rust
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          # It is needed to install Rust for Linux,
+          # because cibuildwheel on Linux runs inside a container
+          # and the container does not have Rust.
+          CIBW_ARCHS_WINDOWS: "AMD64 x86"
 
-    - name: Store artifacts
-      uses: actions/upload-artifact@v6
-      with:
-        path: ./wheelhouse/*.whl
+      - name: Store artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          path: ./wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution
@@ -123,21 +123,21 @@ jobs:
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
     steps:
-    - name: Checkout source code
-      uses: actions/checkout@v6
-    - name: Setup Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: "3.13"
-        cache: "pip"
-    - name: Build source distribution
-      run: |
-        cd nlpo3-python
-        bash ../build_tools/github/build_source.sh
-    - name: Store artifacts
-      uses: actions/upload-artifact@v6
-      with:
-        path: nlpo3-python/dist/*.tar.gz
+      - name: Checkout source code
+        uses: actions/checkout@v6
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14" # Check with PyO3's maximum supported version
+          cache: "pip"
+      - name: Build source distribution
+        run: |
+          cd nlpo3-python
+          bash ../build_tools/github/build_source.sh
+      - name: Store artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          path: nlpo3-python/dist/*.tar.gz
 
   publish_pypi:
     name: Publish to PyPI
@@ -148,14 +148,14 @@ jobs:
     # Alternatively, upload to PyPI on every tag starting with 'v':
     #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
     steps:
-    - name: Retrieve artifacts
-      uses: actions/download-artifact@v6
-      with:
-        name: artifact
-        path: dist
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1
-      with:
-        skip-existing: true
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Retrieve artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: artifact
+          path: dist
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@v1
+        with:
+          skip-existing: true
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}

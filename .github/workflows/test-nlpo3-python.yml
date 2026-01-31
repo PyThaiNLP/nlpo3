@@ -2,20 +2,20 @@ name: Test nlpo3-python
 on:
   push:
     branches:
-    - main
+      - main
     paths:
-    - 'nlpo3-python/**'
-    - '!notebooks/'
-    - '!LICENSE'
-    - '!*.md'
+      - "nlpo3-python/**"
+      - "!notebooks/"
+      - "!LICENSE"
+      - "!*.md"
   pull_request:
     branches:
-    - main
+      - main
     paths:
-    - 'nlpo3-python/**'
-    - '!notebooks/'
-    - '!LICENSE'
-    - '!*.md'
+      - "nlpo3-python/**"
+      - "!notebooks/"
+      - "!LICENSE"
+      - "!*.md"
 
 defaults:
   run:
@@ -27,27 +27,24 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        python-version: ["3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7"]
-        bitness: [64]  # 32, 64
+        python-version: ["3.14", "3.13", "3.12", "3.11", "3.10", "3.9"]
+        bitness: [64] # 32, 64
         include:
           - os: windows-latest
             python-version: "3.9"
             bitness: 32
-        exclude:
-          - os: macos-latest
-            python-version: "3.7"
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"

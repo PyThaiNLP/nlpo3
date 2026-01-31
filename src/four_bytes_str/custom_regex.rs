@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-FileCopyrightText: 2024-2026 PyThaiNLP Project
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -20,6 +20,7 @@ trait ToCustomStringRepr {
     fn to_custom_byte_repr(&self) -> Result<String>;
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 enum UnsupportedCustomRegexParserError {
     ByteLiteral,
@@ -51,10 +52,15 @@ impl Display for UnsupportedCustomRegexParserError {
                     a, b
                 )
             }
-            UnsupportedCustomRegexParserError::RepetitionRange => todo!(),
-            UnsupportedCustomRegexParserError::ByteLiteral => todo!(),
-            UnsupportedCustomRegexParserError::AnchorStartLine => todo!(),
-            UnsupportedCustomRegexParserError::AnchorEndLine => todo!(),
+            UnsupportedCustomRegexParserError::RepetitionRange => {
+                write!(f, "Repetition range is not supported")
+            }
+            UnsupportedCustomRegexParserError::AnchorStartLine => {
+                write!(f, "Anchor start-of-line is not supported")
+            }
+            UnsupportedCustomRegexParserError::AnchorEndLine => {
+                write!(f, "Anchor end-of-line is not supported")
+            }
         }
     }
 }
@@ -311,6 +317,7 @@ fn char_class(character: char) -> UTFBytesLength {
     }
 }
 
+#[allow(dead_code)]
 fn is_in_range<T: PartialEq + PartialOrd>(value: T, range: (T, T)) -> bool {
     value >= range.0 && value <= range.1
 }

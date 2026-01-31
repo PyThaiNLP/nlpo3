@@ -14,7 +14,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 cd /io
 
-for PYBIN in /opt/python/cp{36,37,38,39}*/bin; do
+for PYBIN in /opt/python/cp{36,37,38,39,310,311,312,313,314,315,316,317,318}*/bin; do
     "${PYBIN}/pip" install -U build setuptools setuptools-rust wheel
     "${PYBIN}/python" -m build --wheel
 done
