@@ -39,6 +39,7 @@ classifiers = [
   "Natural Language :: Thai",
   "Topic :: Text Processing :: Linguistic",
   "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
 ]
 
 [project.urls]
