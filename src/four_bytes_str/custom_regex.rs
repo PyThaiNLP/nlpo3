@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+// SPDX-FileCopyrightText: 2024-2026 PyThaiNLP Project
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -45,11 +45,13 @@ impl Display for UnsupportedCustomRegexParserError {
             UnsupportedCustomRegexParserError::ByteClass => {
                 write!(f, "Byte class is not supported")
             }
-            UnsupportedCustomRegexParserError::DifferentRanges(a, b) => write!(
-                f,
-                "Different byte length range is not supported: {} {}",
-                a, b
-            ),
+            UnsupportedCustomRegexParserError::DifferentRanges(a, b) => {
+                write!(
+                    f,
+                    "Different byte length range is not supported {} {}",
+                    a, b
+                )
+            }
             UnsupportedCustomRegexParserError::RepetitionRange => {
                 write!(f, "Repetition range is not supported")
             }
