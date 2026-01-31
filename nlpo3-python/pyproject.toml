@@ -10,7 +10,15 @@ readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-keywords = ["thai", "tokenizer", "nlp", "word-segmentation", "pythainlp"]
+keywords = [
+  "thai",
+  "tokenizer",
+  "tokenization",
+  "text-processing",
+  "nlp",
+  "word-segmentation",
+  "pythainlp",
+]
 authors = [
   { name = "Thanathip Suntorntip" },
   { name = "Arthit Suriyawongkul" },
@@ -24,6 +32,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Intended Audience :: Developers",

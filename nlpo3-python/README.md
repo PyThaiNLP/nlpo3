@@ -122,6 +122,13 @@ To install a wheel from a local directory:
 pip install dist/nlpo3-1.3.1-cp311-cp311-macosx_12_0_x86_64.whl 
 ```
 
+The script `build_wheels_local_macos.sh` builds wheels for every
+Python version installed via pyenv on macOS.
+
+Similarly, `build_wheels_local_manylinux.sh` builds wheels for every
+Python version installed in the manylinux Docker image
+(or systems with the same Python binary locations).
+
 ### Test
 
 To run a Python unit test:
