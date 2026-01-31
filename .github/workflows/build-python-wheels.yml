@@ -98,7 +98,7 @@ jobs:
           CIBW_SKIP: "*-musllinux_i686"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ENVIRONMENT_MACOS: |
-            MACOSX_DEPLOYMENT_TARGET=10.9
+            MACOSX_DEPLOYMENT_TARGET=10.12
             PATH="$HOME/.cargo/bin:$PATH"
             CC=/usr/bin/clang
             CXX=/usr/bin/clang++
