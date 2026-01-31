@@ -102,7 +102,7 @@ jobs:
             PATH="$HOME/.cargo/bin:$PATH"
             CC=/usr/bin/clang
             CXX=/usr/bin/clang++
-          CIBW_ARCHS_LINUX: "auto"
+          CIBW_ARCHS_LINUX: "x86_64 i686"
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
           CIBW_BEFORE_BUILD_LINUX: |
             pip install --upgrade setuptools-rust
@@ -112,12 +112,10 @@ jobs:
           # and the container does not have Rust.
           CIBW_ARCHS_WINDOWS: "AMD64 x86"
 
-      - name: Store artifacts
+      - name: List wheel files
         run: |
           echo "Files to upload (binary wheels):"
-          ls -lah ./wheelhouse || true
-          echo "Matching wheel files:"
-          find ./wheelhouse -maxdepth 1 -type f -name '*.whl' -print || true
+          find ./wheelhouse -maxdepth 1 -type f -name '*.whl' -print | sort || true
           echo "Count: $(find ./wheelhouse -maxdepth 1 -type f -name '*.whl' -print | wc -l || true)"
         shell: bash
       - name: Store artifacts
@@ -149,9 +147,7 @@ jobs:
       - name: List sdist files
         run: |
           echo "Files to upload (sdist):"
-          ls -lah nlpo3-python/dist || true
-          echo "Matching sdist files:"
-          find nlpo3-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print || true
+          find nlpo3-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print | sort || true
           echo "Count: $(find nlpo3-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print | wc -l || true)"
         shell: bash
       - name: Store artifacts

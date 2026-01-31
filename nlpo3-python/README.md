@@ -1,12 +1,12 @@
 ---
-SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+SPDX-FileCopyrightText: 2024-2026 PyThaiNLP Project
 SPDX-License-Identifier: Apache-2.0
 ---
 
 # nlpO3 Python binding
 
 [![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
-[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg "Python 3.7")](https://www.python.org/downloads/)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg "Python 3.9")](https://www.python.org/downloads/)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
@@ -146,85 +146,98 @@ A pre-built binary package is available from [PyPI][pypi] for these platforms:
 
 [pypi]: https://pypi.org/project/nlpo3/
 
-|Python|OS|Architecture|Has binary wheel?|
-|-|-|-|-|
-|3.14|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|3.13|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|3.12|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|3.11|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|3.10|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|3.9|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|3.8 (nlpO3 1.3.1)|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|3.7 (nlpO3 1.3.1)|Windows|x86|✅|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|❌|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-||musllinux|x86_64|✅|
-|PyPy 3.10|Windows|x86|❌|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-|PyPy 3.9|Windows|x86|❌|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-|PyPy 3.8 (nlpO3 1.3.1)|Windows|x86|❌|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|✅|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
-|PyPy 3.7 (nlpO3 1.3.1)|Windows|x86|❌|
-||Windows|AMD64|✅|
-||macOS|x86_64|✅|
-||macOS|arm64|❌|
-||manylinux|x86_64|✅|
-||manylinux|i686|✅|
+| Python     | OS        | Architecture | Binary wheel  |
+| ---------- | --------- | ------------ | ------------- |
+| 3.14       | Windows   | x86          | ✅            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ❌            |
+|            | musllinux | x86_64       | ✅            |
+| 3.14t      | Windows   | x86          | ✅            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ❌            |
+|            | musllinux | x86_64       | ✅            |
+| 3.13       | Windows   | x86          | ✅            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ✅            |
+|            | musllinux | x86_64       | ✅            |
+| 3.12       | Windows   | x86          | ✅            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ✅            |
+|            | musllinux | x86_64       | ✅            |
+| 3.11       | Windows   | x86          | ✅            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ✅            |
+|            | musllinux | x86_64       | ✅            |
+| 3.10       | Windows   | x86          | ✅            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ✅ (v1.3.1)   |
+|            | musllinux | x86_64       | ✅            |
+| 3.9        | Windows   | x86          | ✅            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ✅ (v1.3.1)   |
+|            | musllinux | x86_64       | ✅            |
+| 3.8        | Windows   | x86          | ✅ (v1.3.1)   |
+|            |           | AMD64        | ✅ (v1.3.1)   |
+|            | macOS     | x86_64       | ✅ (v1.3.1)   |
+|            |           | arm64        | ✅ (v1.3.1)   |
+|            | manylinux | x86_64       | ✅ (v1.3.1)   |
+|            |           | i686         | ✅ (v1.3.1)   |
+|            | musllinux | x86_64       | ✅ (v1.3.1)   |
+| 3.7        | Windows   | x86          | ✅ (v1.3.1)   |
+|            |           | AMD64        | ✅ (v1.3.1)   |
+|            | macOS     | x86_64       | ✅ (v1.3.1)   |
+|            |           | arm64        | ❌            |
+|            | manylinux | x86_64       | ✅ (v1.3.1)   |
+|            |           | i686         | ✅ (v1.3.1)   |
+|            | musllinux | x86_64       | ✅ (v1.3.1)   |
+| PyPy 3.11  | Windows   | x86          | ❌            |
+|            |           | AMD64        | ✅            |
+|            | macOS     | x86_64       | ✅            |
+|            |           | arm64        | ✅            |
+|            | manylinux | x86_64       | ✅            |
+|            |           | i686         | ❌            |
+| PyPy 3.10  | Windows   | x86          | ❌            |
+|            |           | AMD64        | ✅ (v1.3.1)   |
+|            | macOS     | x86_64       | ✅ (v1.3.1)   |
+|            |           | arm64        | ✅ (v1.3.1)   |
+|            | manylinux | x86_64       | ✅ (v1.3.1)   |
+|            |           | i686         | ✅ (v1.3.1)   |
+| PyPy 3.9   | Windows   | x86          | ❌            |
+|            |           | AMD64        | ✅ (v1.3.1)   |
+|            | macOS     | x86_64       | ✅ (v1.3.1)   |
+|            |           | arm64        | ✅ (v1.3.1)   |
+|            | manylinux | x86_64       | ✅ (v1.3.1)   |
+|            |           | i686         | ✅ (v1.3.1)   |
+| PyPy 3.8   | Windows   | x86          | ❌            |
+|            |           | AMD64        | ✅ (v1.3.1)   |
+|            | macOS     | x86_64       | ✅ (v1.3.1)   |
+|            |           | arm64        | ✅ (v1.3.1)   |
+|            | manylinux | x86_64       | ✅ (v1.3.1)   |
+|            |           | i686         | ✅ (v1.3.1)   |
+| PyPy 3.7   | Windows   | x86          | ❌            |
+|            |           | AMD64        | ✅ (v1.3.1)   |
+|            | macOS     | x86_64       | ✅ (v1.3.1)   |
+|            |           | arm64        | ❌            |
+|            | manylinux | x86_64       | ✅ (v1.3.1)   |
+|            |           | i686         | ✅ (v1.3.1)   |

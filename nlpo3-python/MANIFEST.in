@@ -1,2 +1,9 @@
 include LICENSE README.md pyproject.toml Cargo.toml
 recursive-include src *
+
+# Ensure the Python package files are included in the sdist
+graft nlpo3
+
+# Exclude test notebooks and tests from the sdist to keep it small
+prune tests
+prune notebooks
