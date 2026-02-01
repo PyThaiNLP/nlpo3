@@ -95,7 +95,7 @@ jobs:
           CIBW_ENABLE: "graalpy pypy" # Enable GraalPy and PyPy builds
           CIBW_BUILD: "cp* gp* pp*" # Build for CPython, GraalPy and PyPy
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_SKIP: "*-musllinux_i686"
+          CIBW_SKIP: "*-musllinux_i686 gp*-win_*"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=10.12

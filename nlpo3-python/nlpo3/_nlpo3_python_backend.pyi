@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 PyThaiNLP Project
+# SPDX-FileCopyrightText: 2026 PyThaiNLP Project
 # SPDX-License-Identifier: Apache-2.0
 
 """Type stubs for _nlpo3_python_backend Rust extension module."""
