@@ -45,12 +45,13 @@ const TEXT_SCAN_END: usize = TEXT_SCAN_POINT + TEXT_SCAN_RIGHT;
 
 type CharacterIndex = usize;
 
-const NON_THAI_READABLE_PATTERN: &[&str; 5] = &[
+const NON_THAI_READABLE_PATTERN: &[&str; 6] = &[
     r"(?x)^[-a-zA-Z]+",
     r"(?x)^[0-9]+([,\.][0-9]+)*",
     r"(?x)^[๐-๙]+([,\.][๐-๙]+)*",
     r"(?x)^[\ \t]+",
     r"(?x)^\r?\n",
+    r"(?x)^[\u0E00-\u0E7F  \t\r\n]",
 ];
 
 lazy_static! {
