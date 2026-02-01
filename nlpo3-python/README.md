@@ -255,4 +255,3 @@ Versions with a "t" suffix indicate CPython with free threading.
 |              |           | arm64        |               |
 |              | manylinux | x86_64       | ✓ (v1.3.1)    |
 |              |           | i686         | ✓ (v1.3.1)    |
-

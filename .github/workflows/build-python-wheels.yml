@@ -92,7 +92,7 @@ jobs:
         env:
           # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
           # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
-          CIBW_ENABLE: "graalpy pypy" # Enable GraalPy and PyPy builds
+          CIBW_ENABLE: "graalpy pypy pypy-eol" # Enable GraalPy and PyPy builds
           CIBW_BUILD: "cp* gp* pp*" # Build for CPython, GraalPy and PyPy
           CIBW_BUILD_VERBOSITY: 1
           CIBW_SKIP: "*-musllinux_i686 gp*-win_*"
