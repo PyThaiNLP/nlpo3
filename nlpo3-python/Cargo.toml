@@ -10,7 +10,15 @@ authors = [
 ]
 description = "Python binding for nlpO3 Thai language processing library"
 categories = ["text-processing"]
-keywords = ["thai", "tokenizer", "nlp", "word-segmentation", "python"]
+keywords = [
+  "thai",
+  "tokenizer",
+  "tokenization",
+  "text-processing",
+  "nlp",
+  "word-segmentation",
+  "pythainlp",
+]
 homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-python"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
 documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/README.md"

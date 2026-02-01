@@ -1,4 +1,5 @@
 ---
+SPDX-FileContributor: Thanathip Suntorntip Gorlph
 SPDX-FileCopyrightText: 2024 PyThaiNLP Project
 SPDX-License-Identifier: Apache-2.0
 ---

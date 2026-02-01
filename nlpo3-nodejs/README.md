@@ -57,7 +57,8 @@ For now, copy the whole `nlpo3/` directory after build to your project.
 
 ### npm (experitmental)
 
-npm is still experimental and may not work on all platforms. Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
+npm is still experimental and may not work on all platforms.
+Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
 
 ```shell
 npm i nlpo3

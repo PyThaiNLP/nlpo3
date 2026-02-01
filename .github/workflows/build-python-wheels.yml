@@ -44,7 +44,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - id: check_build_trigger
         name: Check build trigger
         run: bash build_tools/github/check_build_trigger.sh
@@ -56,13 +56,11 @@ jobs:
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
     strategy:
-      # Ensure that a wheel builder finishes even if another fails
-      fail-fast: false
+      fail-fast: false # If false, all jobs continue even if one fails
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python-version: ["3.14"] # Check with PyO3's maximum supported version
-    env:
-      CIBW_BUILD: "" # blank, let cibuildwheel build all supported platforms
+        # cibuildwheel will manage multiple Python versions internally
 
     steps:
       - name: Checkout source code
@@ -92,17 +90,19 @@ jobs:
           package-dir: nlpo3-python
           output-dir: wheelhouse
         env:
-          CIBW_BUILD_VERBOSITY: 1
           # See CIBW_BUILD, CIBW_SKIP, CIBW_ARCHS and other build selectors at:
           # https://cibuildwheel.readthedocs.io/en/stable/options/#build-skip
-          CIBW_SKIP: "*-musllinux_i686"
+          CIBW_ENABLE: "graalpy pypy" # Enable GraalPy and PyPy builds
+          CIBW_BUILD: "cp* gp* pp*" # Build for CPython, GraalPy and PyPy
+          CIBW_BUILD_VERBOSITY: 1
+          CIBW_SKIP: "*-musllinux_i686 gp*-win_*"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=10.12
             PATH="$HOME/.cargo/bin:$PATH"
             CC=/usr/bin/clang
             CXX=/usr/bin/clang++
-          CIBW_ARCHS_LINUX: "auto"
+          CIBW_ARCHS_LINUX: "x86_64 i686"
           CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
           CIBW_BEFORE_BUILD_LINUX: |
             pip install --upgrade setuptools-rust
@@ -112,13 +112,20 @@ jobs:
           # and the container does not have Rust.
           CIBW_ARCHS_WINDOWS: "AMD64 x86"
 
+      - name: List wheel files
+        run: |
+          echo "Files to upload (binary wheels):"
+          find ./wheelhouse -maxdepth 1 -type f -name '*.whl' -print | sort || true
+          echo "Count: $(find ./wheelhouse -maxdepth 1 -type f -name '*.whl' -print | wc -l || true)"
+        shell: bash
       - name: Store artifacts
         uses: actions/upload-artifact@v6
         with:
           path: ./wheelhouse/*.whl
-          name: wheelhouse-${{ matrix.os }}-${{ matrix.python-version }}
+          name: ${{ github.job }}-wheelhouse-${{ matrix.os }}-${{ github.run_id }}
           if-no-files-found: warn
           overwrite: true
+          retention-days: 1
 
   build_sdist:
     name: Build source distribution
@@ -131,16 +138,25 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14" # Check with PyO3's maximum supported version
+          python-version: "3.14" # Ideally matches with the python-version in build_wheels
           cache: "pip"
       - name: Build source distribution
         run: |
           cd nlpo3-python
           bash ../build_tools/github/build_source.sh
+      - name: List sdist files
+        run: |
+          echo "Files to upload (sdist):"
+          find nlpo3-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print | sort || true
+          echo "Count: $(find nlpo3-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print | wc -l || true)"
+        shell: bash
       - name: Store artifacts
         uses: actions/upload-artifact@v6
         with:
           path: nlpo3-python/dist/*.tar.gz
+          name: sdist
+          overwrite: true
+          retention-days: 1
 
   publish_pypi:
     name: Publish to PyPI
@@ -151,11 +167,11 @@ jobs:
     # Alternatively, upload to PyPI on every tag starting with 'v':
     #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
     steps:
-      - name: Retrieve artifacts
+      - name: Retrieve all artifacts
         uses: actions/download-artifact@v6
         with:
-          name: artifact
           path: dist
+          merge-multiple: true
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
