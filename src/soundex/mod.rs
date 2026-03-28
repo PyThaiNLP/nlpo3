@@ -13,6 +13,35 @@ pub use metasound::metasound;
 pub use prayut_and_somchaip::prayut_and_somchaip;
 pub use udom83::udom83;
 
+/// Default soundex engine.
+pub const DEFAULT_ENGINE: &str = "udom83";
+
+/// Compute Thai soundex using the specified engine.
+///
+/// # Engines
+/// - `"udom83"` (default)
+/// - `"lk82"`
+/// - `"metasound"`
+/// - `"prayut_and_somchaip"`
+///
+/// `length` is only used by metasound and prayut_and_somchaip.
+///
+/// # Examples
+/// ```
+/// use nlpo3::soundex::soundex;
+///
+/// assert_eq!(soundex("ลัก", "lk82", 4), "ร1000");
+/// assert_eq!(soundex("ลัก", "udom83", 4), "ร100000");
+/// ```
+pub fn soundex(text: &str, engine: &str, length: usize) -> String {
+    match engine {
+        "lk82" => lk82(text),
+        "metasound" => metasound(text, length),
+        "prayut_and_somchaip" => prayut_and_somchaip(text, length),
+        _ => udom83(text), // default
+    }
+}
+
 /// Calculate similarity between two soundex codes.
 ///
 /// Character-by-character comparison: matches / max(len(a), len(b)).
