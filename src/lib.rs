@@ -2,4 +2,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod four_bytes_str;
+pub mod thai_chars;
 pub mod tokenizer;
