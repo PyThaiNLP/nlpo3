@@ -3,6 +3,7 @@
 
 //! Thai soundex algorithms for phonetic matching.
 
+pub mod complete_soundex;
 pub mod lk82;
 pub mod metasound;
 pub mod prayut_and_somchaip;
