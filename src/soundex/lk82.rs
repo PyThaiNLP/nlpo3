@@ -17,9 +17,9 @@ lazy_static! {
     /// Silenced consonant patterns (karan).
     static ref RE_KARANT: Regex =
         Regex::new(r"จน์|มณ์|ณฑ์|ทร์|ตร์|[ก-ฮ]์|[ก-ฮ][ะ-ู]์").unwrap();
-    /// Signs/symbols to remove: Paiyannoi, Phinthu, Maiyamok, Maitaikhu, Nikhahit.
+    /// Signs/symbols to remove: ฯ ์ ๆ ็ ํ (U+0E2F, U+0E3A, U+0E46, U+0E47, U+0E4D).
     static ref RE_SIGN: Regex =
-        Regex::new(r"[\u{0E2F}\u{0E3A}\u{0E46}\u{0E47}\u{0E4D}]").unwrap();
+        Regex::new(r"[ฯ\u{0E3A}ๆ็ํ]").unwrap();
 }
 
 /// TRANS1: first-character normalization (consonant class grouping).
@@ -145,34 +145,34 @@ pub fn lk82(text: &str) -> String {
     let mut i_v: Option<usize> = None; // position of last vowel separator
 
     for (i, &c) in remaining.iter().enumerate() {
-        if "\u{0E30}\u{0E31}\u{0E34}\u{0E35}".contains(c) {
-            // Sara A, Mai Han-Akat, Sara I, Sara II: separator only
+        if "ะัิี".contains(c) {
+            // ะ ั ิ ี (U+0E30,31,34,35): separator only
             i_v = Some(i);
             res.push(String::new());
-        } else if "\u{0E32}\u{0E36}\u{0E37}\u{0E39}\u{0E45}".contains(c) {
-            // Sara Aa, Sara Ue, Sara Uee, Sara Uu, Lakkhangyao: separator + encode
+        } else if "าึืูๅ".contains(c) {
+            // า ึ ื ู ๅ (U+0E32,36,37,39,45): separator + encode
             i_v = Some(i);
             res.push(trans2(c).to_string());
-        } else if c == '\u{0E38}' {
-            // Sara U: separator; encode unless preceded by ต or ธ
+        } else if c == 'ุ' {
+            // ุ (U+0E38): separator; encode unless preceded by ต or ธ
             i_v = Some(i);
             if i == 0 || (remaining[i - 1] != 'ต' && remaining[i - 1] != 'ธ') {
                 res.push(trans2(c).to_string());
             } else {
                 res.push(String::new());
             }
-        } else if c == '\u{0E2B}' || c == '\u{0E2D}' {
-            // ห or อ: encode only if next char is Sara Ue/Uee/U/Uu
-            if i + 1 < len_text && "\u{0E36}\u{0E37}\u{0E38}\u{0E39}".contains(remaining[i + 1])
+        } else if c == 'ห' || c == 'อ' {
+            // ห อ: encode only if next char is ึ ื ุ ู
+            if i + 1 < len_text && "ึืุู".contains(remaining[i + 1])
             {
                 res.push(trans2(c).to_string());
             }
             // else: skip (don't push anything)
-        } else if "\u{0E22}\u{0E23}\u{0E24}\u{0E26}\u{0E27}".contains(c) {
-            // ย ร ฤ ฦ ว: encode only if after vowel or next is Sara Ue/Uee/U/Uu
+        } else if "ยรฤฦว".contains(c) {
+            // ย ร ฤ ฦ ว: encode only if after vowel or next is ึ ื ุ ู
             if i_v == Some(i.wrapping_sub(1))
                 || (i + 1 < len_text
-                    && "\u{0E36}\u{0E37}\u{0E38}\u{0E39}".contains(remaining[i + 1]))
+                    && "ึืุู".contains(remaining[i + 1]))
             {
                 res.push(trans2(c).to_string());
             }

@@ -21,32 +21,38 @@ fn cons_class() -> String {
 
 lazy_static! {
     // Preprocessing regex patterns (applied in order)
-    static ref RE_1: Regex = Regex::new(r"รร([\u{0E40}-\u{0E44}])").unwrap();
+    // รร + lead vowel (เ-ไ) → ัน + lead vowel
+    static ref RE_1: Regex = Regex::new(r"รร([เ-ไ])").unwrap();
+    // รร + consonant + (consonant or lead vowel) → ั + match
     static ref RE_2: Regex = Regex::new(&format!(
-        r"รร([{cons}][{cons}\u{{0E40}}-\u{{0E44}}])",
-        cons = cons_class()
+        r"รร([{c}][{c}เ-ไ])", c = cons_class()
     )).unwrap();
+    // รร + consonant + (vowel or tone) → ัน + match
     static ref RE_3: Regex = Regex::new(&format!(
-        r"รร([{cons}][\u{{0E30}}-\u{{0E39}}\u{{0E48}}-\u{{0E4C}}])",
-        cons = cons_class()
+        r"รร([{c}][ะ-ู่-์])", c = cons_class()
     )).unwrap();
+    // remaining รร → ัน
     static ref RE_4: Regex = Regex::new(r"รร").unwrap();
+    // ไ + consonant + ย → consonant + ย
     static ref RE_5: Regex = Regex::new(&format!(
-        r"ไ([{cons}]ย)",
-        cons = cons_class()
+        r"ไ([{c}]ย)", c = cons_class()
     )).unwrap();
+    // ไ/ใ + consonant → consonant + ย
     static ref RE_6: Regex = Regex::new(&format!(
-        r"[ไใ]([{cons}])",
-        cons = cons_class()
+        r"[ไใ]([{c}])", c = cons_class()
     )).unwrap();
-    static ref RE_7: Regex = Regex::new(r"\u{0E33}(ม[\u{0E30}-\u{0E39}])").unwrap();
-    static ref RE_8: Regex = Regex::new(r"\u{0E33}ม").unwrap();
-    static ref RE_9: Regex = Regex::new(r"\u{0E33}").unwrap();
+    // ำ + ม + vowel → ม + vowel
+    static ref RE_7: Regex = Regex::new(r"ำ(ม[ะ-ู])").unwrap();
+    // ำ + ม → ม
+    static ref RE_8: Regex = Regex::new(r"ำม").unwrap();
+    // remaining ำ → ม
+    static ref RE_9: Regex = Regex::new(r"ำ").unwrap();
+    // karan patterns + consonant with ์
     static ref RE_10: Regex = Regex::new(&format!(
-        r"จน์|มณ์|ณฑ์|ทร์|ตร์|[{cons}]์|[{cons}][\u{{0E30}}-\u{{0E39}}]์",
-        cons = cons_class()
+        r"จน์|มณ์|ณฑ์|ทร์|ตร์|[{c}]์|[{c}][ะ-ู]์", c = cons_class()
     )).unwrap();
-    static ref RE_11: Regex = Regex::new(r"[\u{0E30}-\u{0E4C}]").unwrap();
+    // remove all vowels and marks (ะ-์, U+0E30..U+0E4C)
+    static ref RE_11: Regex = Regex::new(r"[ะ-์]").unwrap();
 }
 
 /// TRANS1: first-character normalization for Udom83.
