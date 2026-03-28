@@ -27,11 +27,12 @@ pub fn is_thai_consonant(c: char) -> bool {
 
 /// Check if a character is in the Thai Unicode block (U+0E01..U+0E5B).
 ///
-/// Covers consonants, vowels, tone marks, digits, signs, and punctuation.
-/// Excludes unassigned code points (U+0E3B..U+0E3E, U+0E5C..U+0E5F).
+/// Simple range check covering the entire assigned Thai block.
+/// Includes 4 currently unassigned code points (U+0E3B..U+0E3E)
+/// within the range — these are not PUA and may be assigned in
+/// future Unicode versions.
 pub fn is_thai_character(c: char) -> bool {
-    ('\u{0E01}'..='\u{0E3A}').contains(&c)
-        || ('\u{0E3F}'..='\u{0E5B}').contains(&c)
+    ('\u{0E01}'..='\u{0E5B}').contains(&c)
 }
 
 /// Check if a character is a Thai tone mark (U+0E48..U+0E4B).
@@ -65,13 +66,13 @@ mod tests {
 
     #[test]
     fn test_is_thai_character() {
-        assert!(is_thai_character('ก')); // consonant
-        assert!(is_thai_character('า')); // vowel
-        assert!(is_thai_character('๙')); // digit
-        assert!(is_thai_character('฿')); // baht symbol
-        assert!(!is_thai_character('A'));
-        // unassigned U+0E3B should be excluded
-        assert!(!is_thai_character('\u{0E3B}'));
+        assert!(is_thai_character('ก'));  // consonant
+        assert!(is_thai_character('า'));  // vowel
+        assert!(is_thai_character('๙'));  // digit
+        assert!(is_thai_character('฿'));  // baht symbol
+        assert!(!is_thai_character('A')); // latin
+        assert!(!is_thai_character('\u{0E00}')); // before block
+        assert!(!is_thai_character('\u{0E5C}')); // after block
     }
 
     #[test]
