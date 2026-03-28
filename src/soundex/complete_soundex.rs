@@ -49,26 +49,6 @@ fn final_code(c: char) -> &'static str {
     }
 }
 
-/// Vowel map (Table 5.3).
-fn vowel_code(v: &str) -> &'static str {
-    match v {
-        "ะ" | "ั" | "รร" | "ำ" | "ไ" | "ใ" | "เา" => "1A",
-        "า" => "1B",
-        "ิ" => "2C", "ี" => "2D",
-        "ึ" => "3E", "ื" => "3F",
-        "ุ" => "4G", "ู" => "4H",
-        "เะ" | "เ็" => "5I", "เ" => "5J",
-        "แะ" | "แ็" => "6K", "แ" => "6L",
-        "โะ" => "7M", "โ" => "7N",
-        "เาะ" | "อ" => "8O",
-        "เอะ" => "9Q", "เอ" => "9R",
-        "เอียะ" => "AS", "เอีย" => "AT",
-        "เอือะ" => "BU", "เอือ" => "BV",
-        "อัวะ" => "CW", "อัว" | "ว" => "CX",
-        _ => "",
-    }
-}
-
 /// Tone mark map (Table 5.4).
 fn tone_code(c: char) -> &'static str {
     match c {
@@ -153,6 +133,46 @@ fn heuristic_split(text: &str) -> Vec<(&str, Option<&str>)> {
 
     // Default: single syllable
     vec![(text, None)]
+}
+
+/// Encode a Thai word into Complete Soundex code.
+///
+/// Handles multi-syllable words via heuristic splitting.
+/// Adds asterisk suffix for words containing ญญ, ญ+ย, ณ+ย, or starting with ญ.
+///
+/// # Examples
+/// ```
+/// use nlpo3::soundex::complete_soundex::complete_soundex;
+///
+/// assert_eq!(complete_soundex("ก้าน"), "กก1Bน2-");
+/// assert_eq!(complete_soundex("กมล"), "กก1A-0-มม7Mน0-");
+/// ```
+pub fn complete_soundex(text: &str) -> String {
+    if text.is_empty() {
+        return String::new();
+    }
+
+    let text = clean_text(text);
+    if text.is_empty() {
+        return String::new();
+    }
+
+    let parts = heuristic_split(&text);
+    let mut result = String::new();
+    for (syl, rule) in &parts {
+        result.push_str(&process_syllable(syl, *rule));
+    }
+
+    // Asterisk suffix for specific patterns
+    if text.contains("ญญ")
+        || (text.contains('ญ') && text.contains('ย'))
+        || (text.contains('ณ') && text.contains('ย'))
+        || text.starts_with('ญ')
+    {
+        result.push('*');
+    }
+
+    result
 }
 
 /// Process a single syllable into its Complete Soundex code.
@@ -388,12 +408,52 @@ mod tests {
 
     #[test]
     fn test_process_syllable_basic() {
-        // Verified against pythainlp
         assert_eq!(process_syllable("ก้าน", None), "กก1Bน2-");
         assert_eq!(process_syllable("ก้ม", None), "กก7Mม2-");
         assert_eq!(process_syllable("แกน", None), "กก6Lน0-");
         assert_eq!(process_syllable("โก่ง", None), "กก7Nง1-");
         assert_eq!(process_syllable("นา", None), "นน1B0--");
         assert_eq!(process_syllable("ยา", None), "ยย1B0--");
+    }
+
+    #[test]
+    fn test_complete_soundex_empty() {
+        assert_eq!(complete_soundex(""), "");
+    }
+
+    #[test]
+    fn test_complete_soundex_single_syllable() {
+        // Verified against pythainlp output
+        assert_eq!(complete_soundex("ก้าน"), "กก1Bน2-");
+        assert_eq!(complete_soundex("กลับ"), "กก1Aบ0ล");
+        assert_eq!(complete_soundex("ใกล้"), "กก1Aย2ล");
+        assert_eq!(complete_soundex("โก่ง"), "กก7Nง1-");
+        assert_eq!(complete_soundex("ก้ม"), "กก7Mม2-");
+        assert_eq!(complete_soundex("แกน"), "กก6Lน0-");
+        assert_eq!(complete_soundex("นา"), "นน1B0--");
+        assert_eq!(complete_soundex("ยา"), "ยย1B0--");
+        assert_eq!(complete_soundex("ปัน"), "ปป1A0น-");
+        assert_eq!(complete_soundex("บุญ"), "บบ4G0น-");
+        assert_eq!(complete_soundex("บุณ"), "บบ4G0น-");
+        assert_eq!(complete_soundex("ปุญ"), "ปป4G0น-");
+        assert_eq!(complete_soundex("ปัญ"), "ปป1A0น-");
+    }
+
+    #[test]
+    fn test_complete_soundex_asterisk() {
+        // ญ as initial → asterisk
+        assert_eq!(complete_soundex("ญา"), "ยย1B0--*");
+    }
+
+    #[test]
+    fn test_complete_soundex_multi_syllable() {
+        assert_eq!(complete_soundex("กมล"), "กก1A-0-มม7Mน0-");
+        assert_eq!(complete_soundex("ทราย"), "ซซ1Bย0-");
+        assert_eq!(complete_soundex("มารค"), "มม1B-ก0-");
+    }
+
+    #[test]
+    fn test_complete_soundex_cluster() {
+        assert_eq!(complete_soundex("เครื่อง"), "คคBVง1ร");
     }
 }
