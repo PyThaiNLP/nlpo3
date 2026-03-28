@@ -155,6 +155,180 @@ fn heuristic_split(text: &str) -> Vec<(&str, Option<&str>)> {
     vec![(text, None)]
 }
 
+/// Process a single syllable into its Complete Soundex code.
+fn process_syllable(syl: &str, implicit_rule: Option<&str>) -> String {
+    let chars: Vec<char> = syl.chars().collect();
+    let mut idx = 0;
+
+    // A. Leading Vowel
+    let leading_vowel = if idx < chars.len() && "เแโไใ".contains(chars[idx]) {
+        let v = chars[idx];
+        idx += 1;
+        Some(v)
+    } else {
+        None
+    };
+
+    // B. Initial Consonant + Cluster
+    let mut init_char = None;
+    let mut init_code = String::new();
+    let mut cluster_char = "-".to_string();
+
+    if idx < chars.len() && is_thai_consonant(chars[idx]) {
+        init_char = Some(chars[idx]);
+
+        // Special: ทร → ซซ
+        if chars[idx] == 'ท' && idx + 1 < chars.len() && chars[idx + 1] == 'ร' {
+            init_code = "ซซ".to_string();
+            idx += 2;
+        } else {
+            init_code = initial_code(chars[idx]).to_string();
+            idx += 1;
+
+            // Check for cluster consonant (ร ล ว)
+            if idx < chars.len() && "รลว".contains(chars[idx]) {
+                let is_cluster = if idx + 1 < chars.len() {
+                    let nc = chars[idx + 1];
+                    "ะัิีึืุู่้๊๋".contains(nc)
+                        || (leading_vowel.is_some()
+                            && !"รลว".contains(nc)
+                            && !is_thai_consonant(nc)
+                            && nc != 'า')
+                } else {
+                    leading_vowel.is_some()
+                };
+                if is_cluster {
+                    cluster_char = chars[idx].to_string();
+                    idx += 1;
+                }
+            }
+        }
+    }
+
+    // C. Map leading vowel to code
+    let (mut vowel_code_str, mut final_code_str) = match leading_vowel {
+        Some('โ') => ("7N".to_string(), "-".to_string()),
+        Some('ไ') | Some('ใ') => ("1A".to_string(), "ย".to_string()),
+        Some('แ') => ("6L".to_string(), "-".to_string()),
+        Some('เ') => ("5J".to_string(), "-".to_string()),
+        _ => (String::new(), "-".to_string()),
+    };
+
+    // D. Scan remaining chars for vowels, tones, finals
+    let mut tone_code_str = "0".to_string();
+    let mut final_candidates: Vec<char> = Vec::new();
+
+    for &c in &chars[idx..] {
+        if "่้๊๋".contains(c) {
+            tone_code_str = tone_code(c).to_string();
+        } else if "ะัาิีึืุู".contains(c)
+            || c == 'ำ'
+            || (c == 'อ' && leading_vowel == Some('เ'))
+        {
+            // Process vowel character
+            if leading_vowel == Some('เ') && c == 'ื' {
+                vowel_code_str = "BV".to_string(); // เอือ
+            } else if leading_vowel == Some('เ') && c == 'อ' {
+                if vowel_code_str != "BV" {
+                    vowel_code_str = "9R".to_string(); // เอ
+                }
+            } else if c == 'ำ' {
+                vowel_code_str = "1A".to_string();
+                final_code_str = "ม".to_string();
+            } else if c == 'อ' && leading_vowel.is_none() && vowel_code_str.is_empty() {
+                vowel_code_str = "8P".to_string();
+            } else if let Some(v) = match c {
+                'ะ' => Some("1A"), 'ั' => Some("1A"), 'า' => Some("1B"),
+                'ิ' => Some("2C"), 'ี' => Some("2D"),
+                'ึ' => Some("3E"), 'ื' => Some("3F"),
+                'ุ' => Some("4G"), 'ู' => Some("4H"),
+                _ => None,
+            } {
+                vowel_code_str = v.to_string();
+            }
+
+            // Handle ะ shortening
+            if c == 'ะ' {
+                vowel_code_str = match vowel_code_str.as_str() {
+                    "5J" => "5I", "6L" => "6K", "7N" => "7M", "1B" => "1A",
+                    other => other,
+                }.to_string();
+            }
+        } else {
+            final_candidates.push(c);
+        }
+    }
+
+    // E. Final consonant processing
+    let mut dropped_r = false;
+    if final_code_str == "-" {
+        if syl.contains("รร") {
+            vowel_code_str = "1A".to_string();
+            final_code_str = if let Some(&f) = final_candidates.last() {
+                final_code(f).to_string()
+            } else {
+                "น".to_string()
+            };
+        } else if !final_candidates.is_empty() {
+            let raw: String = final_candidates.iter().collect();
+            let f = if raw.len() >= 2 && raw.chars().rev().nth(1) == Some('ร')
+                && final_code(raw.chars().last().unwrap()) != "-"
+            {
+                dropped_r = true;
+                raw.chars().last().unwrap()
+            } else if raw.ends_with("ตร") {
+                dropped_r = true;
+                'ต'
+            } else {
+                *final_candidates.last().unwrap()
+            };
+            final_code_str = final_code(f).to_string();
+        }
+    }
+
+    // F. Special format check (tone before final)
+    let special_format = {
+        let ic = init_char.unwrap_or(' ');
+        ic == 'ญ' || ic == 'ย' || ic == 'น'
+            || final_candidates.iter().any(|&c| c == 'ญ' || c == 'ณ')
+            || (final_candidates.iter().any(|&c| c == 'น') && vowel_code_str == "1A")
+    };
+
+    // G. Implicit vowel
+    if vowel_code_str.is_empty() {
+        vowel_code_str = match implicit_rule {
+            Some("a") => "1A",
+            Some("o") => "7M",
+            _ => "7M",
+        }.to_string();
+    }
+
+    // H. Fix leading vowel overrides
+    if leading_vowel == Some('โ') { vowel_code_str = "7N".to_string(); }
+    if leading_vowel == Some('แ') { vowel_code_str = "6L".to_string(); }
+
+    // I. So Sua adjustment
+    if init_char == Some('ส') && init_code == "ซศ" {
+        if implicit_rule.is_none() && syl.chars().count() >= 2 {
+            let consonants_after: Vec<char> = syl.chars().skip(1)
+                .filter(|&c| is_thai_consonant(c))
+                .collect();
+            if consonants_after.is_empty() || consonants_after.iter().all(|c| "รลว".contains(*c)) {
+                init_code = "ซซ".to_string();
+            }
+        }
+    }
+
+    // J. Format output
+    if special_format {
+        format!("{}{}{}{}{}", init_code, vowel_code_str, tone_code_str, final_code_str, cluster_char)
+    } else if dropped_r && (final_code_str == "ก" || final_code_str == "-") {
+        format!("{}{}-{}{}{}",init_code, vowel_code_str, final_code_str, tone_code_str, cluster_char)
+    } else {
+        format!("{}{}{}{}{}", init_code, vowel_code_str, final_code_str, tone_code_str, cluster_char)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -210,5 +384,16 @@ mod tests {
         let result = heuristic_split("ก้าน");
         assert_eq!(result.len(), 1);
         assert_eq!(result[0], ("ก้าน", None));
+    }
+
+    #[test]
+    fn test_process_syllable_basic() {
+        // Verified against pythainlp
+        assert_eq!(process_syllable("ก้าน", None), "กก1Bน2-");
+        assert_eq!(process_syllable("ก้ม", None), "กก7Mม2-");
+        assert_eq!(process_syllable("แกน", None), "กก6Lน0-");
+        assert_eq!(process_syllable("โก่ง", None), "กก7Nง1-");
+        assert_eq!(process_syllable("นา", None), "นน1B0--");
+        assert_eq!(process_syllable("ยา", None), "ยย1B0--");
     }
 }
