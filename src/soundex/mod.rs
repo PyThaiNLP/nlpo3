@@ -9,6 +9,7 @@ pub mod metasound;
 pub mod prayut_and_somchaip;
 pub mod udom83;
 
+pub use complete_soundex::complete_soundex;
 pub use lk82::lk82;
 pub use metasound::metasound;
 pub use prayut_and_somchaip::prayut_and_somchaip;
@@ -24,6 +25,7 @@ pub const DEFAULT_ENGINE: &str = "udom83";
 /// - `"lk82"`
 /// - `"metasound"`
 /// - `"prayut_and_somchaip"`
+/// - `"complete_soundex"`
 ///
 /// `length` is only used by metasound and prayut_and_somchaip.
 ///
@@ -39,6 +41,7 @@ pub fn soundex(text: &str, engine: &str, length: usize) -> String {
         "lk82" => lk82(text),
         "metasound" => metasound(text, length),
         "prayut_and_somchaip" => prayut_and_somchaip(text, length),
+        "complete_soundex" => complete_soundex(text),
         _ => udom83(text), // default
     }
 }
