@@ -5,8 +5,10 @@
 
 pub mod lk82;
 pub mod metasound;
+pub mod prayut_and_somchaip;
 pub mod udom83;
 
 pub use lk82::lk82;
 pub use metasound::metasound;
+pub use prayut_and_somchaip::prayut_and_somchaip;
 pub use udom83::udom83;
