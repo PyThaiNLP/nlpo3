@@ -228,16 +228,17 @@ mod tests {
     }
 
     #[test]
-    fn test_lk82_non_empty() {
-        assert!(!lk82("เกาะ").is_empty());
-        assert!(!lk82("อุยกูร์").is_empty());
-        assert!(!lk82("หยากไย่").is_empty());
-        assert!(!lk82("หอ").is_empty());
-        assert!(!lk82("อยู่").is_empty());
-        assert!(!lk82("อู่").is_empty());
-        assert!(!lk82("อย่าง").is_empty());
-        assert!(!lk82("เหย้า").is_empty());
-        assert!(!lk82("หยุด").is_empty());
-        assert!(!lk82("หืออือ").is_empty());
+    fn test_lk82_exact_values() {
+        // Verified against pythainlp output
+        assert_eq!(lk82("เกาะ"), "กB900");
+        assert_eq!(lk82("อุยกูร์"), "อE71E");
+        assert_eq!(lk82("หยากไย่"), "ห9170");
+        assert_eq!(lk82("หอ"), "ห0000");
+        assert_eq!(lk82("อยู่"), "อ7E00");
+        assert_eq!(lk82("อู่"), "อE000");
+        assert_eq!(lk82("อย่าง"), "อ9200");
+        assert_eq!(lk82("เหย้า"), "หB900");
+        assert_eq!(lk82("หยุด"), "ห7E30");
+        assert_eq!(lk82("หืออือ"), "หAFA0");
     }
 }
