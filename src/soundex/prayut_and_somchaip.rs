@@ -180,20 +180,13 @@ mod tests {
     }
 
     #[test]
-    fn test_non_empty() {
-        assert!(!prayut_and_somchaip("สวัสดี", 4).is_empty());
-        assert!(!prayut_and_somchaip("hello", 4).is_empty());
-        assert!(!prayut_and_somchaip("ง", 4).is_empty());
-        assert!(!prayut_and_somchaip("บา", 4).is_empty());
-        assert!(!prayut_and_somchaip("go", 4).is_empty());
-        assert!(!prayut_and_somchaip("อด", 4).is_empty());
-        assert!(!prayut_and_somchaip("ลน", 4).is_empty());
-        assert!(!prayut_and_somchaip("มอ", 4).is_empty());
-        assert!(!prayut_and_somchaip("รอ", 4).is_empty());
-        assert!(!prayut_and_somchaip("ขอ", 4).is_empty());
-        assert!(!prayut_and_somchaip("บน", 4).is_empty());
-        assert!(!prayut_and_somchaip("ณาญ", 4).is_empty());
-        assert!(!prayut_and_somchaip("กาง", 4).is_empty());
-        assert!(!prayut_and_somchaip("ว้าว", 4).is_empty());
+    fn test_exact_values() {
+        // Verified against pythainlp output
+        assert_eq!(prayut_and_somchaip("บา", 4), "1");
+        assert_eq!(prayut_and_somchaip("อด", 4), "03");
+        assert_eq!(prayut_and_somchaip("ลน", 4), "45");
+        assert_eq!(prayut_and_somchaip("มอ", 4), "57");
+        assert_eq!(prayut_and_somchaip("ณาญ", 4), "59");
+        assert_eq!(prayut_and_somchaip("กาง", 4), "252");
     }
 }

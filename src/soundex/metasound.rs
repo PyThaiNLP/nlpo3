@@ -123,6 +123,7 @@ mod tests {
         assert_eq!(metasound("คน", 4), "ค500");
         assert_eq!(metasound("คนA", 4), "ค500");
         assert_eq!(metasound("ดา", 4), "ด000");
+        assert_eq!(metasound("ปัจจุบัน", 4), "ป223");
     }
 
     #[test]
