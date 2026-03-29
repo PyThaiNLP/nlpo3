@@ -17,7 +17,7 @@ lazy_static! {
     /// Silenced consonant patterns (karan).
     static ref RE_KARANT: Regex =
         Regex::new(r"จน์|มณ์|ณฑ์|ทร์|ตร์|[ก-ฮ]์|[ก-ฮ][ะ-ู]์").unwrap();
-    /// Signs/symbols to remove: ฯ ์ ๆ ็ ํ (U+0E2F, U+0E3A, U+0E46, U+0E47, U+0E4D).
+    /// Signs/symbols to remove: ฯ ๆ ็ ํ + Phinthu (U+0E2F, U+0E3A, U+0E46, U+0E47, U+0E4D).
     static ref RE_SIGN: Regex =
         Regex::new(r"[ฯ\u{0E3A}ๆ็ํ]").unwrap();
 }

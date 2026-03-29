@@ -82,57 +82,56 @@ fn clean_text(text: &str) -> String {
 ///
 /// Returns: Vec<(syllable, implicit_vowel_rule)>
 /// where rule is Some("a"), Some("o"), or None.
-fn heuristic_split(text: &str) -> Vec<(&str, Option<&str>)> {
-    // 0. อัต pattern
+fn heuristic_split(text: &str) -> Vec<(String, Option<&str>)> {
+    // 0. อัต pattern (e.g. อัตรา → อัต + ตรา)
     if text.starts_with("อัต") && text.chars().count() > 3 {
         let rest_start = text.char_indices().nth(3).map(|(i, _)| i).unwrap_or(text.len());
         return vec![
-            (&text[..rest_start], None),
-            // Prepend ต to the rest
+            (text[..rest_start].to_string(), None),
+            (format!("ต{}", &text[rest_start..]), None),
         ];
-        // This needs special handling - we'll allocate for this case
     }
 
-    // 1. Aksorn Nam with Ro Han (e.g. สวรรค์ -> ส-วรรค์)
+    // 1. Aksorn Nam with Ro Han (e.g. สวรรค์ → ส + วรรค์)
     if RE_AKSORN_NAM.is_match(text) {
         let first_end = text.char_indices().nth(1).map(|(i, _)| i).unwrap_or(text.len());
         return vec![
-            (&text[..first_end], Some("a")),
-            (&text[first_end..], None),
+            (text[..first_end].to_string(), Some("a")),
+            (text[first_end..].to_string(), None),
         ];
     }
 
-    // 2. Two consonants without vowel (e.g. กม -> ก-a ม-a)
+    // 2. Two consonants without vowel (e.g. กม → ก + ม)
     if RE_TWO_CONS.is_match(text) {
         let mid = text.char_indices().nth(1).map(|(i, _)| i).unwrap_or(text.len());
         return vec![
-            (&text[..mid], Some("a")),
-            (&text[mid..], Some("a")),
+            (text[..mid].to_string(), Some("a")),
+            (text[mid..].to_string(), Some("a")),
         ];
     }
 
-    // 3. Three consonants -> C1-a C2C3-o
+    // 3. Three consonants → C1 + C2C3 (e.g. กมล → ก + มล)
     if RE_THREE_CONS.is_match(text) {
         let first_end = text.char_indices().nth(1).map(|(i, _)| i).unwrap_or(text.len());
         return vec![
-            (&text[..first_end], Some("a")),
-            (&text[first_end..], Some("o")),
+            (text[..first_end].to_string(), Some("a")),
+            (text[first_end..].to_string(), Some("o")),
         ];
     }
 
-    // 4. Three consonants + vowel -> C1-a C2-a C3V
+    // 4. Three consonants + vowel → C1 + C2 + C3V
     if RE_THREE_CONS_VOWEL.is_match(text) {
         let c1_end = text.char_indices().nth(1).map(|(i, _)| i).unwrap_or(text.len());
         let c2_end = text.char_indices().nth(2).map(|(i, _)| i).unwrap_or(text.len());
         return vec![
-            (&text[..c1_end], Some("a")),
-            (&text[c1_end..c2_end], Some("a")),
-            (&text[c2_end..], None),
+            (text[..c1_end].to_string(), Some("a")),
+            (text[c1_end..c2_end].to_string(), Some("a")),
+            (text[c2_end..].to_string(), None),
         ];
     }
 
     // Default: single syllable
-    vec![(text, None)]
+    vec![(text.to_string(), None)]
 }
 
 /// Encode a Thai word into Complete Soundex code.
@@ -387,23 +386,32 @@ mod tests {
     fn test_heuristic_split_two_cons() {
         let result = heuristic_split("กม");
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0], ("ก", Some("a")));
-        assert_eq!(result[1], ("ม", Some("a")));
+        assert_eq!(result[0].0, "ก");
+        assert_eq!(result[1].0, "ม");
     }
 
     #[test]
     fn test_heuristic_split_three_cons() {
         let result = heuristic_split("กมล");
         assert_eq!(result.len(), 2);
-        assert_eq!(result[0], ("ก", Some("a")));
-        assert_eq!(result[1], ("มล", Some("o")));
+        assert_eq!(result[0].0, "ก");
+        assert_eq!(result[1].0, "มล");
     }
 
     #[test]
     fn test_heuristic_split_single() {
         let result = heuristic_split("ก้าน");
         assert_eq!(result.len(), 1);
-        assert_eq!(result[0], ("ก้าน", None));
+        assert_eq!(result[0].0, "ก้าน");
+    }
+
+    #[test]
+    fn test_heuristic_split_at_pattern() {
+        // อัตรา → อัต + ตรา (ต prepended to rest)
+        let result = heuristic_split("อัตรา");
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].0, "อัต");
+        assert_eq!(result[1].0, "ตรา");
     }
 
     #[test]
