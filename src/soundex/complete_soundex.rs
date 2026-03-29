@@ -193,7 +193,10 @@ fn process_syllable(syl: &str, implicit_rule: Option<&str>) -> String {
     let mut init_code = String::new();
     let mut cluster_char = "-".to_string();
 
-    if idx < chars.len() && is_thai_consonant(chars[idx]) {
+    // Accept consonants (ก-ฮ) plus ฤ and ฦ which have initial_code mappings
+    if idx < chars.len()
+        && (is_thai_consonant(chars[idx]) || chars[idx] == 'ฤ' || chars[idx] == 'ฦ')
+    {
         init_char = Some(chars[idx]);
 
         // Special: ทร → ซซ
@@ -481,5 +484,11 @@ mod tests {
         assert_eq!(complete_soundex("สวรรค์"), "ซศ1A-0-วว1Aน0-");
         // รักษ์ → clean → รัก
         assert_eq!(complete_soundex("รักษ์"), "รร1Aก0-");
+    }
+
+    #[test]
+    fn test_complete_soundex_rue_lue() {
+        // ฤ (not a consonant but has initial_code mapping)
+        assert_eq!(complete_soundex("ฤ"), "รร7M-0-");
     }
 }

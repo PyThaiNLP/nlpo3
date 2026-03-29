@@ -55,10 +55,10 @@ pub fn metasound(text: &str, length: usize) -> String {
         return String::new();
     }
 
-    // Keep only consonants and thanthakhat
+    // Keep only consonants, ฦ, and thanthakhat
     let mut chars: Vec<char> = text
         .chars()
-        .filter(|&c| is_thai_consonant(c) || c == THANTHAKHAT)
+        .filter(|&c| is_thai_consonant(c) || c == 'ฦ' || c == THANTHAKHAT)
         .collect();
 
     // Remove karan (thanthakhat and the consonant before it)
