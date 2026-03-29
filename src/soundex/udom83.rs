@@ -184,4 +184,11 @@ mod tests {
         assert_eq!(udom83("รักษ์"), "ร100000");
         assert_eq!(udom83("บูรณการ"), "บ931900");
     }
+
+    #[test]
+    fn test_udom83_common_words() {
+        assert_eq!(udom83("สวัสดี"), "ส044000");
+        assert_eq!(udom83("ประเทศ"), "ป984000");
+        assert_eq!(udom83("กรุงเทพ"), "ก928500");
+    }
 }

@@ -229,7 +229,6 @@ mod tests {
 
     #[test]
     fn test_lk82_exact_values() {
-        // Verified against pythainlp output
         assert_eq!(lk82("เกาะ"), "กB900");
         assert_eq!(lk82("อุยกูร์"), "อE71E");
         assert_eq!(lk82("หยากไย่"), "ห9170");
@@ -240,5 +239,28 @@ mod tests {
         assert_eq!(lk82("เหย้า"), "หB900");
         assert_eq!(lk82("หยุด"), "ห7E30");
         assert_eq!(lk82("หืออือ"), "หAFA0");
+    }
+
+    #[test]
+    fn test_lk82_single_char() {
+        assert_eq!(lk82("ก"), "ก0000");
+        assert_eq!(lk82("า"), "90000");  // vowel as first char → TRANS2
+        assert_eq!(lk82("่"), "");       // tonemark stripped → empty
+        assert_eq!(lk82("ๆ"), "");       // sign stripped → empty
+    }
+
+    #[test]
+    fn test_lk82_tonemarks_stripped() {
+        assert_eq!(lk82("ก่า"), "ก9000");
+        assert_eq!(lk82("ก้า"), "ก9000");
+        assert_eq!(lk82("ก๊า"), "ก9000");
+        assert_eq!(lk82("ก๋า"), "ก9000");
+    }
+
+    #[test]
+    fn test_lk82_common_words() {
+        assert_eq!(lk82("สวัสดี"), "ซ3000");
+        assert_eq!(lk82("ประเทศ"), "ปB300");
+        assert_eq!(lk82("กรุงเทพ"), "ก4E2B");
     }
 }

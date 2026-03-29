@@ -456,4 +456,22 @@ mod tests {
     fn test_complete_soundex_cluster() {
         assert_eq!(complete_soundex("เครื่อง"), "คคBVง1ร");
     }
+
+    #[test]
+    fn test_complete_soundex_edge_cases() {
+        // Single consonant → implicit vowel 7M (โอะ)
+        assert_eq!(complete_soundex("ก"), "กก7M-0-");
+        // Two consonants → heuristic split: ก-a ก-a
+        assert_eq!(complete_soundex("กก"), "กก1A-0-กก1A-0-");
+        // Karan removes everything → empty
+        assert_eq!(complete_soundex("ก์"), "");
+    }
+
+    #[test]
+    fn test_complete_soundex_karan_variants() {
+        // สวรรค์ → clean → สวรร → aksorn nam split
+        assert_eq!(complete_soundex("สวรรค์"), "ซศ1A-0-วว1Aน0-");
+        // รักษ์ → clean → รัก
+        assert_eq!(complete_soundex("รักษ์"), "รร1Aก0-");
+    }
 }
