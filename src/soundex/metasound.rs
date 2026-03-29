@@ -15,9 +15,9 @@ fn metasound_code(c: char) -> char {
     match c {
         // Group 1: K-class
         'ก' | 'ข' | 'ฃ' | 'ค' | 'ฆ' | 'ฅ' => '1',
-        // Group 2: D-class (dental/sibilant)
-        'จ' | 'ฉ' | 'ช' | 'ฌ' | 'ซ' | 'ฐ' | 'ท' | 'ฒ' | 'ด' | 'ฎ' | 'ต' | 'ส' | 'ศ'
-        | 'ษ' => '2',
+        // Group 2: D-class (dental/sibilant) — 18 consonants per paper Table p.507
+        'จ' | 'ฉ' | 'ช' | 'ฌ' | 'ซ' | 'ฎ' | 'ฏ' | 'ฐ' | 'ฑ' | 'ฒ'
+        | 'ด' | 'ต' | 'ถ' | 'ท' | 'ธ' | 'ศ' | 'ษ' | 'ส' => '2',
         // Group 3: B-class (labial)
         'ฟ' | 'ฝ' | 'พ' | 'ผ' | 'ภ' | 'บ' | 'ป' => '3',
         // Group 4: NG
@@ -127,18 +127,35 @@ mod tests {
     }
 
     #[test]
+    fn test_metasound_fixed_consonants() {
+        // ฏ ฑ ถ ธ were missing from _C2 in pythainlp — fixed per paper Table p.507
+        // See: https://github.com/PyThaiNLP/pythainlp/issues/1383
+        assert_eq!(metasound("กถ", 2), "ก2");  // ถ → class 2
+        assert_eq!(metasound("กธ", 2), "ก2");  // ธ → class 2
+        assert_eq!(metasound("กฏ", 2), "ก2");  // ฏ → class 2
+        assert_eq!(metasound("กฑ", 2), "ก2");  // ฑ → class 2
+    }
+
+    #[test]
+    fn test_metasound_uncategorized() {
+        // ห อ ฮ correctly map to '0' per paper (no /h/ or glottal class)
+        assert_eq!(metasound("กห", 2), "ก0");
+        assert_eq!(metasound("กอ", 2), "ก0");
+        assert_eq!(metasound("กฮ", 2), "ก0");
+    }
+
+    #[test]
     fn test_metasound_non_empty() {
-        assert!(!metasound("จะ", 4).is_empty());
-        assert!(!metasound("ปา", 4).is_empty());
-        assert!(!metasound("งง", 4).is_empty());
-        assert!(!metasound("ลา", 4).is_empty());
-        assert!(!metasound("มา", 4).is_empty());
-        assert!(!metasound("ยา", 4).is_empty());
-        assert!(!metasound("วา", 4).is_empty());
-        assert!(!metasound("บูชา", 4).is_empty());
-        assert!(!metasound("กมลา", 4).is_empty());
-        assert!(!metasound("กาโวกาโว", 4).is_empty());
-        assert!(!metasound("สุวรรณา", 4).is_empty());
-        assert!(!metasound("ดอยบอย", 4).is_empty());
+        assert_eq!(metasound("จะ", 4), "จ000");
+        assert_eq!(metasound("ปา", 4), "ป000");
+        assert_eq!(metasound("งง", 4), "ง400");
+        assert_eq!(metasound("ลา", 4), "ล000");
+        assert_eq!(metasound("มา", 4), "ม000");
+        assert_eq!(metasound("ยา", 4), "ย000");
+        assert_eq!(metasound("วา", 4), "ว000");
+        assert_eq!(metasound("บูชา", 4), "บ200");
+        assert_eq!(metasound("กมลา", 4), "ก650");
+        assert_eq!(metasound("สุวรรณา", 4), "ส855");
+        assert_eq!(metasound("ดอยบอย", 4), "ด073");
     }
 }
