@@ -44,6 +44,12 @@ conventions. Version numbers follow [Semantic Versioning](https://semver.org/).
   `add_word`/`remove_word` use copy-on-write semantics via `Arc::make_mut`.
 - **`TrieChar` and `FstDict` now implement `Clone`** (required by the
   copy-on-write path).
+- **`TrieChar` memory optimization** — removed the parallel `HashSet<String>`
+  word store. Words are now encoded exclusively in the trie structure,
+  eliminating the per-word duplicate string allocation (~12–20 bytes/word
+  overhead for Thai text). `contain()` does a trie walk (O(k)); `iterate()`
+  does a depth-first traversal; a single `word_count: usize` counter replaces
+  `HashSet::len()`.
 - **Fallible constructors** — `NewmmTokenizer::new()`,
   `NewmmFstTokenizer::new()`, and `NewmmFstTokenizer::from_word_list()` now
   return `anyhow::Result<Self>` instead of panicking on I/O or parse errors.

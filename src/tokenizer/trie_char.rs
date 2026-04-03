@@ -6,14 +6,16 @@
  *
  * The trie nodes branch on `char` values (Rust's native Unicode scalar),
  * so the structure works directly on UTF-8 text without any custom encoding.
- * Words are stored as `String` keys for O(k) membership tests.
+ * Words are encoded implicitly in the trie paths; no separate word list is
+ * kept, which reduces memory use compared with maintaining a parallel
+ * `HashSet<String>`.
  *
  * For basic information on tries, see:
  *   https://en.wikipedia.org/wiki/Trie
  */
 use crate::char_string::CharString;
 use crate::tokenizer::dict_backend::DictBackend;
-use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+use rustc_hash::FxHashMap as HashMap;
 
 #[derive(Debug, Clone)]
 struct TrieNode {
@@ -78,6 +80,34 @@ impl TrieNode {
             }
         }
     }
+
+    /// Return `true` if the exact sequence `chars` is a complete word.
+    fn contains_word(&self, chars: &[char]) -> bool {
+        if chars.is_empty() {
+            return self.end;
+        }
+        match self.find_child(chars[0]) {
+            Some(child) => child.contains_word(&chars[1..]),
+            None => false,
+        }
+    }
+
+    /// Append all complete words reachable from this node to `result`.
+    ///
+    /// `buf` accumulates the character path from the root to the current node.
+    fn collect_words(&self, buf: &mut String, result: &mut Vec<String>) {
+        if self.end {
+            result.push(buf.clone());
+        }
+        // Iterate in sorted order for deterministic output.
+        let mut pairs: Vec<(&char, &TrieNode)> = self.children.iter().collect();
+        pairs.sort_by_key(|(ch, _)| *ch);
+        for (ch, child) in pairs {
+            buf.push(*ch);
+            child.collect_words(buf, result);
+            buf.pop();
+        }
+    }
 }
 
 /// Character-based trie storing a set of words.
@@ -87,16 +117,20 @@ impl TrieNode {
 /// directly with Rust's standard UTF-8 string types without any intermediate
 /// encoding: each `&str` is decoded once on the way in, and lookups compare
 /// decoded `char` values.
+///
+/// Words are stored exclusively in the trie structure; there is no parallel
+/// `HashSet` for membership tests.  This halves the per-word memory overhead
+/// compared with keeping a separate word list.
 #[derive(Debug, Clone)]
 pub struct TrieChar {
-    words: HashSet<String>,
+    word_count: usize,
     root: TrieNode,
 }
 
 impl TrieChar {
     pub fn new(words: &[CharString]) -> Self {
         let mut instance = Self {
-            words: HashSet::default(),
+            word_count: 0,
             root: TrieNode::new(),
         };
         for word in words {
@@ -108,9 +142,12 @@ impl TrieChar {
     pub fn add(&mut self, word: &CharString) {
         let stripped = word.trim();
         if !stripped.is_empty() {
-            let key = stripped.as_str().to_string();
+            let key = stripped.as_str();
             let chars: Vec<char> = key.chars().collect();
-            self.words.insert(key);
+            // Only increment the counter when the word is genuinely new.
+            if !self.root.contains_word(&chars) {
+                self.word_count += 1;
+            }
             self.root.add_word(&chars);
         }
     }
@@ -119,27 +156,39 @@ impl TrieChar {
         let stripped = word.trim();
         if !stripped.is_empty() {
             let key = stripped.as_str();
-            if self.words.contains(key) {
-                let chars: Vec<char> = key.chars().collect();
-                self.words.remove(key);
+            let chars: Vec<char> = key.chars().collect();
+            if self.root.contains_word(&chars) {
                 self.root.remove_word(&chars);
+                self.word_count -= 1;
             }
         }
     }
 
     #[allow(dead_code)]
     pub fn contain(&self, word: &CharString) -> bool {
-        self.words.contains(word.as_str())
+        let stripped = word.trim();
+        if stripped.is_empty() {
+            return false;
+        }
+        let chars: Vec<char> = stripped.as_str().chars().collect();
+        self.root.contains_word(&chars)
     }
 
+    /// Iterate over all words stored in the trie.
+    ///
+    /// The words are yielded in an unspecified (depth-first) order.
+    /// This allocates one `String` per word; use sparingly on the hot path.
     #[allow(dead_code)]
-    pub fn iterate(&self) -> std::collections::hash_set::Iter<'_, String> {
-        self.words.iter()
+    pub fn iterate(&self) -> impl Iterator<Item = String> + '_ {
+        let mut buf = String::new();
+        let mut result = Vec::new();
+        self.root.collect_words(&mut buf, &mut result);
+        result.into_iter()
     }
 
     #[allow(dead_code)]
     pub fn amount_of_words(&self) -> usize {
-        self.words.len()
+        self.word_count
     }
 
     /// Return character lengths of all dictionary entries that are prefixes
