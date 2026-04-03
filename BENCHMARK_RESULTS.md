@@ -55,11 +55,13 @@ let tok: Box<dyn Tokenizer> = Box::new(DeepcutTokenizer::new()?);
 
 | Implementation | Time for 62 018 words |
 |---|---:|
-| `TrieChar::new` | 65.3 ms |
-| `FstDict::from_words` | 62.2 ms |
+| `TrieChar::new` | **33.7 ms** |
+| `FstDict::from_words` | 64.4 ms |
 
-Construction time is similar. FST construction sorts the input and builds a
-minimized automaton; `TrieChar` inserts into a `HashMap`-based trie.
+`TrieChar::new` is now ~1.9× faster than `FstDict::from_words`. The speedup
+compared with the previous version (65.3 ms) comes from removing the parallel
+`HashSet<String>` insert — each word now requires only one trie traversal
+instead of a trie insert plus a hash insert (with heap allocation and hashing).
 
 ---
 
@@ -69,9 +71,9 @@ Finding all dictionary entries that are prefixes of a query string.
 
 | Implementation | short_thai (5 chars) | mixed (7 chars) | medium_thai (14 chars) |
 |---|---:|---:|---:|
-| `TrieChar::prefix_ref` | **62 ns** | **72 ns** | **86 ns** |
-| `FstDict::prefix_lengths` | 3 741 ns | 2 041 ns | 4 393 ns |
-| Ratio | **60× faster** | **28× faster** | **51× faster** |
+| `TrieChar::prefix_ref` | **71 ns** | **79 ns** | **97 ns** |
+| `FstDict::prefix_lengths` | 4 112 ns | 2 233 ns | 5 055 ns |
+| Ratio | **58× faster** | **28× faster** | **52× faster** |
 
 `TrieChar` wins on lookup speed because it navigates a `HashMap` per character
 (O(k) pointer chasing, cache-friendly for short words). `FstDict`
@@ -86,11 +88,11 @@ path; use `FstDict` (`NewmmFstTokenizer`) when memory is constrained.
 
 | Tokenizer | short (28 ch) | medium (219 ch) | long (937 ch) |
 |---|---:|---:|---:|
-| `NewmmTokenizer` (safe=false) | **2.63 µs** | **33.1 µs** | **165 µs** |
-| `NewmmTokenizer` (safe=true) | 2.66 µs | 35.0 µs | 207 µs |
-| `NewmmFstTokenizer` (safe=false) | 29.5 µs | 284 µs | 2 225 µs |
-| `NewmmFstTokenizer` (safe=true) | 29.1 µs | 250 µs | 1 553 µs |
-| Speed ratio (Trie vs Fst, safe=false) | **11× faster** | **9× faster** | **13× faster** |
+| `NewmmTokenizer` (safe=false) | **2.73 µs** | **25.6 µs** | **117 µs** |
+| `NewmmTokenizer` (safe=true) | 2.74 µs | 28.6 µs | 166 µs |
+| `NewmmFstTokenizer` (safe=false) | 28.9 µs | 277 µs | 2 337 µs |
+| `NewmmFstTokenizer` (safe=true) | 29.1 µs | 245 µs | 1 530 µs |
+| Speed ratio (Trie vs Fst, safe=false) | **11× faster** | **11× faster** | **20× faster** |
 
 `DeepcutTokenizer` results require the `deepcut` Cargo feature (`--features deepcut`).
 CNN/ONNX inference is significantly slower than dictionary-based methods and
@@ -99,9 +101,9 @@ scales with input length at a different rate.
 **Conclusions:**
 
 - `NewmmTokenizer` is the fastest dictionary-based tokenizer. The `TrieChar`
-  prefix-lookup loop is ~10–60× faster per query than `FstDict`.
+  prefix-lookup loop is ~28–58× faster per query than `FstDict`.
 - `NewmmFstTokenizer` is the memory-efficient alternative: 49× smaller
-  dictionary with 9–13× lower throughput.
+  dictionary with 11–20× lower throughput.
 - The `Tokenizer` trait makes switching between all three tokenizers trivial.
 
 ---
@@ -137,12 +139,50 @@ The bundled deepcut ONNX model (`model/deepcut.onnx`) is approximately
 
 ---
 
+## 5. TrieChar: before and after removing the duplicate word store
+
+The `TrieChar` implementation previously kept a parallel `HashSet<String>` copy
+of every word alongside the trie nodes. This was removed so that words are
+stored exclusively in the trie structure. A single `word_count: usize` counter
+replaces `HashSet::len()`.
+
+### Memory savings (62 018 words)
+
+| Component | Before | After | Saved |
+|---|---:|---:|---:|
+| `HashSet<String>` entries | ~5.7 MB | 0 bytes | **~5.7 MB** |
+| Trie nodes | ~43 MB | ~43 MB | — |
+| **Total `TrieChar`** | **~49 MB** | **~43 MB** | **~5.7 MB (≈12%)** |
+
+Each removed entry was approximately 92 bytes: 24 bytes (`String` header on the
+stack) + ~12 bytes (average UTF-8 heap content for a 4-char Thai word) +
+~56 bytes (`FxHashSet` bucket overhead).
+
+### Construction speed
+
+| | Before | After | Change |
+|---|---:|---:|---:|
+| `TrieChar::new` (62 018 words) | 65.3 ms | **33.7 ms** | **−1.9× faster** |
+
+Removing the `HashSet` insert cuts the per-word work roughly in half: each word
+now requires only one trie traversal (O(k)) instead of a trie insert plus
+a heap allocation, UTF-8 copy, and hash insert.
+
+### Lookup-path impact
+
+`contain()` and the existence check in `add()`/`remove()` now walk the trie
+(O(k)) instead of doing an O(1) hash lookup. In practice this is not on the
+hot tokenization path — `prefix_ref` is — so end-to-end throughput is
+unchanged.
+
+---
+
 ## Summary
 
 | Tokenizer | Speed (short/long) | Dict memory | Use when |
 |-----------|-------------------|-------------|----------|
-| `NewmmTokenizer` | **2.6 µs / 165 µs** | ~43 MB | Maximum throughput |
-| `NewmmFstTokenizer` | 29.5 µs / 2 225 µs | **~0.85 MB** | Memory-constrained |
+| `NewmmTokenizer` | **2.7 µs / 117 µs** | ~43 MB | Maximum throughput |
+| `NewmmFstTokenizer` | 28.9 µs / 2 337 µs | **~0.85 MB** | Memory-constrained |
 | `DeepcutTokenizer` | slower (ONNX) | ~3.9 MB model | No dictionary available |
 
 All three implement `Tokenizer` and are interchangeable. Use `Box<dyn Tokenizer>`
