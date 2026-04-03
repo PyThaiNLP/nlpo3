@@ -174,12 +174,12 @@ impl TrieChar {
         self.root.contains_word(&chars)
     }
 
-    /// Iterate over all words stored in the trie.
+    /// Iterate over all words stored in the trie in lexicographic order.
     ///
-    /// The words are yielded in an unspecified (depth-first) order.
-    /// This allocates one `String` per word; use sparingly on the hot path.
+    /// This eagerly collects all words into a `Vec` before returning the
+    /// iterator; use sparingly on the hot path.
     #[allow(dead_code)]
-    pub fn iterate(&self) -> impl Iterator<Item = String> + '_ {
+    pub fn iterate(&self) -> impl Iterator<Item = String> {
         let mut buf = String::new();
         let mut result = Vec::new();
         self.root.collect_words(&mut buf, &mut result);
