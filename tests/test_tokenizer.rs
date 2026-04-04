@@ -5,6 +5,7 @@
  * Test the NewmmTokenizer with the default dictionary.
  */
 use nlpo3::tokenizer::newmm::NewmmTokenizer;
+use nlpo3::tokenizer::trie_char::TrieChar;
 
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
@@ -22,7 +23,7 @@ fn test_dict_with_empty_line() {
 #[test]
 fn test_from_word_list() {
     let words = vec!["ปาลิเมนต์".to_string(), "คอนสติติวชั่น".to_string()];
-    let _tokenizer = NewmmTokenizer::from_word_list(words);
+    let _tokenizer = NewmmTokenizer::<TrieChar>::from_word_list(words);
 }
 
 #[test]
@@ -372,7 +373,7 @@ fn test_newmm_ambiguous_performance() {
         }
     }
 
-    let tokenizer = NewmmTokenizer::from_word_list(words);
+    let tokenizer = NewmmTokenizer::<TrieChar>::from_word_list(words);
 
     // 50 repetitions of a five-consonant sequence = 250 characters.
     // Without the fix this input causes exponential BFS expansion.
