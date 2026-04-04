@@ -10,115 +10,75 @@ SPDX-License-Identifier: Apache-2.0
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
-Python binding for nlpO3,
-a Thai natural language processing library written in Rust.
+Python binding for nlpO3 Thai word tokenization.
 
-To install:
+## Overview
+
+- Class-based tokenizer API.
+- Three tokenizer classes:
+  - `NewmmTokenizer`
+  - `NewmmFstTokenizer`
+  - `DeepcutTokenizer`
+- Improved behavior on ambiguous and long input.
+- Improved parallel processing controls for large input.
+
+For implementation details and design choices, see
+[../docs/implementation.md](../docs/implementation.md).
+
+## Install
 
 ```bash
 pip install nlpo3
 ```
 
-## Table of Contents
+## Requirements
 
-- [Features](#features)
-- [Use](#use)
-  - [Dictionary](#dictionary)
-- [Build](#build)
-- [Issues](#issues)
-- [License](#license)
-- [Binary wheels](#binary-wheels)
+- Python 3.9 or newer
+- Rust Edition 2024 (required when building from source)
 
-## Features
+## Quick start
 
-Three interchangeable Thai word tokenizers:
+```python
+from nlpo3 import NewmmTokenizer, NewmmFstTokenizer, DeepcutTokenizer
 
-- `NewmmTokenizer` — dictionary-based maximal-matching (TrieChar backend,
-  fastest, ~43 MB for 62k words). [2.5× faster][benchmark] than PyThaiNLP's newmm.
-- `NewmmFstTokenizer` — same algorithm with FST backend (~49× less memory)
-- `DeepcutTokenizer` — neural CNN model (no dictionary needed).
-  Based on [deepcut][deepcut] via [LEKCut][lekcut].
+tok = NewmmTokenizer("/path/to/dict.txt")
+print(tok.segment("สวัสดีครับ"))
 
-All three implement the same `segment()` interface and are interchangeable.
-Each instance is **read-only after construction** and safe to reuse across
-many concurrent calls or Python threads.
+tok_fst = NewmmFstTokenizer("/path/to/dict.txt")
+print(tok_fst.segment("สวัสดีครับ"))
+
+tok_deepcut = DeepcutTokenizer()
+print(tok_deepcut.segment("สวัสดีครับ"))
+```
+
+## Error handling
+
+- `segment(...)` raises `RuntimeError` if tokenization or inference fails.
+- Constructor methods (for example, loading dictionaries or models) also raise
+  `RuntimeError` on failure.
+
+Handle these with standard Python `try/except` blocks.
+
+## Segment options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `safe` | `bool` | `False` | For `NewmmTokenizer` and `NewmmFstTokenizer`: avoid long run times on inputs with many ambiguous word boundaries |
+| `parallel_chunk_size` | `Optional[int]` | `None` | Enable chunked parallel processing for larger text; `None`, `0`, or too-small values disable parallel mode |
+
+`DeepcutTokenizer` supports `parallel_chunk_size` but not `safe`.
+
+> **Note on parallel mode accuracy:** when `parallel_chunk_size` is set, text
+> is split into chunks before tokenization. Token sequences near chunk
+> boundaries may differ from full-text results. This is acceptable for tasks
+> such as text classification and word embedding, but may not be suitable for
+> tasks that require precise linguistic unit identification.
 
 [benchmark]: ./notebooks/nlpo3_segment_benchmarks.ipynb
 [deepcut]: https://github.com/rkcosmos/deepcut
 [lekcut]: https://github.com/PyThaiNLP/LEKCut
 
-## Use
-
-### Dictionary-based tokenizer (newmm, TrieChar backend)
-
-```python
-from nlpo3 import NewmmTokenizer
-
-# Create once — the dictionary is loaded only once.
-# Reuse the same instance for every call; no dictionary copying occurs.
-tok = NewmmTokenizer("path/to/dict.txt")
-
-# Basic tokenization
-tok.segment("สวัสดีครับ")
-# => ["สวัสดี", "ครับ"]
-
-# Safe mode — avoids long run times on ambiguous input
-tok.segment("สวัสดีครับ", safe=True)
-
-# Parallel mode — uses Rayon to tokenize one document in parallel chunks.
-# Best for a single large document. For many short texts, use caller-side
-# threading instead (the tokenizer is thread-safe; see section below).
-tok.segment("สวัสดีครับ", parallel=True)
-```
-
-### Dictionary-based tokenizer (nf, FST backend)
-
-Same API as `NewmmTokenizer`, but uses ~49× less memory:
-
-```python
-from nlpo3 import NewmmFstTokenizer
-
-tok = NewmmFstTokenizer("path/to/dict.txt")
-tok.segment("สวัสดีครับ")
-```
-
-### Neural tokenizer (deepcut)
-
-```python
-from nlpo3 import DeepcutTokenizer
-
-# No dictionary needed. The model is compiled once and cached in the instance.
-tok = DeepcutTokenizer()
-tok.segment("สวัสดีครับ")
-# => ["สวัสดี", "ครับ"]
-
-# Custom ONNX model
-tok = DeepcutTokenizer(model_path="/path/to/custom.onnx")
-tok.segment("สวัสดีครับ")
-```
-
-### Parallel and distributed environments
-
-Each tokenizer instance is **read-only after construction** and safe to
-call from multiple Python threads concurrently — no locking is needed:
-
-```python
-import concurrent.futures
-from nlpo3 import NewmmTokenizer
-
-# Create once, share across all workers.
-tok = NewmmTokenizer("path/to/dict.txt")
-
-texts = ["สวัสดีครับ", "การตัดคำ", "ภาษาไทย"]
-
-with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-    results = list(pool.map(tok.segment, texts))
-```
-
-For multiprocessing (separate processes), each process creates its own
-instance. Loading a 62k-word dictionary typically takes less than 200 ms.
-
-### Dictionary
+## Dictionary
 
 To keep the library small, nlpO3 does not include a dictionary.
 For dictionary-based tokenizers you must provide one.
@@ -135,41 +95,9 @@ Recommended dictionaries:
 [dict-pythainlp]: https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt
 [dict-libthai]: https://github.com/tlwg/libthai/tree/master/data
 
-## Build
+## Support
 
-### Requirements
-
-- [Rust 2024 Edition](https://www.rust-lang.org/tools/install)
-- Python 3.9 or newer
-- Python Development Headers
-  - Ubuntu: `sudo apt-get install python3-dev`
-  - macOS: No action needed
-- [PyO3](https://github.com/PyO3/pyo3) — already included in `Cargo.toml`
-- [setuptools-rust](https://github.com/PyO3/setuptools-rust)
-
-### Steps
-
-```bash
-python -m pip install --upgrade build
-python -m build
-```
-
-This generates a wheel file in `dist/`, installable with pip:
-
-```bash
-pip install dist/nlpo3-2.0.0-cp311-cp311-macosx_12_0_x86_64.whl
-```
-
-### Test
-
-```bash
-cd tests
-python -m unittest
-```
-
-## Issues
-
-Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
+- Issues: <https://github.com/PyThaiNLP/nlpo3/issues>
 
 ## License
 
@@ -179,9 +107,7 @@ See file [LICENSE](./LICENSE) for details.
 
 ## Binary wheels
 
-Pre-built binary packages for CPython, GraalPy, and PyPy are available
-on [PyPI][pypi] for the platforms listed below.
-Versions with a "t" suffix indicate CPython with free threading.
+Pre-built binary packages are available on [PyPI][pypi].
 
 [pypi]: https://pypi.org/project/nlpo3/
 

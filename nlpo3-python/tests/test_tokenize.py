@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import unittest
-from typing import List
 
 from nlpo3 import DeepcutTokenizer, NewmmFstTokenizer, NewmmTokenizer
 
@@ -29,9 +28,7 @@ class TestNewmmTokenizer(unittest.TestCase):
         )
 
         self.DANGER_TEXT_1 = (
-            "ชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิ"
-            "ชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิ"
-            "ชิชิชิชิชิชิชิชิชิ"
+            "ชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิชิ"
         )
 
         self.DANGER_TEXT_2 = (
@@ -92,7 +89,7 @@ class TestNewmmTokenizer(unittest.TestCase):
         self.assertIsInstance(result, list)
 
     def test_parallel_mode(self):
-        result = self.tok.segment(self.LONG_TEXT, parallel=True)
+        result = self.tok.segment(self.LONG_TEXT, parallel_chunk_size=16_384)
         self.assertIsInstance(result, list)
         self.assertTrue(len(result) > 0)
 

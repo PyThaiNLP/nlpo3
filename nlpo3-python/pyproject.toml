@@ -92,7 +92,13 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ["nlpo3"]
-exclude = ["notebooks", "tests"]
+exclude = ["notebooks", "tests", "nlpo3.__pycache__"]
+
+[tool.setuptools.package-data]
+nlpo3 = ["py.typed", "*.pyi"]
+
+[tool.setuptools.exclude-package-data]
+nlpo3 = ["__pycache__/*", "*.pyc", "*.pyo"]
 
 [[tool.setuptools-rust.ext-modules]]
 target = "nlpo3._nlpo3_python_backend"

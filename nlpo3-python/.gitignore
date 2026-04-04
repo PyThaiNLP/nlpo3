@@ -1,0 +1,41 @@
+# Rust build output
+/target/
+
+# Python caches and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+MANIFEST
+
+# Local package metadata
+nlpo3.egg-info/
+
+# Compiled extension modules
+*.so
+*.pyd
+
+# Virtual environments and tool caches
+.venv/
+venv/
+.python-version
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.tox/
+.nox/
+
+# Local editor and OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log

@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 # Benchmark results: three Thai tokenizers compared
 
+Updated on: 2026-04-03 00:00
+
 This document records the results of running `cargo bench` (and
 `cargo bench --features deepcut` for `DeepcutTokenizer`).
 
@@ -24,8 +26,7 @@ All three implement the same [`Tokenizer`] trait:
 
 ```rust
 pub trait Tokenizer {
-    fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>>;
-    fn segment_to_string(&self, text: &str, safe: bool, parallel: bool) -> Vec<String>;
+  fn segment(&self, text: &str) -> AnyResult<Vec<String>>;
 }
 ```
 

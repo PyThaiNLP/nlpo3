@@ -7,137 +7,98 @@ SPDX-License-Identifier: Apache-2.0
 
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/licenses/Apache-2.0)
 
-Node.js binding for nlpO3, a Thai natural language processing library in Rust.
+Rust-powered Thai tokenization library for Node.js.
 
-## Features
+## Overview
 
-- Three interchangeable Thai word tokenizers:
-  - `NewmmTokenizer` — dictionary-based maximal-matching (TrieChar backend,
-    fastest, ~43 MB for 62k words)
-  - `NewmmFstTokenizer` — same algorithm with FST backend (~49× less memory)
-  - `DeepcutTokenizer` — neural CNN model (no dictionary needed)
-- All tokenizers honor [Thai Character Cluster][tcc] boundaries
-- Each instance is read-only after construction and safe to reuse across
-  many concurrent async calls on the Node.js event loop
+- Node.js-native ESM package backed by a Rust `.node` addon.
+- Three tokenizer classes:
+  - `NewmmTokenizer` — Dictionary-based maximal-matching tokenizer.
+  - `NewmmFstTokenizer` — FST-accelerated dictionary tokenizer.
+  - `DeepcutTokenizer` — Neural network-based tokenizer.
+- Framework-independent and suitable for plain Node.js applications.
+- Built and type-checked with TypeScript `module: "NodeNext"` for Node-native ESM behavior.
 
-[tcc]: https://dl.acm.org/doi/10.1145/355214.355225
+## Runtime support
 
-## Build
+- Supported Node.js versions: 22.x, 23.x, 24.x, 25.x
 
-### Requirements
-
-- [Rust 2024 Edition](https://www.rust-lang.org/tools/install)
-- Node.js 24 (LTS) or newer
-- TypeScript 6
-
-### Steps
-
-```bash
-# In this directory
-npm run release
-```
-
-After build, `nlpo3/` contains:
-
-```text
-nlpo3/
-  index.js          ← compiled TypeScript (main entry point)
-  index.d.ts        ← TypeScript declarations
-  index.ts          ← TypeScript source
-  rust_mod.d.ts     ← Rust native module declarations
-  rust_mod.node     ← compiled Rust native addon
-```
+For implementation details and design choices, see
+[../docs/implementation.md](../docs/implementation.md).
 
 ## Install
 
+Install the package via [npm](https://www.npmjs.com/package/nlpo3):
+
 ```shell
-npm i nlpo3-nodejs
+npm i nlpo3
 ```
 
-## Usage
+## Quick start
 
-### JavaScript
+### JavaScript (ESM)
 
 ```javascript
-const { NewmmTokenizer, NewmmFstTokenizer, DeepcutTokenizer } = require("nlpo3-nodejs");
+import { NewmmTokenizer, NewmmFstTokenizer, DeepcutTokenizer } from "nlpo3";
 
-// Dictionary-based tokenizer (TrieChar backend — fastest)
-// Create once, reuse for every call — the dictionary is loaded only once.
 const tok = new NewmmTokenizer("/path/to/dict.txt");
-tok.segment("สวัสดีครับ");
-// => ["สวัสดี", "ครับ"]
+const tokens = tok.segment("สวัสดีครับ");
 
-// Same options as newmm, but FST backend uses ~49x less memory
-const fstTok = new NewmmFstTokenizer("/path/to/dict.txt");
-fstTok.segment("สวัสดีครับ");
+const tokFst = new NewmmFstTokenizer("/path/to/dict.txt");
+const tokensFst = tokFst.segment("สวัสดีครับ");
 
-// Neural CNN tokenizer — no dictionary needed
-const dc = new DeepcutTokenizer();
-dc.segment("สวัสดีครับ");
+const deepcut = new DeepcutTokenizer();
+const tokensDeepcut = deepcut.segment("สวัสดีครับ");
 ```
 
 ### TypeScript
 
 ```typescript
-import { NewmmTokenizer, NewmmFstTokenizer, DeepcutTokenizer, SegmentOptions } from "nlpo3-nodejs";
+import { NewmmTokenizer, NewmmFstTokenizer, DeepcutTokenizer } from "nlpo3";
+import type { SegmentOptions } from "nlpo3";
 
-// Create once, reuse the same instance across all calls.
-// The dictionary is loaded only once; all segment() calls share it.
 const tok = new NewmmTokenizer("/path/to/dict.txt");
-
 const tokens: string[] = tok.segment("สวัสดีครับ");
 
-// Optional flags
-const opts: SegmentOptions = { safe: true, parallel: false };
-tok.segment("สวัสดีครับ", opts);
-
-// FST backend — less memory, same API
-const fstTok = new NewmmFstTokenizer("/path/to/dict.txt");
-fstTok.segment("สวัสดีครับ");
-
-// Neural tokenizer
-const dc = new DeepcutTokenizer();
-dc.segment("สวัสดีครับ");
+const options: SegmentOptions = { safe: false, parallelChunkSize: 16384 };
+const tokensParallel: string[] = tok.segment("สวัสดีครับ", options);
 ```
 
-### Parallel / distributed environments
+### Development note for local imports
 
-Each tokenizer instance is **read-only after construction** and safe to call
-from many concurrent async operations on the same Node.js event loop:
+When working on the binding itself under `module: "NodeNext"`, use explicit
+`.js` extensions in relative TypeScript imports so the emitted code matches
+Node.js ESM resolution:
 
 ```typescript
-import express from "express";
-import { NewmmTokenizer } from "nlpo3-nodejs";
-
-// One tokenizer serves all requests — the dictionary is never reloaded.
-const tok = new NewmmTokenizer("/path/to/dict.txt");
-const app = express();
-
-app.get("/segment", (req, res) => {
-  const text = String(req.query.text ?? "");
-  res.json({ tokens: tok.segment(text) });
-});
-
-app.listen(3000, () => {
-  console.log("Listening on http://localhost:3000");
-});
+import type { TokenizerHandle } from "./rust_mod.js";
 ```
 
-For Node.js worker threads, each worker creates its own instance.
-Loading a 62k-word dictionary typically takes less than 200 ms.
+## Error handling
 
-### Segment options
+- `segment(...)` throws `Error` if tokenization or inference fails.
+- Constructor calls can also throw `Error` when dictionary/model loading fails.
+
+Handle these with standard JavaScript/TypeScript `try/catch` blocks.
+
+## Segment options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `safe` | `boolean` | `false` | Avoid long run times on inputs with many ambiguous word boundaries |
-| `parallel` | `boolean` | `false` | Use Rayon to tokenize one document in parallel chunks (higher memory use). Best for a single large document; for many short texts, use caller-side worker threads instead. |
+| `safe` | `boolean` | `false` | For `NewmmTokenizer` and `NewmmFstTokenizer`: avoid long run times on inputs with many ambiguous word boundaries |
+| `parallelChunkSize` | `number \| undefined` | `undefined` | For `NewmmTokenizer` and `NewmmFstTokenizer`: target chunk size in bytes for chunked parallel processing; `undefined`, `0`, or low values disable parallel mode |
 
-`DeepcutTokenizer.segment()` does not accept options; the neural model has a fixed inference path.
+`DeepcutTokenizer.segment(text, parallelChunkSize?)` supports optional chunk-size configuration.
 
-### Dictionary
+> **Note on parallel mode accuracy:** when `parallelChunkSize` is set, text is
+> split into chunks before tokenization. Token sequences near chunk boundaries
+> may differ from full-text results. This is acceptable for tasks such as text
+> classification and word embedding, but may not be suitable for tasks that
+> require precise linguistic unit identification.
 
-To keep the library small, nlpO3 does not include a dictionary.
+## Dictionary
+
+To keep the package small, nlpO3 does not include a dictionary.
 For dictionary-based tokenizers you must provide one.
 
 Recommended dictionaries:
@@ -149,6 +110,10 @@ Recommended dictionaries:
 [libthai]: https://github.com/tlwg/libthai/
 [dict-pythainlp]: https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt
 [dict-libthai]: https://github.com/tlwg/libthai/tree/master/data
+
+## Support
+
+- Issues: <https://github.com/PyThaiNLP/nlpo3/issues>
 
 ## License
 

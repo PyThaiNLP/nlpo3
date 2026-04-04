@@ -1,0 +1,72 @@
+name: Test nlpo3-nodejs
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "model/**"
+      - "nlpo3-nodejs/src/**"
+      - "nlpo3-nodejs/nlpo3/**"
+      - "nlpo3-nodejs/tests/**"
+      - "nlpo3-nodejs/Cargo.toml"
+      - "nlpo3-nodejs/package.json"
+      - "nlpo3-nodejs/package-lock.json"
+      - "nlpo3-nodejs/tsconfig.json"
+      - ".github/workflows/test-nlpo3-nodejs.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "model/**"
+      - "nlpo3-nodejs/src/**"
+      - "nlpo3-nodejs/nlpo3/**"
+      - "nlpo3-nodejs/tests/**"
+      - "nlpo3-nodejs/Cargo.toml"
+      - "nlpo3-nodejs/package.json"
+      - "nlpo3-nodejs/package-lock.json"
+      - "nlpo3-nodejs/tsconfig.json"
+      - ".github/workflows/test-nlpo3-nodejs.yml"
+
+defaults:
+  run:
+    working-directory: nlpo3-nodejs
+
+jobs:
+  test-nodejs:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node-version: ["22.x", "24.x", "25.x"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: nlpo3-nodejs/package-lock.json
+
+      - name: Install Node.js dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Test publish
+        run: npm pack --dry-run
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '22.x'
+
+      - name: Test
+        run: npm test

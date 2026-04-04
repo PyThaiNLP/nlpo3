@@ -1,33 +1,35 @@
 // SPDX-FileCopyrightText: 2024-2026 PyThaiNLP Project
 // SPDX-License-Identifier: Apache-2.0
 
-/**
- * Memory-efficient dictionary backed by a Finite State Transducer (FST).
- *
- * The `FstDict` stores the base word set as an `fst::Set`, which
- * minimizes the deterministic automaton and typically uses only a few bytes
- * per entry (compared with tens of bytes per trie node in the `TrieChar`
- * implementation).
- *
- * Because `fst::Set` is immutable, dynamic add/remove operations are
- * handled with two small delta `HashSet`s:
- *   - `additions`: words added after construction.
- *   - `removals`: words in the base set that have been removed.
- *
- * The lookup API mirrors `TrieChar::prefix_ref`, returning the character
- * lengths of all dictionary entries that form a prefix of the query text.
- *
- * # Construction
- *
- * ```rust,ignore
- * use nlpo3::tokenizer::fst_dict::FstDict;
- *
- * let dict = FstDict::from_words(["กา", "กาแฟ", "แฟ"].iter().copied())?;
- * let lengths = dict.prefix_lengths("กาแฟดี");
- * assert!(lengths.contains(&2)); // "กา" (2 chars)
- * assert!(lengths.contains(&3)); // "กาแฟ" (4 bytes, 3 chars? let's recount)
- * ```
- */
+//! Memory-efficient dictionary backed by a Finite State Transducer (FST).
+//!
+//! The `FstDict` stores the base word set as an `fst::Set`, which
+//! minimizes the deterministic automaton and typically uses only a few bytes
+//! per entry (compared with tens of bytes per trie node in the `TrieChar`
+//! implementation).
+//!
+//! Because `fst::Set` is immutable, dynamic add/remove operations are
+//! handled with two small delta `HashSet`s:
+//!   - `additions`: words added after construction.
+//!   - `removals`: words in the base set that have been removed.
+//!
+//! The lookup API mirrors `TrieChar::prefix_ref`, returning the character
+//! lengths of all dictionary entries that form a prefix of the query text.
+//!
+//! # Construction
+//!
+//! ```
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! use nlpo3::tokenizer::fst_dict::FstDict;
+//!
+//! let dict = FstDict::from_words(["กา", "กาแฟ", "แฟ"].iter().copied())?;
+//! let lengths = dict.prefix_lengths("กาแฟดี");
+//! assert!(lengths.contains(&2)); // "กา" (2 chars)
+//! assert!(lengths.contains(&4)); // "กาแฟ" (4 chars)
+//! # Ok(())
+//! # }
+//! ```
+
 use fst::{Automaton, IntoStreamer, Set, Streamer};
 use rustc_hash::FxHashSet as HashSet;
 use std::{error::Error, fmt};

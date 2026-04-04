@@ -5,14 +5,20 @@ use std::io;
 use std::io::BufRead;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 
 #[cfg(feature = "deepcut")]
 use nlpo3::tokenizer::deepcut::DeepcutTokenizer;
 use nlpo3::tokenizer::newmm::{NewmmFstTokenizer, NewmmTokenizer};
 
-const DEFAULT_DICT: &str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../words_th.txt"));
+enum TokenizerWrapper {
+    Newmm(NewmmTokenizer),
+    Nf(NewmmFstTokenizer),
+    #[cfg(feature = "deepcut")]
+    Deepcut(DeepcutTokenizer),
+}
+
+const DEFAULT_DICT: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/words_th.txt"));
+const DEFAULT_PARALLEL_CHUNK_SIZE_STR: &str = "65536";
 
 #[derive(Parser, Debug)]
 #[command(name = "nlpo3", about = "Thai natural language processing CLI")]
@@ -61,9 +67,23 @@ struct SegmentOpts {
     #[arg(short = 'z', long)]
     safe: bool,
 
-    /// Enable multithread mode (uses more memory).
-    #[arg(short = 'p', long)]
-    parallel: bool,
+    /// Enable parallel chunk processing.
+    ///
+    /// Optionally pass chunk size in bytes. If the flag is provided without
+    /// a value, the default chunk size is used.
+    ///
+    /// When parallel mode is active, text is split into chunks before
+    /// tokenization. Token sequences near chunk boundaries may differ from
+    /// full-text results. This is acceptable for bulk processing tasks such as
+    /// classification and embedding, but may not be suitable for tasks that
+    /// require precise token boundaries.
+    #[arg(
+        short = 'p',
+        long = "parallel",
+        num_args = 0..=1,
+        default_missing_value = DEFAULT_PARALLEL_CHUNK_SIZE_STR
+    )]
+    parallel_chunk_size: Option<usize>,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -71,17 +91,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let SubCommand::Segment(segment_opts) = opt.subcommand;
 
-    let tokenizer: Box<dyn Tokenizer> = match segment_opts.tokenizer {
+    let tokenizer = match segment_opts.tokenizer {
         TokenizerKind::Newmm => {
             let dict_path = match segment_opts.dict_path.as_str() {
                 "default" => None,
                 dict_name => Some(dict_name),
             };
             match dict_path {
-                None => Box::new(NewmmTokenizer::from_word_list(
+                None => TokenizerWrapper::Newmm(NewmmTokenizer::from_word_list(
                     DEFAULT_DICT.lines().map(|s| s.to_owned()).collect(),
                 )),
-                Some(path) => Box::new(NewmmTokenizer::new(path)?),
+                Some(path) => TokenizerWrapper::Newmm(NewmmTokenizer::new(path)?),
             }
         }
         TokenizerKind::Nf => {
@@ -90,24 +110,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 dict_name => Some(dict_name),
             };
             match dict_path {
-                None => Box::new(NewmmFstTokenizer::from_word_list(
+                None => TokenizerWrapper::Nf(NewmmFstTokenizer::from_word_list(
                     DEFAULT_DICT.lines().map(|s| s.to_owned()).collect(),
                 )?),
-                Some(path) => Box::new(NewmmFstTokenizer::new(path)?),
+                Some(path) => TokenizerWrapper::Nf(NewmmFstTokenizer::new(path)?),
             }
         }
         #[cfg(feature = "deepcut")]
-        TokenizerKind::Deepcut => Box::new(DeepcutTokenizer::new()?),
+        TokenizerKind::Deepcut => TokenizerWrapper::Deepcut(DeepcutTokenizer::new()?),
     };
 
     for line_opt in io::stdin().lock().lines() {
         let line = line_opt?;
-        let cleaned_line = line.trim_end_matches('\n');
-        let toks = tokenizer.segment_to_string(
-            cleaned_line,
-            segment_opts.safe,
-            segment_opts.parallel,
-        );
+        let toks = match &tokenizer {
+            TokenizerWrapper::Newmm(tok) => tok.segment_with_options(
+                &line,
+                segment_opts.safe,
+                segment_opts.parallel_chunk_size,
+            )?,
+            TokenizerWrapper::Nf(tok) => tok.segment_with_options(
+                &line,
+                segment_opts.safe,
+                segment_opts.parallel_chunk_size,
+            )?,
+            #[cfg(feature = "deepcut")]
+            TokenizerWrapper::Deepcut(tok) => {
+                tok.segment_with_options(&line, segment_opts.parallel_chunk_size)?
+            }
+        };
         println!("{}", toks.join(segment_opts.word_delimiter.as_str()));
     }
     Ok(())

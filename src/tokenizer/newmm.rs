@@ -19,6 +19,8 @@ use std::{collections::VecDeque, error::Error, fmt::Display, path::PathBuf, sync
 use super::{
     dict_backend::DictBackend,
     dict_reader::{DictSource, create_dict_fst, create_dict_trie},
+    parallel_helper,
+    parallel_options::ParallelOptions,
     tcc::tcc_tokenizer,
     tokenizer_trait::Tokenizer,
     trie_char::TrieChar,
@@ -54,8 +56,10 @@ const NON_THAI_READABLE_PATTERN: &[&str; 5] = &[
 ];
 
 lazy_static! {
-    static ref NON_THAI_PATTERN: Regex = Regex::new(&NON_THAI_READABLE_PATTERN.join("|")).unwrap();
-    static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(r"^[ก-ฮ]{0,2}$").unwrap();
+    static ref NON_THAI_PATTERN: Regex = Regex::new(&NON_THAI_READABLE_PATTERN.join("|"))
+        .expect("newmm: NON_THAI_PATTERN must be a valid static regex");
+    static ref THAI_TWOCHARS_PATTERN: Regex = Regex::new(r"^[ก-ฮ]{0,2}$")
+        .expect("newmm: THAI_TWOCHARS_PATTERN must be a valid static regex");
 }
 
 #[derive(Clone, Debug)]
@@ -108,15 +112,15 @@ impl Error for BFSSearchError {}
 /// All dictionary-based tokenizers implement the shared [`Tokenizer`] trait,
 /// so switching between them requires only a single line change:
 ///
-/// ```ignore
+/// ```no_run
 /// use nlpo3::tokenizer::newmm::{NewmmTokenizer, NewmmFstTokenizer};
 /// use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 ///
 /// // Maximum speed (CharString + TrieChar):
-/// let tok: Box<dyn Tokenizer> = Box::new(NewmmTokenizer::new("words_th.txt").unwrap());
+/// let _tok: Box<dyn Tokenizer> = Box::new(NewmmTokenizer::new("words_th.txt").unwrap());
 ///
 /// // Compact memory (CharString + FstDict):
-/// let tok: Box<dyn Tokenizer> = Box::new(NewmmFstTokenizer::new("words_th.txt").unwrap());
+/// let _tok: Box<dyn Tokenizer> = Box::new(NewmmFstTokenizer::new("words_th.txt").unwrap());
 /// ```
 #[derive(Debug)]
 pub struct NewmmTokenizer<D: DictBackend = TrieChar> {
@@ -182,8 +186,10 @@ impl NewmmTokenizer<TrieChar> {
     ///
     /// Construction from a word list is infallible.
     pub fn from_word_list(word_list: Vec<String>) -> Self {
+        let char_word_list: Vec<CharString> =
+            word_list.into_iter().map(|w| CharString::new(&w)).collect();
         NewmmTokenizer {
-            dict: Arc::new(create_dict_trie(DictSource::WordList(word_list)).unwrap()),
+            dict: Arc::new(TrieChar::new(&char_word_list)),
         }
     }
 }
@@ -229,15 +235,41 @@ impl NewmmFstTokenizer {
     pub fn remove_word(&mut self, word_list: &[&str]) {
         self.inner.remove_word(word_list);
     }
+
+    /// Segment text with default options (safe=false, parallel disabled).
+    pub fn segment(&self, text: &str) -> AnyResult<Vec<String>> {
+        self.segment_with_options(text, false, None)
+    }
+
+    /// Segment text with automatically tuned parallel chunking.
+    pub fn segment_parallel(&self, text: &str, safe: bool) -> AnyResult<Vec<String>> {
+        let options = ParallelOptions::auto_for_text(text.len());
+        self.segment_with_options(
+            text,
+            safe,
+            if options.enabled {
+                Some(options.chunk_size)
+            } else {
+                None
+            },
+        )
+    }
+
+    /// Segment text with explicit options.
+    pub fn segment_with_options(
+        &self,
+        text: &str,
+        safe: bool,
+        parallel_chunk_size: Option<usize>,
+    ) -> AnyResult<Vec<String>> {
+        self.inner
+            .segment_with_options(text, safe, parallel_chunk_size)
+    }
 }
 
 impl Tokenizer for NewmmFstTokenizer {
-    fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>> {
-        self.inner.segment(text, safe, parallel)
-    }
-
-    fn segment_to_string(&self, text: &str, safe: bool, parallel: bool) -> Vec<String> {
-        self.inner.segment_to_string(text, safe, parallel)
+    fn segment(&self, text: &str) -> AnyResult<Vec<String>> {
+        self.segment_with_options(text, false, None)
     }
 }
 
@@ -319,6 +351,7 @@ impl<D: DictBackend> NewmmTokenizer<D> {
 
         // All positions are character indices (not byte offsets).
         let valid_position = tcc_tokenizer::tcc_pos(text.as_str());
+        let is_valid_position = |pos: usize| valid_position.binary_search(&pos).is_ok();
         let text_length = input_char_len;
         let mut position_list: BinaryHeap<CharacterIndex, MinComparator> = BinaryHeap::new_min();
         let mut existing_candidate: HashSet<CharacterIndex> = HashSet::default();
@@ -335,7 +368,7 @@ impl<D: DictBackend> NewmmTokenizer<D> {
             let prefixes = custom_dict.prefix_lengths_of(&sub_text_prefix);
             for word_length in prefixes {
                 let end_position_candidate = begin_position + word_length;
-                if valid_position.contains(&end_position_candidate) {
+                if is_valid_position(end_position_candidate) {
                     graph
                         .entry(begin_position)
                         .or_default()
@@ -370,7 +403,9 @@ impl<D: DictBackend> NewmmTokenizer<D> {
                         end_position = position;
                     }
                 } else {
-                    panic!("Incorrect position list");
+                    return Err(anyhow::anyhow!(
+                        "newmm invariant violated: expected one candidate in position_list"
+                    ));
                 }
             } else if position_list_length == 0 {
                 // No candidate: handle non-dictionary segment.
@@ -385,13 +420,13 @@ impl<D: DictBackend> NewmmTokenizer<D> {
                     None => {
                         let mut finish_without_break = true;
                         for position in begin_position + 1..text_length {
-                            if valid_position.contains(&position) {
+                            if is_valid_position(position) {
                                 let prefix = text.substring(position, text_length);
 
                                 let list_of_prefixes = custom_dict.prefix_lengths_of(&prefix);
                                 let valid_word_filter = |word_length: &usize| {
                                     let new_position = position + word_length;
-                                    let is_valid = valid_position.contains(&new_position);
+                                    let is_valid = is_valid_position(new_position);
                                     let word_str =
                                         text.substring_as_str(position, position + word_length);
                                     let is_two_thai_chars =
@@ -440,92 +475,195 @@ impl<D: DictBackend> NewmmTokenizer<D> {
         Ok(result_str)
     }
 
+    fn segment_single(input: &CharString, custom_dict: &D, safe: bool) -> AnyResult<Vec<String>> {
+        if !safe || input.chars_len() < TEXT_SCAN_END {
+            return Self::one_cut(input, custom_dict)
+                .map(|parts| parts.into_iter().map(|s| s.to_string()).collect());
+        }
+
+        let mut txt = input.substring(0, input.chars_len());
+        let mut txt_parts: Vec<CharString> = Vec::with_capacity(txt.chars_len() / 10);
+        while txt.chars_len() >= TEXT_SCAN_END {
+            let sample = txt.substring(TEXT_SCAN_BEGIN, TEXT_SCAN_END);
+            let cut_pos = if let Some(space_char_index) = rfind_space_char_index(sample.as_str()) {
+                space_char_index + 1
+            } else {
+                let word_tokens = Self::one_cut(&sample, custom_dict)?;
+                let mut token_max_index = 0;
+                let mut token_max_length = 0;
+                for (idx, &token) in word_tokens.iter().enumerate() {
+                    let tok_chars = token.chars().count();
+                    if tok_chars >= token_max_length {
+                        token_max_length = tok_chars;
+                        token_max_index = idx;
+                    }
+                }
+                let mut cut_pos = TEXT_SCAN_BEGIN;
+                for &token in word_tokens.iter().take(token_max_index) {
+                    cut_pos += token.chars().count();
+                }
+                cut_pos
+            };
+
+            txt_parts.push(txt.substring(0, cut_pos));
+            txt = txt.substring(cut_pos, txt.chars_len());
+        }
+        if !txt.is_empty() {
+            txt_parts.push(txt);
+        }
+
+        let mut out: Vec<String> = Vec::new();
+        for part in &txt_parts {
+            let chunk = part.substring(0, part.chars_len());
+            let words = Self::one_cut(&chunk, custom_dict)?;
+            out.extend(words.into_iter().map(|s| s.to_string()));
+        }
+        Ok(out)
+    }
+
     fn internal_segment(
         input: &CharString,
         custom_dict: &D,
         safe: bool,
-        parallel: bool,
+        parallel_chunk_size: Option<usize>,
     ) -> AnyResult<Vec<String>> {
         if input.is_empty() {
             return Ok(vec![]);
         }
-        if !safe || input.chars_len() < TEXT_SCAN_END {
-            let result = Self::one_cut(input, custom_dict)?;
-            Ok(if parallel {
-                result.into_par_iter().map(|s| s.to_string()).collect()
-            } else {
-                result.into_iter().map(|s| s.to_string()).collect()
-            })
-        } else {
-            let mut txt = input.substring(0, input.chars_len());
-            let mut txt_parts: Vec<CharString> = Vec::with_capacity(txt.chars_len() / 10);
-            while txt.chars_len() >= TEXT_SCAN_END {
-                let sample = txt.substring(TEXT_SCAN_BEGIN, TEXT_SCAN_END);
-                let mut cut_pos;
-
-                let space_char_index = rfind_space_char_index(sample.as_str());
-                if let Some(space_char_index) = space_char_index {
-                    cut_pos = space_char_index + 1;
-                } else {
-                    let word_tokens = Self::one_cut(&sample, custom_dict)?;
-                    let mut token_max_index = 0;
-                    let mut token_max_length = 0;
-                    for (idx, &token) in word_tokens.iter().enumerate() {
-                        let tok_chars = token.chars().count();
-                        if tok_chars >= token_max_length {
-                            token_max_length = tok_chars;
-                            token_max_index = idx;
-                        }
-                    }
-                    cut_pos = TEXT_SCAN_BEGIN;
-                    for &token in word_tokens.iter().take(token_max_index) {
-                        cut_pos += token.chars().count();
-                    }
-                }
-                txt_parts.push(txt.substring(0, cut_pos));
-                txt = txt.substring(cut_pos, txt.chars_len());
-            }
-            if !txt.is_empty() {
-                txt_parts.push(txt);
-            }
-
-            Ok(if parallel {
-                txt_parts
-                    .par_iter()
-                    .flat_map(|part| -> AnyResult<_> {
-                        let bind_part = &part.substring(0, part.chars_len());
-                        let words = Self::one_cut(bind_part, custom_dict)?;
-                        Ok(words
-                            .into_par_iter()
-                            .map(|s| s.to_string())
-                            .collect::<Vec<String>>())
-                    })
-                    .flatten()
-                    .collect()
-            } else {
-                txt_parts
-                    .iter()
-                    .flat_map(|part| -> AnyResult<_> {
-                        Ok(
-                            Self::one_cut(&part.substring(0, part.chars_len()), custom_dict)?
-                                .iter()
-                                .map(|s| s.to_string())
-                                .collect::<Vec<String>>(),
-                        )
-                    })
-                    .flatten()
-                    .collect()
-            })
+        let text = input.as_str();
+        let parallel_options = ParallelOptions::from_chunk_size(parallel_chunk_size);
+        let should_parallelize = parallel_options.should_parallelize(text.len());
+        if !should_parallelize {
+            return Self::segment_single(input, custom_dict, safe);
         }
+
+        let tcc_positions = tcc_tokenizer::tcc_pos(text);
+        let chunk_ranges = parallel_helper::split_text_into_chunk_ranges(
+            text,
+            parallel_options.chunk_size,
+            &tcc_positions,
+        );
+
+        let token_vecs: Vec<Vec<String>> = chunk_ranges
+            .into_par_iter()
+            .map(|(start, end)| {
+                let chunk = input.substring(start, end);
+                Self::segment_single(&chunk, custom_dict, safe)
+            })
+            .collect::<AnyResult<Vec<_>>>()?;
+
+        Ok(parallel_helper::flatten_tokens(token_vecs))
+    }
+}
+
+impl<D: DictBackend> NewmmTokenizer<D> {
+    /// Segment text with default options (safe=false, parallel disabled).
+    pub fn segment(&self, text: &str) -> AnyResult<Vec<String>> {
+        self.segment_with_options(text, false, None)
+    }
+
+    /// Segment text with automatically tuned parallel chunking.
+    pub fn segment_parallel(&self, text: &str, safe: bool) -> AnyResult<Vec<String>> {
+        let options = ParallelOptions::auto_for_text(text.len());
+        self.segment_with_options(
+            text,
+            safe,
+            if options.enabled {
+                Some(options.chunk_size)
+            } else {
+                None
+            },
+        )
+    }
+
+    /// Segment text with explicit options.
+    ///
+    /// When parallel mode is active, text is split into chunks before
+    /// tokenization. Token sequences near chunk boundaries may differ from
+    /// full-text results. This is acceptable for throughput-oriented tasks
+    /// such as text classification and word embedding, but may not be suitable
+    /// for tasks that require precise linguistic unit identification.
+    pub fn segment_with_options(
+        &self,
+        text: &str,
+        safe: bool,
+        parallel_chunk_size: Option<usize>,
+    ) -> AnyResult<Vec<String>> {
+        Self::internal_segment(
+            &CharString::new(text),
+            &*self.dict,
+            safe,
+            parallel_chunk_size,
+        )
     }
 }
 
 impl<D: DictBackend> Tokenizer for NewmmTokenizer<D> {
-    fn segment(&self, text: &str, safe: bool, parallel: bool) -> AnyResult<Vec<String>> {
-        Self::internal_segment(&CharString::new(text), &*self.dict, safe, parallel)
+    fn segment(&self, text: &str) -> AnyResult<Vec<String>> {
+        self.segment_with_options(text, false, None)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_word_list() -> Vec<String> {
+        vec![
+            "ภาษา".to_string(),
+            "ไทย".to_string(),
+            "ทดสอบ".to_string(),
+            "การ".to_string(),
+            "ตัด".to_string(),
+            "คำ".to_string(),
+        ]
     }
 
-    fn segment_to_string(&self, text: &str, safe: bool, parallel: bool) -> Vec<String> {
-        self.segment(text, safe, parallel).unwrap()
+    #[test]
+    fn newmm_defaults_match_explicit_options() {
+        let tok = NewmmTokenizer::from_word_list(sample_word_list());
+        let text = "ภาษาไทยทดสอบการตัดคำ";
+
+        let via_default = tok.segment(text).unwrap();
+        let via_explicit = tok.segment_with_options(text, false, None).unwrap();
+        let via_result = tok.segment_with_options(text, false, None).unwrap();
+
+        assert_eq!(via_default, via_explicit);
+        assert_eq!(via_explicit, via_result);
+    }
+
+    #[test]
+    fn newmm_trait_and_inherent_segment_are_consistent() {
+        let tok = NewmmTokenizer::from_word_list(sample_word_list());
+        let text = "ภาษาไทยทดสอบการตัดคำ";
+
+        let via_inherent = tok.segment(text).unwrap();
+        let via_trait = <NewmmTokenizer<TrieChar> as Tokenizer>::segment(&tok, text).unwrap();
+
+        assert_eq!(via_inherent, via_trait);
+    }
+
+    #[test]
+    fn newmm_fst_defaults_match_explicit_options() {
+        let tok = NewmmFstTokenizer::from_word_list(sample_word_list()).unwrap();
+        let text = "ภาษาไทยทดสอบการตัดคำ";
+
+        let via_default = tok.segment(text).unwrap();
+        let via_explicit = tok.segment_with_options(text, false, None).unwrap();
+        let via_result = tok.segment_with_options(text, false, None).unwrap();
+
+        assert_eq!(via_default, via_explicit);
+        assert_eq!(via_explicit, via_result);
+    }
+
+    #[test]
+    fn newmm_fst_trait_and_inherent_segment_are_consistent() {
+        let tok = NewmmFstTokenizer::from_word_list(sample_word_list()).unwrap();
+        let text = "ภาษาไทยทดสอบการตัดคำ";
+
+        let via_inherent = tok.segment(text).unwrap();
+        let via_trait = <NewmmFstTokenizer as Tokenizer>::segment(&tok, text).unwrap();
+
+        assert_eq!(via_inherent, via_trait);
     }
 }

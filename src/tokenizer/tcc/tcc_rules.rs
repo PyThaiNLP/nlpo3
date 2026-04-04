@@ -60,7 +60,7 @@ lazy_static! {
         .map(replace_tcc_symbol)
         .join("|")
     )
-    .unwrap();
+    .expect("tcc_rules: NON_LOOKAHEAD_TCC must be a valid static regex");
 
     pub static ref LOOKAHEAD_TCC: Regex = Regex::new(
         &[
@@ -70,7 +70,7 @@ lazy_static! {
         .map(replace_tcc_symbol)
         .join("|")
     )
-    .unwrap();
+    .expect("tcc_rules: LOOKAHEAD_TCC must be a valid static regex");
 }
 
 // ---------------------------------------------------------------------------

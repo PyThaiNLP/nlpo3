@@ -5,51 +5,32 @@ SPDX-License-Identifier: Apache-2.0
 
 # Changelog
 
-All notable changes to the nlpo3 Python package are documented here.
+All notable changes to the nlpO3 Python package are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [2.0.0] - 2026-04-01
+Major release with breaking changes.
 
 ### Added
 
-- `NewmmTokenizer` class exposing the Rust `NewmmTokenizer` struct, which
-  implements the `Tokenizer` trait. Replace `load_dict(path, name)` +
-  `segment(text, name)` with `NewmmTokenizer(path).segment(text)`.
-- `NewmmFstTokenizer` class exposing the Rust `NewmmFstTokenizer` struct.
-  Uses a finite-state automaton (FST) dictionary back-end that is ~49×
-  more memory-efficient than the default TrieChar back-end at the cost of
-  slower per-lookup speed.
-- `DeepcutTokenizer` class exposing the Rust `DeepcutTokenizer` struct,
-  which implements the `Tokenizer` trait and is enabled by the `deepcut`
-  Cargo feature. Performs Thai word tokenization using a CNN (deepcut
-  model) via ONNX inference (`tract-onnx`). The model is bundled with
-  the package and runs with no additional Python runtime dependencies.
-  Custom ONNX model paths are supported via `DeepcutTokenizer(model_path=...)`.
-  The deepcut model and its ONNX port originate from
-  [Deepcut](https://github.com/rkcosmos/deepcut) and
-  [LEKCut](https://github.com/PyThaiNLP/LEKCut).
-- All three tokenizer classes are exposed at the top-level `nlpo3` namespace.
-- All classes are `frozen` in PyO3 (immutable Python objects), enabling
-  lock-free concurrent use from multiple threads, including free-threaded
-  CPython (PEP 703).
-- `segment()` on dictionary-based tokenizers now raises `RuntimeError` on
-  tokenization failure instead of panicking.
+- Added class-based tokenizer API with three classes:
+  `NewmmTokenizer`, `NewmmFstTokenizer`, and `DeepcutTokenizer`.
+- Added `parallel_chunk_size` options for large-input processing.
+- Added top-level exports for all tokenizer classes in the `nlpo3` namespace.
 
 ### Changed
 
-- **Breaking**: version bumped to 2.0.0.
-- Rust crate edition updated from 2018 to 2024;
-  `rust-version` set to `"1.88.0"`.
+- **Breaking:** moved from global helper functions to explicit tokenizer objects.
+- Improved behavior on ambiguous and long input.
+- Updated build/toolchain baseline for the 2.0 line.
 
 ### Removed
 
-- **Breaking**: `load_dict()`, `segment()`, and `segment_deepcut()` free
-  functions removed. Use `NewmmTokenizer`, `NewmmFstTokenizer`, and
-  `DeepcutTokenizer` classes instead.
+- **Breaking:** removed `load_dict()`, `segment()`, and `segment_deepcut()`
+  free functions.
 
 ### Migration
 
@@ -67,5 +48,5 @@ tokens = tok.segment("สวัสดีครับ")
 tokens = DeepcutTokenizer().segment("สวัสดีครับ")
 ```
 
-[Unreleased]: https://github.com/PyThaiNLP/nlpo3/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/PyThaiNLP/nlpo3/compare/v1.4.0...v2.0.0
+For implementation details and design choices, see
+[docs/implementation.md](../docs/implementation.md) in the repository root.

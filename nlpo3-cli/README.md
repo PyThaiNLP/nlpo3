@@ -8,8 +8,18 @@ SPDX-License-Identifier: Apache-2.0
 [![crates.io](https://img.shields.io/crates/v/nlpo3-cli.svg "crates.io")](https://crates.io/crates/nlpo3-cli/)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/licenses/Apache-2.0)
 
-Command line interface for nlpO3, a Thai natural language processing library.
-Originally developed by Vee Satayamas.
+Command-line interface for nlpO3 Thai word tokenization.
+
+## Overview
+
+- Added tokenizer selection in CLI:
+  - `newmm` (default)
+  - `nf` (FST dictionary backend)
+  - `deepcut` (neural tokenizer)
+- Improved error handling and user-facing messages.
+- Better support for long-input processing.
+
+For implementation details, see [../docs/implementation.md](../docs/implementation.md).
 
 ## Install
 
@@ -17,20 +27,32 @@ Originally developed by Vee Satayamas.
 cargo install nlpo3-cli
 ```
 
-## Usage
+## Requirements
+
+- Rust Edition 2024
+- rustc 1.88.0 or newer
+
+## Quick start
 
 ```bash
 nlpo3 --help
 nlpo3 segment --help
+
+echo "ฉันกินข้าว" | nlpo3 segment
 ```
 
-## Tokenizers
+## Segment options
 
-| Tokenizer | Flag | Description |
-|-----------|------|-------------|
-| `newmm` | *(default)* | Dictionary-based maximal-matching (TrieChar backend, fastest) |
-| `nf` | `--tokenizer nf` | Same algorithm with FST backend (~49× less memory) |
-| `deepcut` | `--tokenizer deepcut` | Neural CNN model (no dictionary needed) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--safe` | flag | off | Avoid long run times on inputs with many ambiguous word boundaries |
+| `--parallel [CHUNK_SIZE]` | optional integer | `65536` (when flag is set without value) | Enable chunked parallel processing; if no value is provided, uses 65536 bytes |
+
+Other useful segment flags:
+
+- `--tokenizer` (`newmm`, `nf`, `deepcut`)
+- `--dict-path` (for dictionary-based tokenizers)
+- `--word-delimiter`
 
 ## Examples
 
@@ -72,11 +94,16 @@ Enable safe mode (avoids long run times on ambiguous input):
 echo "ฉันกินข้าว" | nlpo3 segment --safe
 ```
 
-Enable parallel processing:
+Enable parallel processing for larger text:
 
 ```bash
-echo "ฉันกินข้าว" | nlpo3 segment --parallel
+echo "ฉันกินข้าว" | nlpo3 segment -p
+echo "ฉันกินข้าว" | nlpo3 segment -p 16384
 ```
+
+## Support
+
+- Issues: <https://github.com/PyThaiNLP/nlpo3/issues>
 
 ## License
 

@@ -5,16 +5,15 @@
  * Test the NewmmTokenizer with the default dictionary.
  */
 use nlpo3::tokenizer::newmm::NewmmTokenizer;
-use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
     "อาชญากรรมทางการแพทย์.. หลอกลวงคนไข้ผ่าตัด ตัดหมอนรองข้อเข่าอำพราง รพ.กรุงเทพภูเก็ตปลอมเวชระเบียน ตอนที่๑.";
-const DEFAULT_DICT_PATH: &str = "/words_th.txt"; // relative to cargo
+const DEFAULT_DICT_PATH: &str = "/tests/data/words_th.txt"; // relative to cargo
 
 #[test]
 fn test_dict_with_empty_line() {
-    const DICT_PATH: &str = "/tests/data/dict_with_empty_line.txt";
+    const DICT_PATH: &str = "/tests/data/dict-with-empty-line.txt";
     let mut relative_dict_path = env!("CARGO_MANIFEST_DIR").to_string();
     relative_dict_path.push_str(DICT_PATH);
     let _tokenizer = NewmmTokenizer::new(&relative_dict_path).unwrap();
@@ -176,8 +175,12 @@ fn test_long_text_byte_tokenizer() {
     .join("");
 
     let tokenizer = NewmmTokenizer::new(&relative_dict_path).unwrap();
-    let result = tokenizer.segment(&text, false, true).unwrap();
-    let safe_result = tokenizer.segment(&text, true, true).unwrap();
+    let result = tokenizer
+        .segment_with_options(&text, false, Some(16_384))
+        .unwrap();
+    let safe_result = tokenizer
+        .segment_with_options(&text, true, Some(16_384))
+        .unwrap();
     assert_eq!(result.len(), 1889);
     assert_eq!(safe_result.len(), 1991);
 }
@@ -189,31 +192,16 @@ fn test_standard_short_word() {
 
     let tokenizer = NewmmTokenizer::new(&relative_dict_path).unwrap();
     assert_eq!(
-        tokenizer.segment_to_string("1) ประมวลผลภาษาไทย", false, false),
+        tokenizer.segment("1) ประมวลผลภาษาไทย").unwrap(),
         ["1", ")", " ", "ประมวลผล", "ภาษาไทย"]
     );
+    assert_eq!(tokenizer.segment("มาตรา39").unwrap(), ["มาตรา", "39"]);
+    assert_eq!(tokenizer.segment("19...").unwrap(), ["19", "..."]);
+    assert_eq!(tokenizer.segment("19.").unwrap(), ["19", "."]);
+    assert_eq!(tokenizer.segment("19.84").unwrap(), ["19.84"]);
+    assert_eq!(tokenizer.segment("127.0.0.1").unwrap(), ["127.0.0.1"]);
     assert_eq!(
-        tokenizer.segment_to_string("มาตรา39", false, false),
-        ["มาตรา", "39"]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("19...", false, false),
-        ["19", "..."]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("19.", false, false),
-        ["19", "."]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("19.84", false, false),
-        ["19.84"]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("127.0.0.1", false, false),
-        ["127.0.0.1"]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("USD1,984.42", false, false),
+        tokenizer.segment("USD1,984.42").unwrap(),
         ["USD", "1,984.42"]
     );
 }
@@ -226,12 +214,12 @@ fn test_add_or_remove_word() {
     let mut tokenizer = NewmmTokenizer::new(&relative_dict_path).unwrap();
     tokenizer.add_word(&["ห้องสมุดประชาชนเทศบาลตำบลวิชิต"]);
     assert_eq!(
-        tokenizer.segment_to_string("ห้องสมุดประชาชนเทศบาลตำบลวิชิต", false, false),
+        tokenizer.segment("ห้องสมุดประชาชนเทศบาลตำบลวิชิต").unwrap(),
         ["ห้องสมุดประชาชนเทศบาลตำบลวิชิต"]
     );
     tokenizer.remove_word(&["ห้องสมุดประชาชนเทศบาลตำบลวิชิต", "ห้องสมุดประชาชน", "ประชาชน"]);
     assert_eq!(
-        tokenizer.segment_to_string("ห้องสมุดประชาชนเทศบาลตำบลวิชิต", false, false),
+        tokenizer.segment("ห้องสมุดประชาชนเทศบาลตำบลวิชิต").unwrap(),
         ["ห้องสมุด", "ประชา", "ชน", "เทศบาลตำบล", "วิชิต"]
     );
 }
@@ -243,11 +231,11 @@ fn test_with_some_real_data() {
 
     let tokenizer = NewmmTokenizer::new(&relative_dict_path).unwrap();
     assert_eq!(
-        tokenizer.segment_to_string(FIRST_TEXT, false, false),
+        tokenizer.segment(FIRST_TEXT).unwrap(),
         ["นิสสัน", "ผ่อน", "จน", "เพลีย", "นาวา", "ร่า", ".."]
     );
     assert_eq!(
-        tokenizer.segment_to_string(SECOND_TEXT, false, false),
+        tokenizer.segment(SECOND_TEXT).unwrap(),
         [
             "อาชญากรรม",
             "ทางการแพทย์",
@@ -284,24 +272,12 @@ fn test_thai_number() {
     relative_dict_path.push_str(DEFAULT_DICT_PATH);
 
     let tokenizer = NewmmTokenizer::new(&relative_dict_path).unwrap();
+    assert_eq!(tokenizer.segment("๑๙...").unwrap(), ["๑๙", "..."]);
+    assert_eq!(tokenizer.segment("๑๙.").unwrap(), ["๑๙", "."]);
+    assert_eq!(tokenizer.segment("๑๙.๘๔").unwrap(), ["๑๙.๘๔"]);
+    assert_eq!(tokenizer.segment("๑๒๗.๐.๐.๑").unwrap(), ["๑๒๗.๐.๐.๑"]);
     assert_eq!(
-        tokenizer.segment_to_string("๑๙...", false, false),
-        ["๑๙", "..."]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("๑๙.", false, false),
-        ["๑๙", "."]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("๑๙.๘๔", false, false),
-        ["๑๙.๘๔"]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("๑๒๗.๐.๐.๑", false, false),
-        ["๑๒๗.๐.๐.๑"]
-    );
-    assert_eq!(
-        tokenizer.segment_to_string("USD๑,๙๘๔.๔๒", false, false),
+        tokenizer.segment("USD๑,๙๘๔.๔๒").unwrap(),
         ["USD", "๑,๙๘๔.๔๒"]
     );
 }
@@ -317,7 +293,7 @@ fn test_fst_new_and_basic_segment() {
     let mut path = env!("CARGO_MANIFEST_DIR").to_string();
     path.push_str(DEFAULT_DICT_PATH);
     let tok = NewmmFstTokenizer::new(&path).unwrap();
-    let result = tok.segment_to_string(FIRST_TEXT, false, false);
+    let result = tok.segment(FIRST_TEXT).unwrap();
     assert!(!result.is_empty(), "result should not be empty");
     assert_eq!(
         result.concat(),
@@ -330,7 +306,7 @@ fn test_fst_new_and_basic_segment() {
 fn test_fst_from_word_list() {
     let words = vec!["สวัสดี".to_string(), "ประเทศ".to_string(), "ไทย".to_string()];
     let tok = NewmmFstTokenizer::from_word_list(words).unwrap();
-    let result = tok.segment_to_string("สวัสดีประเทศไทย", false, false);
+    let result = tok.segment("สวัสดีประเทศไทย").unwrap();
     assert_eq!(result.concat(), "สวัสดีประเทศไทย");
 }
 
@@ -342,8 +318,8 @@ fn test_fst_matches_trie_output() {
     let tok_trie = NewmmTokenizer::new(&path).unwrap();
     let tok_fst = NewmmFstTokenizer::new(&path).unwrap();
     for text in &[FIRST_TEXT, SECOND_TEXT] {
-        let trie_out = tok_trie.segment_to_string(text, false, false);
-        let fst_out = tok_fst.segment_to_string(text, false, false);
+        let trie_out = tok_trie.segment(text).unwrap();
+        let fst_out = tok_fst.segment(text).unwrap();
         assert_eq!(
             trie_out, fst_out,
             "NewmmTokenizer and NewmmFstTokenizer must produce identical output for {:?}",
@@ -361,10 +337,7 @@ fn test_tokenizer_trait_switchable() {
     let trie: Box<dyn Tokenizer> = Box::new(NewmmTokenizer::new(&path).unwrap());
     let fst: Box<dyn Tokenizer> = Box::new(NewmmFstTokenizer::new(&path).unwrap());
     let text = "สวัสดีประเทศไทย";
-    assert_eq!(
-        trie.segment_to_string(text, false, false),
-        fst.segment_to_string(text, false, false),
-    );
+    assert_eq!(trie.segment(text).unwrap(), fst.segment(text).unwrap(),);
 }
 
 /// Regression test for BFS path explosion in `bfs_paths_graph`.
@@ -406,7 +379,7 @@ fn test_newmm_ambiguous_performance() {
     let text = "กขคงจ".repeat(50);
 
     let start = Instant::now();
-    let result = tokenizer.segment_to_string(&text, false, false);
+    let result = tokenizer.segment_with_options(&text, false, None).unwrap();
     let elapsed = start.elapsed();
 
     assert!(

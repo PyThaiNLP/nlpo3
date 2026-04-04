@@ -6,6 +6,7 @@ on:
     paths:
     - 'src/**'
     - 'Cargo.toml'
+    - 'Cargo.lock'
     - 'tests/**'
     - '.github/workflows/test-main-lib.yml'
   pull_request:
@@ -15,18 +16,15 @@ on:
     - 'src/**'
     - 'tests/**'
     - 'Cargo.toml'
+    - 'Cargo.lock'
     - '.github/workflows/test-main-lib.yml'
 
 jobs:
-  test:
+  test-main-lib:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bitness: [64]  # 32, 64
-        include:
-        - os: windows-latest
-          bitness: 32
 
     runs-on: ${{ matrix.os }}
 
@@ -36,6 +34,10 @@ jobs:
 
     - name: Setup Rust toolchain
       uses: actions-rust-lang/setup-rust-toolchain@v1
+
+    - name: Test publish
+      run: cargo publish --dry-run
+      if: matrix.os == 'ubuntu-latest'
 
     - name: Test
       run: cargo test

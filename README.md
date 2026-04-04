@@ -9,203 +9,134 @@ SPDX-License-Identifier: Apache-2.0
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg "Apache-2.0")](https://opensource.org/license/apache-2-0)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14082448.svg)](https://doi.org/10.5281/zenodo.14082448)
 
-A Thai natural language processing library written in Rust,
-featuring optional Python and Node.js bindings.
-Formerly known as `oxidized-thainlp`,
-it was originally developed by Thanathip Suntorntip.
+A Thai natural language processing library in Rust, with Node.js/TypeScript and Python bindings.
 
-Using in a Rust project
+Formerly known as `oxidized-thainlp`, it was originally developed by
+Thanathip Suntorntip.
+
+## Overview
+
+- Three tokenizer choices with a consistent API:
+  - `NewmmTokenizer` (dictionary, fastest)
+  - `NewmmFstTokenizer` (dictionary, lower memory)
+  - `DeepcutTokenizer` (neural model, requires feature `deepcut`)
+- Thread-safe tokenizer instances for concurrent use.
+- Improved handling for ambiguous and large input.
+
+## Install
+
+Rust:
 
 ```shell
 cargo add nlpo3
 ```
 
-Using in a Python project
+Node.js/TypeScript:
+
+```shell
+npm install nlpo3
+```
+
+Python:
 
 ```shell
 pip install nlpo3
 ```
 
-## Table of contents
-
-- [Features](#features)
-- [Use](#use)
-  - [Node.js binding](#nodejs-binding)
-  - [Python binding](#python-binding)
-  - [Rust library](#rust-library)
-  - [Command-line interface](#command-line-interface)
-  - [Dictionary](#dictionary)
-- [Build](#build)
-- [Develop](#develop)
-- [License](#license)
-
-## Features
-
-- Thai word tokenizer
-  - Uses a maximal-matching, dictionary-based tokenization algorithm
-    and respects [Thai Character Cluster][tcc] boundaries.
-    - Approximately [2.5× faster][benchmark] than the comparable pure-Python
-      implementation (PyThaiNLP's `newmm`).
-  - Load a dictionary from a plain text file (one word per line)
-    or from `Vec<String>`
-
-[tcc]: https://dl.acm.org/doi/10.1145/355214.355225
-[benchmark]: ./nlpo3-python/notebooks/nlpo3_segment_benchmarks.ipynb
-
-## Use
-
-### Node.js binding
-
-See [nlpo3-nodejs](./nlpo3-nodejs/).
-
-### Python binding
-
-[![PyPI](https://img.shields.io/pypi/v/nlpo3.svg "PyPI")](https://pypi.python.org/pypi/nlpo3)
-
-Example:
-
-```python
-from nlpo3 import NewmmTokenizer
-
-tokenizer = NewmmTokenizer("path/to/dict.file")
-tokens = tokenizer.segment("สวัสดีครับ")
-print(tokens)
-```
-
-See more at [nlpo3-python](./nlpo3-python/).
-
-### Rust library
-
-[![crates.io](https://img.shields.io/crates/v/nlpo3.svg "crates.io")](https://crates.io/crates/nlpo3/)
-
-#### Add as a dependency
-
-To add `nlpo3` to your project's dependencies:
+CLI:
 
 ```shell
-cargo add nlpo3
+cargo install nlpo3-cli
 ```
 
-This updates `Cargo.toml` with:
+## Requirements
 
-```toml
-[dependencies]
-nlpo3 = "2.0.0"
-```
+- Rust Edition 2024
+- rustc 1.88.0 or newer
 
-#### Example
+## Quick start
 
-Create a tokenizer from a dictionary file and use it to tokenize a string
-(safe mode = true, parallel mode = false):
+Dictionary tokenizer:
 
 ```rust
 use nlpo3::tokenizer::newmm::NewmmTokenizer;
-use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 
 fn main() {
-    let tokenizer = NewmmTokenizer::new("path/to/dict.file")
-        .expect("failed to load dictionary file");
-    let tokens = tokenizer
-        .segment("ห้องสมุดประชาชน", true, false)
-        .expect("failed to segment text");
-    println!("{:?}", tokens);
+  let tok = NewmmTokenizer::new("words_th.txt").expect("dictionary load failed");
+  let tokens = tok.segment("สวัสดีครับ").expect("segmentation failed");
+  println!("{:?}", tokens);
 }
 ```
 
-`segment(text, safe, parallel)`: set `parallel = true` to use Rayon to
-tokenize a single large document in parallel chunks (higher memory use).
-For processing many documents concurrently, keep `parallel = false` and
-call `segment()` from multiple threads instead — `NewmmTokenizer` is
-`Send + Sync` and the shared dictionary (`Arc`) incurs no copying.
+Neural tokenizer:
 
-Create a tokenizer from a vector of strings:
+Enable feature first:
+
+```toml
+nlpo3 = { version = "2.0", features = ["deepcut"] }
+```
 
 ```rust
-    let words = vec!["ปาลิเมนต์".to_string(), "คอนสติติวชั่น".to_string()];
-    let tokenizer = NewmmTokenizer::from_word_list(words);
+use nlpo3::tokenizer::deepcut::DeepcutTokenizer;
+
+fn main() {
+  let tok = DeepcutTokenizer::new().expect("model load failed");
+  let tokens = tok.segment("สวัสดีครับ").expect("segmentation failed");
+  println!("{:?}", tokens);
+}
 ```
 
-Add words to an existing tokenizer:
+## Error handling
 
-```rust
-    let words = vec!["หอ".to_string(), "ศิลป์".to_string()];
-    let mut tokenizer = NewmmTokenizer::from_word_list(words);
-    tokenizer.add_word(&["มิวเซียม", "โรงประลอง"]);
-```
+- Rust: `segment(...)` returns `AnyResult<Vec<String>>` (`anyhow::Result<Vec<String>>`).
+- Python: tokenizer methods raise `RuntimeError` on tokenization/inference failures.
+- Node.js/TypeScript: tokenizer methods throw `Error` on tokenization/inference failures.
 
-Remove words from an existing tokenizer:
+Use the host language's normal error handling style (`?`, `try/except`,
+`try/catch`) to decide whether to propagate, recover, or fail fast.
 
-```rust
-    tokenizer.remove_word(&["บรรจง", "มาลัย"]);
-```
+## Segment options
 
-### Command-line interface
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `safe` | `bool` | `false` | For `NewmmTokenizer` and `NewmmFstTokenizer`: avoid long run times on highly ambiguous input |
+| `parallel_chunk_size` | `Option<usize>` | `None` | Enable chunked parallel processing for larger text; `None`, `0`, or too-small values disable parallel mode |
 
-[![crates.io](https://img.shields.io/crates/v/nlpo3-cli.svg "crates.io")](https://crates.io/crates/nlpo3-cli/)
+Auto-parallel helpers are available via `segment_parallel(...)` on tokenizers.
 
-Example:
+> **Note on parallel mode accuracy:** when `parallel_chunk_size` is set, text
+> is split into chunks before tokenization. Token sequences near chunk
+> boundaries may differ from full-text results. This is acceptable for tasks
+> such as text classification and word embedding, but may not be suitable for
+> tasks that require precise linguistic unit identification.
 
-```bash
-echo "ฉันกินข้าว" | nlpo3 segment
-```
+For technical implementation and design notes, see
+[docs/implementation.md](./docs/implementation.md).
 
-See more at [nlpo3-cli](./nlpo3-cli/).
+## Bindings
 
-### Dictionary
+- Node.js/TypeScript: [nlpo3-nodejs](./nlpo3-nodejs/)
+- Python: [nlpo3-python](./nlpo3-python/)
+- CLI: [nlpo3-cli](./nlpo3-cli/)
 
-- To keep the library small, `nlpO3` does not include a dictionary; users should
-  provide one when using the dictionary-based tokenizer.
-  - A dictionary is required for the dictionary-based word tokenizer.
-- For tokenization dictionary, try
-  - [words_th.txt][dict-pythainlp] from [PyThaiNLP][pythainlp]
-    - ~62,000 words
-    - CC0-1.0
-  - [word break dictionary][dict-libthai] from [libthai][libthai]
-    - consists of dictionaries in different categories, with a make script
-    - LGPL-2.1
+## Dictionary
 
+`nlpO3` does not bundle a dictionary for dictionary-based tokenizers.
+
+Recommended sources:
+
+- [words_th.txt][dict-pythainlp] from [PyThaiNLP][pythainlp]
+- [word break dictionary][dict-libthai] from [libthai][libthai]
+
+[tcc]: https://dl.acm.org/doi/10.1145/355214.355225
 [pythainlp]: https://github.com/PyThaiNLP/pythainlp
 [libthai]: https://github.com/tlwg/libthai/
 [dict-pythainlp]: https://github.com/PyThaiNLP/pythainlp/blob/dev/pythainlp/corpus/words_th.txt
 [dict-libthai]: https://github.com/tlwg/libthai/tree/master/data
 
-## Build
+## Support
 
-### Requirements
-
-- [Rust 2024 Edition](https://www.rust-lang.org/tools/install)
-
-### Steps
-
-Generic test:
-
-```bash
-cargo test
-```
-
-Build API document and open it to check:
-
-```bash
-cargo doc --open
-```
-
-Build (remove `--release` to keep debug information):
-
-```bash
-cargo build --release
-```
-
-Check `target/` for build artifacts.
-
-## Develop
-
-### Development document
-
-- [Notes on custom string](src/NOTE_ON_STRING.md)
-
-### Issues
-
-- Please report issues at <https://github.com/PyThaiNLP/nlpo3/issues>
+- Issues: <https://github.com/PyThaiNLP/nlpo3/issues>
 
 ## License
 

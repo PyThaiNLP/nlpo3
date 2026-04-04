@@ -1,10 +1,10 @@
 {
-  "name": "nlpo3-nodejs",
+  "name": "nlpo3",
   "version": "2.0.0",
-  "description": "Node.js binding for nlpO3 Thai language processing library",
+  "description": "nlpO3 Thai language tokenizer and word segmentation library for Node.js (ESM) with TypeScript types",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PyThaiNLP/nlpo3.git"
+    "url": "git+https://github.com/PyThaiNLP/nlpo3.git"
   },
   "keywords": [
     "thai",
@@ -31,23 +31,49 @@
   "bugs": {
     "url": "https://github.com/PyThaiNLP/nlpo3/issues"
   },
-  "homepage": "https://github.com/PyThaiNLP/nlpo3/",
+  "homepage": "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-nodejs",
+  "type": "module",
   "main": "./nlpo3/index.js",
   "types": "./nlpo3/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./nlpo3/index.d.ts",
+      "node": "./nlpo3/index.js",
+      "default": "./nlpo3/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "build": "cargo-cp-artifact -nc ./nlpo3/rust_mod.node -- cargo build --message-format=json-render-diagnostics",
-    "release": "cargo-cp-artifact -nc ./nlpo3/rust_mod.node -- cargo build --release --message-format=json-render-diagnostics && tsc",
+    "build": "cargo-cp-artifact -a cdylib nlpo3_nodejs ./nlpo3/rust_mod.node -- cargo build --message-format=json-render-diagnostics",
+    "release": "cargo-cp-artifact -a cdylib nlpo3_nodejs ./nlpo3/rust_mod.node -- cargo build --release --message-format=json-render-diagnostics && tsc",
+    "prepare": "npm run build",
+    "prepack": "npm run release",
     "install": "npm run build",
     "test": "npm run build && tsc && node --test tests/test_tokenizers.js"
   },
+  "dependencies": {
+    "cargo-cp-artifact": "^0.1.9"
+  },
   "devDependencies": {
-    "cargo-cp-artifact": "^0.1",
+    "@types/node": "^22.0.0",
     "typescript": "^6.0.0"
   },
   "engines": {
-    "node": ">= 24.0.0"
+    "node": "^22 || ^23 || ^24 || ^25"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
-    "nlpo3"
+    "Cargo.toml",
+    "Cargo.lock",
+    "src/**",
+    "nlpo3/index.js",
+    "nlpo3/index.d.ts",
+    "nlpo3/rust_mod.js",
+    "nlpo3/rust_mod.d.ts",
+    "README.md",
+    "LICENSE"
   ]
 }

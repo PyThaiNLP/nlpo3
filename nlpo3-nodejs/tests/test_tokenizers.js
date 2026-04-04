@@ -1,25 +1,31 @@
 // SPDX-FileCopyrightText: 2024-2026 PyThaiNLP Project
 // SPDX-License-Identifier: Apache-2.0
 
-"use strict";
-
 /**
- * Integration tests for the nlpo3-nodejs binding.
+ * Integration tests for the nlpO3 Node.js binding.
  *
  * Requires the native addon to be built and TypeScript compiled first:
  *   npm run build && tsc
  *   node --test tests/test_tokenizers.js
  *
  * Uses Node.js built-in test runner (node:test, available since Node 18).
+ * This package supports Node.js 22, 23, 24, and 25.
  */
 
-const assert = require("node:assert/strict");
-const { test, describe } = require("node:test");
-const path = require("node:path");
+import assert from "node:assert/strict";
+import { test, describe } from "node:test";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const { NewmmTokenizer, NewmmFstTokenizer, DeepcutTokenizer } = require("../nlpo3/index.js");
+import { NewmmTokenizer, NewmmFstTokenizer, DeepcutTokenizer } from "../nlpo3/index.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DICT_PATH = path.join(__dirname, "data", "test_dict.txt");
+
+test("runtime version is supported", () => {
+    const major = Number(process.versions.node.split(".")[0]);
+    assert.ok([22, 23, 24, 25].includes(major), "Node.js 22/23/24/25 is required");
+});
 
 // ---------------------------------------------------------------------------
 // NewmmTokenizer
@@ -52,9 +58,9 @@ describe("NewmmTokenizer", () => {
         assert.ok(Array.isArray(tok.segment("ไข่คน", { safe: true })));
     });
 
-    test("segment with parallel=true returns an array", () => {
+    test("segment with parallelChunkSize returns an array", () => {
         const tok = new NewmmTokenizer(DICT_PATH);
-        assert.ok(Array.isArray(tok.segment("ไข่คน", { parallel: true })));
+        assert.ok(Array.isArray(tok.segment("ไข่คน", { parallelChunkSize: 16384 })));
     });
 
     test("same instance reused across many calls", () => {

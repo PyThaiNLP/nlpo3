@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2025",
-    "module": "commonjs",
-    "moduleResolution": "node16",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "lib": ["ES2025"],
+    "types": ["node"],
     "declaration": true,
     "declarationMap": false,
     "strict": true,

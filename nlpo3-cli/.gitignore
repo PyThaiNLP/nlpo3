@@ -1,0 +1,24 @@
+# Rust build output
+/target/
+/debug/
+
+# Cargo backup artifacts
+**/*.rs.bk
+
+# Platform debug symbols
+*.pdb
+
+# Test/coverage artifacts
+*.profraw
+*.profdata
+
+# Local package archives
+*.crate
+
+# Local editor and OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log

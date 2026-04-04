@@ -18,7 +18,20 @@ homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-nodejs/"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
 documentation = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-nodejs/README.md"
 readme = "README.md"
-exclude = ["index.node"]
+include = [
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+    "/src/**",
+    "/nlpo3/index.js",
+    "/nlpo3/index.d.ts",
+    "/nlpo3/rust_mod.js",
+    "/nlpo3/rust_mod.d.ts",
+    "/package.json",
+    "/package-lock.json",
+]
 
 [lib]
 crate-type = ["cdylib"]

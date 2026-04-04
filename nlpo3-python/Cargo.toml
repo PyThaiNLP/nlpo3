@@ -22,16 +22,24 @@ homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-python"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
 documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/README.md"
 readme = "README.md"
-exclude = [
-    ".gitignore",
-    ".github/",
-    "build/",
-    "dist/",
-    "notebooks/",
-    "target",
-    "tests/",
-    "*.sh",
+include = [
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+    "/CITATION.cff",
+    "/pyproject.toml",
+    "/MANIFEST.in",
+    "/src/lib.rs",
+    "/nlpo3/__init__.py",
+    "/nlpo3/_nlpo3_python_backend.pyi",
+    "/nlpo3/py.typed",
 ]
+
+[features]
+default = ["deepcut"]
+deepcut = ["nlpo3/deepcut"]
 
 [lib]
 name = "_nlpo3_python_backend"
@@ -39,7 +47,7 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-nlpo3 = { version = "2.0", path = "..", features = ["deepcut"] }
+nlpo3 = { version = "2.0", path = ".." }
 
 [dependencies.pyo3]
 version = "0.28"

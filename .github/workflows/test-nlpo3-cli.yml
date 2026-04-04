@@ -4,19 +4,31 @@ on:
     branches:
       - main
     paths:
-      - 'nlpo3-cli/**'
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'nlpo3-cli/words_th.txt'
+      - 'nlpo3-cli/src/**'
+      - 'nlpo3-cli/Cargo.toml'
+      - '.github/workflows/test-nlpo3-cli.yml'
   pull_request:
     branches:
       - main
     paths:
-      - 'nlpo3-cli/**'
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'nlpo3-cli/words_th.txt'
+      - 'nlpo3-cli/src/**'
+      - 'nlpo3-cli/Cargo.toml'
+      - '.github/workflows/test-nlpo3-cli.yml'
 
 defaults:
   run:
     working-directory: nlpo3-cli
 
 jobs:
-  test:
+  test-cli:
     strategy:
       fail-fast: false
       matrix:

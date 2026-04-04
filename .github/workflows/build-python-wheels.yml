@@ -1,7 +1,7 @@
 # Build wheels for many platforms, use cibuildwheel
 # see: https://github.com/pypa/cibuildwheel
 
-name: Build wheels
+name: Build Python wheels
 
 on:
   push:

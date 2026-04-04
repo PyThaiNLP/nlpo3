@@ -11,7 +11,6 @@ use std::path::Path;
 
 use nlpo3::tokenizer::deepcut::DeepcutTokenizer;
 use nlpo3::tokenizer::newmm::{NewmmFstTokenizer, NewmmTokenizer};
-use nlpo3::tokenizer::tokenizer_trait::Tokenizer;
 use pyo3::exceptions;
 use pyo3::prelude::*;
 
@@ -28,18 +27,20 @@ use pyo3::prelude::*;
 /// single instance and hold a reference to it from each caller — no copying
 /// of the dictionary occurs.
 ///
-/// Example::
+/// Example:
 ///
-///     from nlpo3 import NewmmTokenizer
+/// ```python
+/// from nlpo3 import NewmmTokenizer
 ///
-///     tok = NewmmTokenizer("path/to/dict.txt")
-///     tokens = tok.segment("สวัสดีครับ")
+/// tok = NewmmTokenizer("path/to/dict.txt")
+/// tokens = tok.segment("สวัสดีครับ")
 ///
-///     # safe=True avoids long run times on ambiguous input
-///     tokens = tok.segment("สวัสดีครับ", safe=True)
+/// # safe=True avoids long run times on ambiguous input
+/// tokens = tok.segment("สวัสดีครับ", safe=True)
 ///
-///     # parallel=True enables multi-threaded segmentation (higher memory use)
-///     tokens = tok.segment("สวัสดีครับ", parallel=True)
+/// # parallel_chunk_size enables chunk-based parallel processing
+/// tokens = tok.segment("สวัสดีครับ", parallel_chunk_size=16_384)
+/// ```
 #[pyclass(name = "NewmmTokenizer", frozen)]
 struct PyNewmmTokenizer {
     inner: NewmmTokenizer,
@@ -56,10 +57,7 @@ impl PyNewmmTokenizer {
         NewmmTokenizer::new(dict_path)
             .map(|inner| PyNewmmTokenizer { inner })
             .map_err(|e| {
-                exceptions::PyRuntimeError::new_err(format!(
-                    "failed to load dictionary: {}",
-                    e
-                ))
+                exceptions::PyRuntimeError::new_err(format!("failed to load dictionary: {}", e))
             })
     }
 
@@ -68,28 +66,43 @@ impl PyNewmmTokenizer {
     /// The tokenizer is immutable — the same instance is safe to call from
     /// multiple threads concurrently without any locking.
     ///
+    /// This method releases the Python Global Interpreter Lock (GIL) while
+    /// running tokenization so other Python threads can continue executing.
+    ///
     /// Args:
     ///     text:     Input text to tokenize.
     ///     safe:     Enable safe mode to avoid long run times on inputs with
     ///               many ambiguous word boundaries (default: False).
-    ///     parallel: Enable multi-threaded processing (default: False).
-    ///               Uses more memory; benefits long texts on multi-core hosts.
+    ///     parallel_chunk_size: Target chunk size in bytes for parallel mode.
+    ///               `None`, `0`, or low values disable parallel mode.
+    ///
+    /// Note:
+    ///     When ``parallel_chunk_size`` is set, text is split into chunks.
+    ///     Token sequences near chunk boundaries may differ from full-text
+    ///     results. Suitable for classification and embedding tasks; not
+    ///     recommended for tasks requiring precise token boundaries.
     ///
     /// Returns:
     ///     List of word tokens.
     ///
     /// Raises:
     ///     RuntimeError: If tokenization fails.
-    #[pyo3(signature = (text, safe = false, parallel = false))]
-    fn segment(&self, text: &str, safe: bool, parallel: bool) -> PyResult<Vec<String>> {
+    #[pyo3(signature = (text, safe = false, parallel_chunk_size = None))]
+    fn segment(
+        &self,
+        py: Python<'_>,
+        text: &str,
+        safe: bool,
+        parallel_chunk_size: Option<usize>,
+    ) -> PyResult<Vec<String>> {
         if text.is_empty() {
             return Ok(vec![]);
         }
-        self.inner
-            .segment(text, safe, parallel)
-            .map_err(|e| {
-                exceptions::PyRuntimeError::new_err(format!("segmentation failed: {}", e))
-            })
+        py.detach(|| {
+            self.inner
+                .segment_with_options(text, safe, parallel_chunk_size)
+        })
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("segmentation failed: {}", e)))
     }
 }
 
@@ -106,12 +119,14 @@ impl PyNewmmTokenizer {
 /// The instance is read-only after construction and safe to call from
 /// multiple threads concurrently without any locking.
 ///
-/// Example::
+/// Example:
 ///
-///     from nlpo3 import NewmmFstTokenizer
+/// ```python
+/// from nlpo3 import NewmmFstTokenizer
 ///
-///     tok = NewmmFstTokenizer("path/to/dict.txt")
-///     tokens = tok.segment("สวัสดีครับ")
+/// tok = NewmmFstTokenizer("path/to/dict.txt")
+/// tokens = tok.segment("สวัสดีครับ")
+/// ```
 #[pyclass(name = "NewmmFstTokenizer", frozen)]
 struct PyNewmmFstTokenizer {
     inner: NewmmFstTokenizer,
@@ -128,10 +143,7 @@ impl PyNewmmFstTokenizer {
         NewmmFstTokenizer::new(dict_path)
             .map(|inner| PyNewmmFstTokenizer { inner })
             .map_err(|e| {
-                exceptions::PyRuntimeError::new_err(format!(
-                    "failed to load dictionary: {}",
-                    e
-                ))
+                exceptions::PyRuntimeError::new_err(format!("failed to load dictionary: {}", e))
             })
     }
 
@@ -140,26 +152,42 @@ impl PyNewmmFstTokenizer {
     /// The tokenizer is immutable — the same instance is safe to call from
     /// multiple threads concurrently without any locking.
     ///
+    /// This method releases the Python Global Interpreter Lock (GIL) while
+    /// running tokenization so other Python threads can continue executing.
+    ///
     /// Args:
     ///     text:     Input text to tokenize.
     ///     safe:     Enable safe mode (default: False).
-    ///     parallel: Enable multi-threaded processing (default: False).
+    ///     parallel_chunk_size: Target chunk size in bytes for parallel mode.
+    ///               `None`, `0`, or low values disable parallel mode.
+    ///
+    /// Note:
+    ///     When ``parallel_chunk_size`` is set, text is split into chunks.
+    ///     Token sequences near chunk boundaries may differ from full-text
+    ///     results. Suitable for classification and embedding tasks; not
+    ///     recommended for tasks requiring precise token boundaries.
     ///
     /// Returns:
     ///     List of word tokens.
     ///
     /// Raises:
     ///     RuntimeError: If tokenization fails.
-    #[pyo3(signature = (text, safe = false, parallel = false))]
-    fn segment(&self, text: &str, safe: bool, parallel: bool) -> PyResult<Vec<String>> {
+    #[pyo3(signature = (text, safe = false, parallel_chunk_size = None))]
+    fn segment(
+        &self,
+        py: Python<'_>,
+        text: &str,
+        safe: bool,
+        parallel_chunk_size: Option<usize>,
+    ) -> PyResult<Vec<String>> {
         if text.is_empty() {
             return Ok(vec![]);
         }
-        self.inner
-            .segment(text, safe, parallel)
-            .map_err(|e| {
-                exceptions::PyRuntimeError::new_err(format!("tokenization failed: {}", e))
-            })
+        py.detach(|| {
+            self.inner
+                .segment_with_options(text, safe, parallel_chunk_size)
+        })
+        .map_err(|e| exceptions::PyRuntimeError::new_err(format!("tokenization failed: {}", e)))
     }
 }
 
@@ -176,17 +204,19 @@ impl PyNewmmFstTokenizer {
 /// For distributed or parallel workloads, create one instance per worker
 /// process to avoid sharing state across process boundaries.
 ///
-/// Example::
+/// Example:
 ///
-///     from nlpo3 import DeepcutTokenizer
+/// ```python
+/// from nlpo3 import DeepcutTokenizer
 ///
-///     # Use the bundled default model
-///     tok = DeepcutTokenizer()
-///     tokens = tok.segment("สวัสดีครับ")
+/// # Use the bundled default model
+/// tok = DeepcutTokenizer()
+/// tokens = tok.segment("สวัสดีครับ")
 ///
-///     # Use a custom ONNX model file
-///     tok = DeepcutTokenizer(model_path="/path/to/custom.onnx")
-///     tokens = tok.segment("สวัสดีครับ")
+/// # Use a custom ONNX model file
+/// tok = DeepcutTokenizer(model_path="/path/to/custom.onnx")
+/// tokens = tok.segment("สวัสดีครับ")
+/// ```
 #[pyclass(name = "DeepcutTokenizer", frozen)]
 struct PyDeepcutTokenizer {
     inner: DeepcutTokenizer,
@@ -227,21 +257,42 @@ impl PyDeepcutTokenizer {
     /// Inference is thread-safe: the same instance may be called concurrently
     /// from multiple threads.
     ///
+    /// This method releases the Python Global Interpreter Lock (GIL) while
+    /// running inference so other Python threads can continue executing.
+    ///
     /// Args:
-    ///     text: Input text to tokenize.
+    ///     text:     Input text to tokenize.
+    ///     parallel_chunk_size: Target chunk size in bytes for parallel mode.
+    ///                 `None`, `0`, or low values disable parallel mode.
+    ///
+    /// Note:
+    ///     When ``parallel_chunk_size`` is set, text is split into chunks.
+    ///     Because deepcut uses a fixed-width context window, characters near
+    ///     chunk boundaries have fewer adjacent context characters, so token
+    ///     sequences near boundaries may differ from full-text results.
+    ///     Suitable for classification and embedding tasks; not recommended
+    ///     for tasks requiring precise token boundaries.
     ///
     /// Returns:
     ///     List of word tokens.
     ///
     /// Raises:
     ///     RuntimeError: If ONNX inference fails.
-    fn segment(&self, text: &str) -> PyResult<Vec<String>> {
+    #[pyo3(signature = (text, parallel_chunk_size = None))]
+    fn segment(
+        &self,
+        py: Python<'_>,
+        text: &str,
+        parallel_chunk_size: Option<usize>,
+    ) -> PyResult<Vec<String>> {
         if text.is_empty() {
             return Ok(vec![]);
         }
-        self.inner.tokenize(text).map_err(|e| {
-            exceptions::PyRuntimeError::new_err(format!("deepcut: inference failed: {}", e))
-        })
+
+        py.detach(|| self.inner.segment_with_options(text, parallel_chunk_size))
+            .map_err(|e| {
+                exceptions::PyRuntimeError::new_err(format!("deepcut: inference failed: {}", e))
+            })
     }
 }
 

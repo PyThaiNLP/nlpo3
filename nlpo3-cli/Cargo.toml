@@ -19,8 +19,17 @@ keywords = [
 ]
 homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-cli/"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
-documentation = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-cli/README.md"
+documentation = "https://docs.rs/nlpo3-cli"
 readme = "README.md"
+include = [
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+    "/src/**",
+    "/words_th.txt",
+]
 
 [badges]
 maintenance = { status = "actively-developed" }

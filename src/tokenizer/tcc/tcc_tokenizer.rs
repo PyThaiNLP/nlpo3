@@ -8,7 +8,6 @@
  * required. Character positions are tracked as plain `usize` counts.
  */
 use super::tcc_rules::{LOOKAHEAD_TCC, NON_LOOKAHEAD_TCC};
-use rustc_hash::FxHashSet as HashSet;
 
 /**
 The implementation of tokenizer according to Thai Character Clusters (TCCs)
@@ -40,12 +39,12 @@ fn byte_end_to_char_count(text: &str, byte_end: usize) -> usize {
     text[..byte_end].chars().count()
 }
 
-/// Returns a set of character indices marking the end of each TCC token in
-/// `text`. Character indices are 0-based counts of Unicode scalar values.
-pub fn tcc_pos(text: &str) -> HashSet<usize> {
-    let mut set: HashSet<usize> = HashSet::default();
+/// Returns a sorted vector of character indices marking the end of each TCC token in
+/// `text`. Character indices are 0-based counts of Unicode scalar values. The vector
+/// is naturally sorted because positions are generated left-to-right.
+pub fn tcc_pos(text: &str) -> Vec<usize> {
     let total_chars = text.chars().count();
-    set.reserve(total_chars / 4 + 1);
+    let mut positions: Vec<usize> = Vec::with_capacity(total_chars / 4 + 1);
 
     let mut txt = text;
     let mut position: usize = 0;
@@ -60,22 +59,31 @@ pub fn tcc_pos(text: &str) -> HashSet<usize> {
                 // trim it off so the TCC ends before that character.
                 let segment_char_count = match_char_count - 1;
                 position += segment_char_count;
-                set.insert(position);
+                positions.push(position);
                 txt = advance_chars(txt, segment_char_count);
             } else {
                 position += match_char_count;
-                set.insert(position);
+                positions.push(position);
                 txt = &txt[m.end()..];
             }
         } else {
             // Non-Thai character: treat as a single-character cluster.
-            let c = txt.chars().next().unwrap();
-            txt = &txt[c.len_utf8()..];
-            position += 1;
-            set.insert(position);
+            if let Some(c) = txt.chars().next() {
+                txt = &txt[c.len_utf8()..];
+                position += 1;
+                positions.push(position);
+            } else {
+                break;
+            }
         }
     }
-    set
+
+    // The tokenizer relies on binary search over this output in hot paths.
+    // Keep this invariant explicit for maintenance and refactors.
+    debug_assert!(positions.windows(2).all(|w| w[0] < w[1]));
+    debug_assert!(positions.last().copied().unwrap_or(0) <= total_chars);
+
+    positions
 }
 
 // ---------------------------------------------------------------------------
@@ -113,5 +121,16 @@ mod tests {
         assert!(gen_result.contains(&11), "expected 11");
         assert!(gen_result.contains(&12), "expected 12");
         assert!(gen_result.contains(&15), "expected 15");
+    }
+
+    #[test]
+    fn test_tcc_pos_is_strictly_increasing_and_in_bounds() {
+        let text = "ภาษาไทยภาษาไทยABC123";
+        let positions = tcc_pos(text);
+        let total_chars = text.chars().count();
+
+        assert!(positions.windows(2).all(|w| w[0] < w[1]));
+        assert!(positions.iter().all(|&p| p > 0 && p <= total_chars));
+        assert_eq!(positions.last().copied(), Some(total_chars));
     }
 }

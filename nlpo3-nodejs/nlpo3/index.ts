@@ -1,7 +1,11 @@
 // SPDX-FileCopyrightText: 2024-2026 PyThaiNLP Project
 // SPDX-License-Identifier: Apache-2.0
 
-import * as native from "./rust_mod";
+import type { TokenizerHandle } from "./rust_mod.js";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const native = require("./rust_mod.node") as typeof import("./rust_mod.js");
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -21,11 +25,10 @@ export interface SegmentOptions {
      */
     safe?: boolean;
     /**
-     * Enable parallel (multi-threaded) processing.  Uses more memory; benefits
-     * long texts on multi-core hosts.
-     * Default: `false`.
+     * Target chunk size in bytes for parallel processing.
+     * `undefined`, `0`, or too-small values disable parallel mode.
      */
-    parallel?: boolean;
+    parallelChunkSize?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -45,17 +48,17 @@ export interface SegmentOptions {
  *
  * @example
  * ```typescript
- * import { NewmmTokenizer } from "nlpo3-nodejs";
+ * import { NewmmTokenizer } from "nlpo3";
  *
  * const tok = new NewmmTokenizer("/path/to/dict.txt");
  *
  * // Reuse tok for every request — the dictionary is never reloaded.
  * const tokens = tok.segment("สวัสดีครับ");
- * const tokensParallel = tok.segment("สวัสดีครับ", { parallel: true });
+ * const tokensParallel = tok.segment("สวัสดีครับ", { parallelChunkSize: 16384 });
  * ```
  */
 export class NewmmTokenizer {
-    private readonly _handle: native.TokenizerHandle;
+    private readonly _handle: TokenizerHandle;
 
     /**
      * @param dictPath  Path to a one-word-per-line dictionary file.
@@ -68,12 +71,18 @@ export class NewmmTokenizer {
      * Tokenize `text` into words.
      *
      * @param text     Input text.
-     * @param options  Optional flags: `safe` and `parallel`.
+     * @param options  Optional flags: `safe` and `parallelChunkSize`.
      * @returns        Array of word tokens.
+     *
+     * @remarks
+     * When {@link SegmentOptions.parallelChunkSize} is set, text is split into
+     * chunks before tokenization. Token sequences near chunk boundaries may
+     * differ from full-text results. Suitable for classification and embedding
+     * tasks; not recommended for tasks requiring precise token boundaries.
      */
     segment(text: string, options: SegmentOptions = {}): string[] {
-        const { safe = false, parallel = false } = options;
-        return native.tokenizerSegment(this._handle, text, safe, parallel);
+        const { safe = false, parallelChunkSize } = options;
+        return native.newmmTokenizerSegment(this._handle, text, safe, parallelChunkSize ?? null);
     }
 }
 
@@ -92,14 +101,14 @@ export class NewmmTokenizer {
  *
  * @example
  * ```typescript
- * import { NewmmFstTokenizer } from "nlpo3-nodejs";
+ * import { NewmmFstTokenizer } from "nlpo3";
  *
  * const tok = new NewmmFstTokenizer("/path/to/dict.txt");
  * const tokens = tok.segment("สวัสดีครับ");
  * ```
  */
 export class NewmmFstTokenizer {
-    private readonly _handle: native.TokenizerHandle;
+    private readonly _handle: TokenizerHandle;
 
     /**
      * @param dictPath  Path to a one-word-per-line dictionary file.
@@ -112,12 +121,18 @@ export class NewmmFstTokenizer {
      * Tokenize `text` into words.
      *
      * @param text     Input text.
-     * @param options  Optional flags: `safe` and `parallel`.
+     * @param options  Optional flags: `safe` and `parallelChunkSize`.
      * @returns        Array of word tokens.
+     *
+     * @remarks
+     * When {@link SegmentOptions.parallelChunkSize} is set, text is split into
+     * chunks before tokenization. Token sequences near chunk boundaries may
+     * differ from full-text results. Suitable for classification and embedding
+     * tasks; not recommended for tasks requiring precise token boundaries.
      */
     segment(text: string, options: SegmentOptions = {}): string[] {
-        const { safe = false, parallel = false } = options;
-        return native.tokenizerSegment(this._handle, text, safe, parallel);
+        const { safe = false, parallelChunkSize } = options;
+        return native.newmmFstTokenizerSegment(this._handle, text, safe, parallelChunkSize ?? null);
     }
 }
 
@@ -137,14 +152,14 @@ export class NewmmFstTokenizer {
  *
  * @example
  * ```typescript
- * import { DeepcutTokenizer } from "nlpo3-nodejs";
+ * import { DeepcutTokenizer } from "nlpo3";
  *
  * const tok = new DeepcutTokenizer();
  * const tokens = tok.segment("สวัสดีครับ");
  * ```
  */
 export class DeepcutTokenizer {
-    private readonly _handle: native.TokenizerHandle;
+    private readonly _handle: TokenizerHandle;
 
     constructor() {
         this._handle = native.deepcutTokenizerNew();
@@ -153,10 +168,20 @@ export class DeepcutTokenizer {
     /**
      * Tokenize `text` using the deepcut CNN model.
      *
-     * @param text  Input text.
-     * @returns     Array of word tokens.
+     * @param text              Input text.
+     * @param parallelChunkSize Target chunk size in bytes for parallel mode.
+     *                          `undefined`, `0`, or low values disable parallel mode.
+     * @returns                 Array of word tokens.
+     *
+     * @remarks
+     * When `parallelChunkSize` is set, text is split into chunks. Because
+     * deepcut uses a fixed-width context window, characters near chunk
+     * boundaries have fewer adjacent context characters, so token sequences
+     * near boundaries may differ from full-text results. Suitable for
+     * classification and embedding tasks; not recommended for tasks requiring
+     * precise token boundaries.
      */
-    segment(text: string): string[] {
-        return native.tokenizerSegment(this._handle, text, false, false);
+    segment(text: string, parallelChunkSize?: number): string[] {
+        return native.deepcutTokenizerSegment(this._handle, text, parallelChunkSize ?? null);
     }
 }

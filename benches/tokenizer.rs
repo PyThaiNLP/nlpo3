@@ -34,12 +34,16 @@
 //! HTML reports land in `target/criterion/`.
 
 use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
+#[cfg(feature = "deepcut")]
+use nlpo3::tokenizer::{
+    deepcut::DeepcutTokenizer, parallel_helper, parallel_options::ParallelOptions,
+    tcc::tcc_tokenizer,
+};
 use nlpo3::{
     char_string::CharString,
     tokenizer::{
         fst_dict::FstDict,
         newmm::{NewmmFstTokenizer, NewmmTokenizer},
-        tokenizer_trait::Tokenizer,
         trie_char::TrieChar,
     },
 };
@@ -78,7 +82,7 @@ Mínguó) เป็นรัฐในทวีปเอเชียตะวั�
 const DICT_PATH: &str = env!("CARGO_MANIFEST_DIR");
 
 fn dict_path() -> String {
-    format!("{}/words_th.txt", DICT_PATH)
+    format!("{}/tests/data/words_th.txt", DICT_PATH)
 }
 
 fn load_word_list() -> Vec<String> {
@@ -177,30 +181,46 @@ fn bench_full_tokenization(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("NewmmTokenizer/safe=false", label),
             text,
-            |b, t| b.iter(|| black_box(tok_trie.segment(black_box(t), false, false).unwrap())),
+            |b, t| b.iter(|| black_box(tok_trie.segment(black_box(t)).unwrap())),
         );
         group.bench_with_input(
             BenchmarkId::new("NewmmTokenizer/safe=true", label),
             text,
-            |b, t| b.iter(|| black_box(tok_trie.segment(black_box(t), true, false).unwrap())),
+            |b, t| {
+                b.iter(|| {
+                    black_box(
+                        tok_trie
+                            .segment_with_options(black_box(t), true, None)
+                            .unwrap(),
+                    )
+                })
+            },
         );
 
         // NewmmFstTokenizer — CharString + FstDict (memory-efficient)
         group.bench_with_input(
             BenchmarkId::new("NewmmFstTokenizer/safe=false", label),
             text,
-            |b, t| b.iter(|| black_box(tok_fst.segment(black_box(t), false, false).unwrap())),
+            |b, t| b.iter(|| black_box(tok_fst.segment(black_box(t)).unwrap())),
         );
         group.bench_with_input(
             BenchmarkId::new("NewmmFstTokenizer/safe=true", label),
             text,
-            |b, t| b.iter(|| black_box(tok_fst.segment(black_box(t), true, false).unwrap())),
+            |b, t| {
+                b.iter(|| {
+                    black_box(
+                        tok_fst
+                            .segment_with_options(black_box(t), true, None)
+                            .unwrap(),
+                    )
+                })
+            },
         );
 
         // DeepcutTokenizer — CNN/ONNX (only with --features deepcut)
         #[cfg(feature = "deepcut")]
         group.bench_with_input(BenchmarkId::new("DeepcutTokenizer", label), text, |b, t| {
-            b.iter(|| black_box(tok_deepcut.segment(black_box(t), false, false).unwrap()))
+            b.iter(|| black_box(tok_deepcut.segment(black_box(t)).unwrap()))
         });
     }
     group.finish();
@@ -319,10 +339,90 @@ fn bench_clone_cost(c: &mut Criterion) {
     group.finish();
 }
 
+// ===========================================================================
+// 6. Deepcut chunking overhead
+//
+// Isolates the cost of chunk management by comparing:
+// - no chunking (parallel disabled)
+// - chunking enabled but sequential tokenization
+// - chunking enabled with parallel tokenization
+// ===========================================================================
+
+#[cfg(feature = "deepcut")]
+fn bench_deepcut_chunking_overhead(c: &mut Criterion) {
+    use std::time::Duration;
+
+    let tok = DeepcutTokenizer::new().expect("deepcut: ONNX model failed to load");
+
+    // Ensure input is large enough to cross chunk thresholds.
+    let huge_text = LONG_TEXT.repeat(240);
+    let len = huge_text.len();
+    let seq_chunk_size = ParallelOptions::MIN_CHUNK_SIZE;
+
+    let mut group = c.benchmark_group("deepcut_chunking_overhead");
+    group.sample_size(10);
+    group.measurement_time(Duration::from_secs(8));
+    group.throughput(Throughput::Bytes(len as u64));
+
+    group.bench_with_input(
+        BenchmarkId::new("chunking", "disabled"),
+        &huge_text,
+        |b, t| b.iter(|| black_box(tok.segment_with_options(black_box(t), None).unwrap())),
+    );
+
+    // Chunking path is taken, but should_parallelize() stays false.
+    group.bench_with_input(
+        BenchmarkId::new("chunking", "enabled-sequential"),
+        &huge_text,
+        |b, t| {
+            b.iter(|| {
+                let tcc_positions = tcc_tokenizer::tcc_pos(black_box(t));
+                let chunks = parallel_helper::split_text_into_chunks(
+                    black_box(t),
+                    seq_chunk_size,
+                    &tcc_positions,
+                );
+                let token_vecs =
+                    parallel_helper::tokenize_chunks(chunks, false, |chunk| tok.tokenize(chunk))
+                        .unwrap();
+                black_box(parallel_helper::flatten_tokens(token_vecs))
+            })
+        },
+    );
+
+    // Chunking path with parallel tokenization.
+    group.bench_with_input(
+        BenchmarkId::new("chunking", "enabled-parallel"),
+        &huge_text,
+        |b, t| {
+            b.iter(|| {
+                black_box(
+                    tok.segment_with_options(black_box(t), Some(ParallelOptions::MIN_CHUNK_SIZE))
+                        .unwrap(),
+                )
+            })
+        },
+    );
+
+    group.finish();
+}
+
 // ---------------------------------------------------------------------------
 // Register all benchmark groups
 // ---------------------------------------------------------------------------
 
+#[cfg(feature = "deepcut")]
+criterion_group!(
+    benches,
+    bench_dict_construction,
+    bench_prefix_lookup,
+    bench_full_tokenization,
+    bench_memory_footprint,
+    bench_clone_cost,
+    bench_deepcut_chunking_overhead,
+);
+
+#[cfg(not(feature = "deepcut"))]
 criterion_group!(
     benches,
     bench_dict_construction,
