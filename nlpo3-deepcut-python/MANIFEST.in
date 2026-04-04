@@ -1,0 +1,23 @@
+include LICENSE README.md pyproject.toml Cargo.toml
+include Cargo.lock
+
+include src/lib.rs
+
+# Ensure the Python package files are included in the sdist
+graft nlpo3_deepcut
+
+# Include PEP 561 marker and type stubs for compiled extension
+include nlpo3_deepcut/py.typed
+recursive-include nlpo3_deepcut *.pyi
+
+# Exclude tests from the sdist to keep it small
+prune tests
+prune build
+prune target
+prune nlpo3_deepcut.egg-info
+prune nlpo3_deepcut/__pycache__
+
+# Keep source distributions deterministic and free of runtime caches.
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store

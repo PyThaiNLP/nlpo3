@@ -116,40 +116,31 @@ class TestNewmmFstTokenizer(unittest.TestCase):
         self.assertEqual(len(results), 3)
 
 
-class TestDeepcutTokenizer(unittest.TestCase):
-    def setUp(self):
-        self.tok = DeepcutTokenizer()
+# ---------------------------------------------------------------------------
+# DeepcutTokenizer — availability guard
+# ---------------------------------------------------------------------------
 
-    def test_empty_input(self):
-        self.assertEqual(self.tok.segment(""), [])
 
-    def test_returns_list(self):
-        result = self.tok.segment("ทดสอบ")
-        self.assertIsInstance(result, list)
-        self.assertTrue(len(result) > 0)
+class TestDeepcutTokenizerMissingPackage(unittest.TestCase):
+    """Verify that DeepcutTokenizer raises a helpful ImportError when the
+    optional ``nlpo3-deepcut`` package is not installed.
 
-    def test_basic(self):
-        result = self.tok.segment("ทดสอบการตัดคำ")
-        self.assertIsInstance(result, list)
-        self.assertTrue(len(result) > 0)
-        # Reconstructed text must equal the input.
-        self.assertEqual("".join(result), "ทดสอบการตัดคำ")
+    This test is meaningful only when ``nlpo3-deepcut`` is absent from the
+    current environment.  When that package *is* installed, construction
+    succeeds and the ImportError is not raised, so the test is skipped.
+    """
 
-    def test_reconstructs_input(self):
-        text = "หมอนทองตากลมหูว์MBK39"
-        result = self.tok.segment(text)
-        self.assertEqual("".join(result), text)
+    def test_raises_import_error_when_deepcut_not_installed(self):
+        try:
+            import nlpo3_deepcut  # noqa: F401
+            self.skipTest("nlpo3-deepcut is installed; skipping absence test")
+        except ImportError:
+            pass
 
-    def test_shared_instance(self):
-        # The same DeepcutTokenizer instance (with Arc-backed model) can be
-        # reused across many calls — the ONNX model is compiled once and
-        # shared by all calls to this tokenizer object.
-        tok = self.tok
-        texts = ["ทดสอบ", "สวัสดีครับ", "การตัดคำ"]
-        results = [tok.segment(t) for t in texts]
-        self.assertEqual(len(results), 3)
-        for r in results:
-            self.assertIsInstance(r, list)
+        with self.assertRaises(ImportError) as ctx:
+            DeepcutTokenizer()
+        self.assertIn("nlpo3-deepcut", str(ctx.exception))
+        self.assertIn("pip install", str(ctx.exception))
 
 
 # ---------------------------------------------------------------------------

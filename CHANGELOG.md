@@ -20,6 +20,9 @@ Major release with breaking changes.
   `NewmmTokenizer`, `NewmmFstTokenizer`, and `DeepcutTokenizer`.
 - Added better parallel processing controls for large input.
 - Added CLI tokenizer selection (`newmm`, `nf`, `deepcut`).
+- **New package `nlpo3-deepcut`**: optional PyPI package that ships the
+  deepcut ONNX model and the `tract-onnx` inference engine.  Install with
+  `pip install nlpo3-deepcut` to enable `DeepcutTokenizer`.
 
 ### Changed
 
@@ -32,6 +35,11 @@ Major release with breaking changes.
   tokenizer-specific `segment_to_string*` methods. Use `segment(...)` and
   `segment_with_options(...)` instead; both remain fallible and return
   `AnyResult<Vec<String>>` (`anyhow::Result<Vec<String>>`).
+- **Breaking (Python):** `DeepcutTokenizer` is no longer bundled in the base
+  `nlpo3` package.  It is now provided by the optional `nlpo3-deepcut` package.
+  The `nlpo3.DeepcutTokenizer` name is still available as a shim; if
+  `nlpo3-deepcut` is not installed, constructing it raises `ImportError` with
+  an installation hint.
 
 ### Removed
 
@@ -44,7 +52,21 @@ Major release with breaking changes.
 
 ### Migration
 
-Python:
+Python (DeepcutTokenizer):
+
+```bash
+# Install both packages to use DeepcutTokenizer
+pip install nlpo3 nlpo3-deepcut
+```
+
+```python
+# Usage is unchanged
+from nlpo3 import DeepcutTokenizer
+tok = DeepcutTokenizer()
+tokens = tok.segment("สวัสดีครับ")
+```
+
+Python (NewmmTokenizer):
 
 ```python
 # Before (v1.x)

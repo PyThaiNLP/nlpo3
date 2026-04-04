@@ -9,12 +9,14 @@ on:
       - main
     paths:
       - "nlpo3-python/**"
+      - "nlpo3-deepcut-python/**"
       - ".github/workflows/build-python-wheels.yml"
   pull_request:
     branches:
       - main
     paths:
       - "nlpo3-python/**"
+      - "nlpo3-deepcut-python/**"
       - ".github/workflows/build-python-wheels.yml"
   release:
     types: [published]
@@ -50,8 +52,12 @@ jobs:
         run: bash build_tools/github/check_build_trigger.sh
         # To trigger the build steps, add "[cd build]" to commit message
 
+  # ---------------------------------------------------------------------------
+  # nlpo3 (base package — no deepcut / tract-onnx)
+  # ---------------------------------------------------------------------------
+
   build_wheels:
-    name: Build ${{ matrix.os }}
+    name: Build nlpo3 ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
@@ -128,7 +134,7 @@ jobs:
           retention-days: 1
 
   build_sdist:
-    name: Build source distribution
+    name: Build nlpo3 source distribution
     runs-on: ubuntu-latest
     needs: check_build_trigger
     if: needs.check_build_trigger.outputs.build
@@ -158,14 +164,120 @@ jobs:
           overwrite: true
           retention-days: 1
 
+  # ---------------------------------------------------------------------------
+  # nlpo3-deepcut (optional deepcut model + tract-onnx extension)
+  # ---------------------------------------------------------------------------
+
+  build_wheels_deepcut:
+    name: Build nlpo3-deepcut ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: check_build_trigger
+    if: needs.check_build_trigger.outputs.build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ["3.14"]
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip
+
+      - name: Setup Rust toolchain
+        if: startsWith(matrix.os, 'ubuntu-') == false
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Setup rustup target
+        if: startsWith(matrix.os, 'macos-')
+        run: rustup target add x86_64-apple-darwin
+
+      - name: Build Python wheels
+        uses: pypa/cibuildwheel@v3.3.1
+        with:
+          package-dir: nlpo3-deepcut-python
+          output-dir: wheelhouse-deepcut
+        env:
+          CIBW_ENABLE: "graalpy pypy"
+          CIBW_BUILD: "cp* gp* pp*"
+          CIBW_BUILD_VERBOSITY: 1
+          CIBW_SKIP: "*-musllinux_i686 gp*-win_*"
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          CIBW_ENVIRONMENT_MACOS: |
+            MACOSX_DEPLOYMENT_TARGET=10.12
+            PATH="$HOME/.cargo/bin:$PATH"
+            CC=/usr/bin/clang
+            CXX=/usr/bin/clang++
+          CIBW_ARCHS_LINUX: "x86_64 i686"
+          CIBW_ENVIRONMENT_LINUX: PATH="$HOME/.cargo/bin:$PATH"
+          CIBW_BEFORE_BUILD_LINUX: |
+            pip install --upgrade setuptools-rust
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          CIBW_ARCHS_WINDOWS: "AMD64 x86"
+
+      - name: List wheel files
+        run: |
+          echo "Files to upload (binary wheels):"
+          find ./wheelhouse-deepcut -maxdepth 1 -type f -name '*.whl' -print | sort || true
+          echo "Count: $(find ./wheelhouse-deepcut -maxdepth 1 -type f -name '*.whl' -print | wc -l || true)"
+        shell: bash
+      - name: Store artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          path: ./wheelhouse-deepcut/*.whl
+          name: ${{ github.job }}-wheelhouse-${{ matrix.os }}-${{ github.run_id }}
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 1
+
+  build_sdist_deepcut:
+    name: Build nlpo3-deepcut source distribution
+    runs-on: ubuntu-latest
+    needs: check_build_trigger
+    if: needs.check_build_trigger.outputs.build
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v6
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: "pip"
+      - name: Build source distribution
+        run: |
+          cd nlpo3-deepcut-python
+          bash ../build_tools/github/build_source.sh
+      - name: List sdist files
+        run: |
+          echo "Files to upload (sdist):"
+          find nlpo3-deepcut-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print | sort || true
+          echo "Count: $(find nlpo3-deepcut-python/dist -maxdepth 1 -type f -name '*.tar.gz' -print | wc -l || true)"
+        shell: bash
+      - name: Store artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          path: nlpo3-deepcut-python/dist/*.tar.gz
+          name: sdist-deepcut
+          overwrite: true
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # Publish both packages to PyPI
+  # ---------------------------------------------------------------------------
+
   publish_pypi:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    needs: [build_wheels, build_sdist]
+    needs: [build_wheels, build_sdist, build_wheels_deepcut, build_sdist_deepcut]
     # Publish when a GitHub Release is created:
     if: github.event_name == 'release' && github.event.action == 'published'
-    # Alternatively, upload to PyPI on every tag starting with 'v':
-    #if: github.event_name == 'push' && startsWith(github.event.ref, 'v')
     steps:
       - name: Retrieve all artifacts
         uses: actions/download-artifact@v6
@@ -178,3 +290,4 @@ jobs:
           skip-existing: true
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+
