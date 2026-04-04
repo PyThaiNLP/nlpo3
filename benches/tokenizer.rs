@@ -97,6 +97,16 @@ const BENCH_DICTS: &[(&str, &str)] = &[
     ("words_th", "tests/data/words_th.txt"),
 ];
 
+/// The four benchmark text files. Ordered from smallest to largest.
+/// Listed here for reference; individual benchmark functions load files directly.
+#[allow(dead_code)]
+const BENCH_TEXTS: &[(&str, &str)] = &[
+    ("wikipedia-s", "tests/data/text-wikipedia-s.txt"),
+    ("wikipedia-m", "tests/data/text-wikipedia-m.txt"),
+    ("wikipedia-l", "tests/data/text-wikipedia-l.txt"),
+    ("wisesight", "tests/data/wisesight-sentiment.txt"),
+];
+
 fn dict_path(filename: &str) -> String {
     format!("{}/{}", BASE_PATH, filename)
 }
@@ -109,6 +119,11 @@ fn load_dict_words(filename: &str) -> Vec<String> {
         .map(|l| l.trim().to_string())
         .filter(|l| !l.is_empty())
         .collect()
+}
+
+fn load_text_file(filename: &str) -> String {
+    let path = dict_path(filename);
+    std::fs::read_to_string(&path).unwrap_or_else(|_| panic!("text file not found: {}", path))
 }
 
 /// Convenience: load the full words_th dict (used by tokenizer benchmarks).
@@ -601,6 +616,132 @@ fn bench_deepcut_chunking_overhead(c: &mut Criterion) {
     group.finish();
 }
 
+// ===========================================================================
+// 8. End-to-end tokenization with real text files
+//
+// Benchmark matrix:
+//   DictBackend:  TrieChar (new), TrieCharLegacy, FstDict
+//   Word lists (small text):  500-short, 500-long, 10k, words_th
+//   Word lists (large text):  10k, words_th only
+//     (500-word dicts are excluded from large texts because FstDict is
+//     impractically slow there: a 500-word vocabulary matches almost nothing,
+//     causing O(n²·B) fallback processing where B = FstDict bytes-per-char.)
+//   Text inputs:  text-wikipedia-s, text-wikipedia-m, text-wikipedia-l,
+//                 wisesight-sentiment
+//
+// Additionally, on wisesight-sentiment.txt with words_th.txt, all three
+// backends are also run with segment_parallel (auto chunk size).
+// ===========================================================================
+
+/// Dictionaries used only for small text files (wikipedia-s, wikipedia-m).
+const SMALL_TEXT_DICTS: &[(&str, &str)] = &[
+    ("500-short", "tests/data/500-short.txt"),
+    ("500-long", "tests/data/500-long.txt"),
+    ("10k", "tests/data/10k.txt"),
+    ("words_th", "tests/data/words_th.txt"),
+];
+
+/// Dictionaries used for large text files (wikipedia-l, wisesight-sentiment).
+const LARGE_TEXT_DICTS: &[(&str, &str)] = &[
+    ("10k", "tests/data/10k.txt"),
+    ("words_th", "tests/data/words_th.txt"),
+];
+
+fn bench_e2e_tokenization(c: &mut Criterion) {
+    use std::time::Duration;
+
+    // Load all text files once.
+    let text_wiki_s = load_text_file("tests/data/text-wikipedia-s.txt");
+    let text_wiki_m = load_text_file("tests/data/text-wikipedia-m.txt");
+    let text_wiki_l = load_text_file("tests/data/text-wikipedia-l.txt");
+    let text_wisesight = load_text_file("tests/data/wisesight-sentiment.txt");
+
+    let mut group = c.benchmark_group("e2e_tokenization");
+    group.sample_size(10);
+    // Allow enough time per case for large texts.
+    group.measurement_time(Duration::from_secs(30));
+
+    // --- Small texts: all 4 dictionaries ---
+    let small_texts: &[(&str, &str)] =
+        &[("wikipedia-s", &text_wiki_s), ("wikipedia-m", &text_wiki_m)];
+
+    for (dict_name, dict_file) in SMALL_TEXT_DICTS {
+        let words = load_dict_words(dict_file);
+        let tok_trie = NewmmTokenizer::<TrieChar>::from_word_list(words.clone());
+        let tok_legacy = NewmmTokenizer::<TrieCharLegacy>::from_word_list(words.clone());
+        let tok_fst = NewmmFstTokenizer::from_word_list(words).unwrap();
+
+        for (text_label, text) in small_texts {
+            group.throughput(Throughput::Bytes(text.len() as u64));
+            let id = format!("{}/{}", dict_name, text_label);
+
+            group.bench_with_input(BenchmarkId::new("TrieChar", &id), *text, |b, t| {
+                b.iter(|| black_box(tok_trie.segment(black_box(t)).unwrap()))
+            });
+            group.bench_with_input(BenchmarkId::new("TrieCharLegacy", &id), *text, |b, t| {
+                b.iter(|| black_box(tok_legacy.segment(black_box(t)).unwrap()))
+            });
+            group.bench_with_input(BenchmarkId::new("FstDict", &id), *text, |b, t| {
+                b.iter(|| black_box(tok_fst.segment(black_box(t)).unwrap()))
+            });
+        }
+    }
+
+    // --- Large texts: 10k and words_th dictionaries only ---
+    let large_texts: &[(&str, &str)] = &[
+        ("wikipedia-l", &text_wiki_l),
+        ("wisesight", &text_wisesight),
+    ];
+
+    for (dict_name, dict_file) in LARGE_TEXT_DICTS {
+        let words = load_dict_words(dict_file);
+        let tok_trie = NewmmTokenizer::<TrieChar>::from_word_list(words.clone());
+        let tok_legacy = NewmmTokenizer::<TrieCharLegacy>::from_word_list(words.clone());
+        let tok_fst = NewmmFstTokenizer::from_word_list(words).unwrap();
+
+        for (text_label, text) in large_texts {
+            group.throughput(Throughput::Bytes(text.len() as u64));
+            let id = format!("{}/{}", dict_name, text_label);
+
+            group.bench_with_input(BenchmarkId::new("TrieChar", &id), *text, |b, t| {
+                b.iter(|| black_box(tok_trie.segment(black_box(t)).unwrap()))
+            });
+            group.bench_with_input(BenchmarkId::new("TrieCharLegacy", &id), *text, |b, t| {
+                b.iter(|| black_box(tok_legacy.segment(black_box(t)).unwrap()))
+            });
+            group.bench_with_input(BenchmarkId::new("FstDict", &id), *text, |b, t| {
+                b.iter(|| black_box(tok_fst.segment(black_box(t)).unwrap()))
+            });
+        }
+    }
+
+    // --- Parallel mode: wisesight × words_th × all 3 backends ---
+    let words_th = load_dict_words("tests/data/words_th.txt");
+    let tok_trie_th = NewmmTokenizer::<TrieChar>::from_word_list(words_th.clone());
+    let tok_legacy_th = NewmmTokenizer::<TrieCharLegacy>::from_word_list(words_th.clone());
+    let tok_fst_th = NewmmFstTokenizer::from_word_list(words_th).unwrap();
+
+    group.throughput(Throughput::Bytes(text_wisesight.len() as u64));
+
+    group.bench_with_input(
+        BenchmarkId::new("TrieChar/parallel", "words_th/wisesight"),
+        text_wisesight.as_str(),
+        |b, t| b.iter(|| black_box(tok_trie_th.segment_parallel(black_box(t), false).unwrap())),
+    );
+    group.bench_with_input(
+        BenchmarkId::new("TrieCharLegacy/parallel", "words_th/wisesight"),
+        text_wisesight.as_str(),
+        |b, t| b.iter(|| black_box(tok_legacy_th.segment_parallel(black_box(t), false).unwrap())),
+    );
+    group.bench_with_input(
+        BenchmarkId::new("FstDict/parallel", "words_th/wisesight"),
+        text_wisesight.as_str(),
+        |b, t| b.iter(|| black_box(tok_fst_th.segment_parallel(black_box(t), false).unwrap())),
+    );
+
+    group.finish();
+}
+
 // ---------------------------------------------------------------------------
 // Register all benchmark groups
 // ---------------------------------------------------------------------------
@@ -615,6 +756,7 @@ criterion_group!(
     bench_memory_footprint,
     bench_clone_cost,
     bench_deepcut_chunking_overhead,
+    bench_e2e_tokenization,
 );
 
 #[cfg(not(feature = "deepcut"))]
@@ -626,5 +768,6 @@ criterion_group!(
     bench_full_tokenization,
     bench_memory_footprint,
     bench_clone_cost,
+    bench_e2e_tokenization,
 );
 criterion_main!(benches);
