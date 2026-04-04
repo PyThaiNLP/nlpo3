@@ -641,11 +641,18 @@ const SMALL_TEXT_DICTS: &[(&str, &str)] = &[
     ("words_th", "tests/data/words_th.txt"),
 ];
 
-/// Dictionaries used for large text files (wikipedia-l, wisesight-sentiment).
-const LARGE_TEXT_DICTS: &[(&str, &str)] = &[
+/// Trie-backend dictionaries for large texts (all 4 dicts).
+const LARGE_TEXT_TRIE_DICTS: &[(&str, &str)] = &[
     ("10k", "tests/data/10k.txt"),
     ("words_th", "tests/data/words_th.txt"),
 ];
+
+/// FST dictionary for large texts — words_th only.
+/// FstDict with smaller vocabularies on large text is impractically slow:
+/// a 10k-word (or 500-word) vocabulary matches almost nothing in the text,
+/// causing heavy character-by-character fallback that amplifies FST overhead
+/// to hundreds of seconds per benchmark iteration.
+const LARGE_TEXT_FST_DICTS: &[(&str, &str)] = &[("words_th", "tests/data/words_th.txt")];
 
 fn bench_e2e_tokenization(c: &mut Criterion) {
     use std::time::Duration;
@@ -687,17 +694,16 @@ fn bench_e2e_tokenization(c: &mut Criterion) {
         }
     }
 
-    // --- Large texts: 10k and words_th dictionaries only ---
+    // --- Large texts: trie backends on 10k+words_th; FstDict on words_th only ---
     let large_texts: &[(&str, &str)] = &[
         ("wikipedia-l", &text_wiki_l),
         ("wisesight", &text_wisesight),
     ];
 
-    for (dict_name, dict_file) in LARGE_TEXT_DICTS {
+    for (dict_name, dict_file) in LARGE_TEXT_TRIE_DICTS {
         let words = load_dict_words(dict_file);
         let tok_trie = NewmmTokenizer::<TrieChar>::from_word_list(words.clone());
-        let tok_legacy = NewmmTokenizer::<TrieCharLegacy>::from_word_list(words.clone());
-        let tok_fst = NewmmFstTokenizer::from_word_list(words).unwrap();
+        let tok_legacy = NewmmTokenizer::<TrieCharLegacy>::from_word_list(words);
 
         for (text_label, text) in large_texts {
             group.throughput(Throughput::Bytes(text.len() as u64));
@@ -709,6 +715,17 @@ fn bench_e2e_tokenization(c: &mut Criterion) {
             group.bench_with_input(BenchmarkId::new("TrieCharLegacy", &id), *text, |b, t| {
                 b.iter(|| black_box(tok_legacy.segment(black_box(t)).unwrap()))
             });
+        }
+    }
+
+    for (dict_name, dict_file) in LARGE_TEXT_FST_DICTS {
+        let words = load_dict_words(dict_file);
+        let tok_fst = NewmmFstTokenizer::from_word_list(words).unwrap();
+
+        for (text_label, text) in large_texts {
+            group.throughput(Throughput::Bytes(text.len() as u64));
+            let id = format!("{}/{}", dict_name, text_label);
+
             group.bench_with_input(BenchmarkId::new("FstDict", &id), *text, |b, t| {
                 b.iter(|| black_box(tok_fst.segment(black_box(t)).unwrap()))
             });
