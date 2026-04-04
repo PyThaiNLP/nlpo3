@@ -7,10 +7,11 @@
  * Original Rust implementation: Thanathip Suntorntip
  * Rewrite and extension: PyThaiNLP Project
  */
-use std::path::Path;
-
-use nlpo3::tokenizer::deepcut::DeepcutTokenizer;
 use nlpo3::tokenizer::newmm::{NewmmFstTokenizer, NewmmTokenizer};
+#[cfg(feature = "deepcut")]
+use std::path::Path;
+#[cfg(feature = "deepcut")]
+use nlpo3::tokenizer::deepcut::DeepcutTokenizer;
 use pyo3::exceptions;
 use pyo3::prelude::*;
 
@@ -192,9 +193,10 @@ impl PyNewmmFstTokenizer {
 }
 
 // ---------------------------------------------------------------------------
-// DeepcutTokenizer Python class
+// DeepcutTokenizer Python class (only compiled with the "deepcut" feature)
 // ---------------------------------------------------------------------------
 
+#[cfg(feature = "deepcut")]
 /// Deepcut CNN-based Thai word tokenizer.
 ///
 /// Each instance compiles and owns the ONNX model.  Internally the compiled
@@ -222,6 +224,7 @@ struct PyDeepcutTokenizer {
     inner: DeepcutTokenizer,
 }
 
+#[cfg(feature = "deepcut")]
 #[pymethods]
 impl PyDeepcutTokenizer {
     /// Create a new DeepcutTokenizer.
@@ -304,6 +307,7 @@ impl PyDeepcutTokenizer {
 fn _nlpo3_python_backend(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyNewmmTokenizer>()?;
     m.add_class::<PyNewmmFstTokenizer>()?;
+    #[cfg(feature = "deepcut")]
     m.add_class::<PyDeepcutTokenizer>()?;
     Ok(())
 }

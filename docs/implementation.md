@@ -106,7 +106,39 @@ default settings.
 - Safe mode remains available for highly ambiguous text.
 - Previous BFS path explosion risk was mitigated with visited-set controls.
 
-## Concurrency model
+## Split Python packaging
+
+The Python binding is split into two PyPI packages to keep the base install lightweight.
+
+### Package layout
+
+| Package | Directory | Cargo feature | Contents |
+|---------|-----------|---------------|----------|
+| `nlpo3` | `nlpo3-python/` | none | `NewmmTokenizer`, `NewmmFstTokenizer`, `DeepcutTokenizer` shim |
+| `nlpo3-deepcut` | `nlpo3-deepcut-python/` | `deepcut` (default) | `DeepcutTokenizer` (ONNX model embedded) |
+
+### DeepcutTokenizer shim
+
+`nlpo3.DeepcutTokenizer` is a pure-Python class defined in
+`nlpo3-python/nlpo3/__init__.py`. Its `__new__` method:
+
+1. Attempts `from nlpo3_deepcut import DeepcutTokenizer`.
+2. On success, constructs and returns the real `nlpo3_deepcut.DeepcutTokenizer`
+   instance (GIL-releasing Rust extension backed by tract-onnx).
+3. On `ImportError`, raises a new `ImportError` with the message:
+   `DeepcutTokenizer requires the nlpo3-deepcut package. Install it with: pip install nlpo3-deepcut`.
+
+The shim defines stub `segment(...)` and `__init__` methods for static type
+checkers, but they are never reached at runtime — `__new__` returns the real
+object before `__init__` is invoked.
+
+### Rust extension module names
+
+- `nlpo3._nlpo3_python_backend` — compiled without `deepcut` feature.
+- `nlpo3_deepcut._nlpo3_deepcut_backend` — compiled with `deepcut` feature;
+  embeds `model/deepcut.onnx` via `include_bytes!`.
+
+
 
 - Tokenizer instances are designed for read-heavy concurrent usage.
 - Dictionary structures are shared where possible.

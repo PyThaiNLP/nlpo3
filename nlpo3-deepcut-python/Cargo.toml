@@ -1,5 +1,5 @@
 [package]
-name = "nlpo3-python"
+name = "nlpo3-deepcut-python"
 version = "2.0.0"
 edition = "2024"
 rust-version = "1.88.0"
@@ -9,18 +9,18 @@ authors = [
     "Arthit Suriyawongkul",
     "Wannaphong Phatthiyaphaibun <wannaphong@yahoo.com>",
 ]
-description = "Python binding for nlpO3 Thai language processing library"
+description = "Deepcut ONNX tokenizer for nlpO3 — optional extension for nlpo3"
 categories = ["text-processing"]
 keywords = [
     "thai",
     "tokenizer",
     "nlp",
-    "text-processing",
+    "deepcut",
     "pythainlp",
 ]
-homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-python"
+homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-deepcut-python"
 repository = "https://github.com/PyThaiNLP/nlpo3/"
-documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-python/README.md"
+documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-deepcut-python/README.md"
 readme = "README.md"
 include = [
     "/Cargo.toml",
@@ -32,17 +32,17 @@ include = [
     "/pyproject.toml",
     "/MANIFEST.in",
     "/src/lib.rs",
-    "/nlpo3/__init__.py",
-    "/nlpo3/_nlpo3_python_backend.pyi",
-    "/nlpo3/py.typed",
+    "/nlpo3_deepcut/__init__.py",
+    "/nlpo3_deepcut/_nlpo3_deepcut_backend.pyi",
+    "/nlpo3_deepcut/py.typed",
 ]
 
 [features]
-default = []
+default = ["deepcut"]
 deepcut = ["nlpo3/deepcut"]
 
 [lib]
-name = "_nlpo3_python_backend"
+name = "_nlpo3_deepcut_backend"
 path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 

@@ -5,10 +5,9 @@ SPDX-License-Identifier: CC0-1.0
 
 # Design notes
 
-## Proposed split packaging for bindings (design only)
+## Split packaging for Python bindings
 
-Status: proposed architecture. This section documents a packaging direction and
-release strategy. It is not implemented yet.
+Status: implemented in v2.0.0.
 
 ### Goals
 
@@ -17,39 +16,49 @@ release strategy. It is not implemented yet.
 - Keep user-facing API stable where possible.
 - Let users install optional assets/features explicitly.
 
-### Python packaging proposal
+### Python packages
 
-Proposed packages:
+Two packages are published to PyPI:
 
 - `nlpo3` (base):
-  - Includes NewMM tokenizers and core Rust extension.
-  - Does not bundle default dictionary.
-  - Does not include Deepcut model or ONNX-heavy dependency path.
-  - Users pass their own dictionary path.
-- `nlpo3-dict` (optional data package):
-  - Provides default `words_th.txt` and dictionary access helpers.
-  - No ONNX/model dependency.
-- `nlpo3-deepcut` (optional model package):
-  - Provides Deepcut model assets and Deepcut-enabled extension/runtime.
-  - Pulls required model/runtime dependencies.
+  - Includes `NewmmTokenizer`, `NewmmFstTokenizer`, and the core Rust extension.
+  - Compiled without the `deepcut` Cargo feature: no `tract-onnx`, no `ndarray`,
+    no embedded ONNX model.
+  - `DeepcutTokenizer` is available as a Python-level shim that delegates to
+    `nlpo3_deepcut.DeepcutTokenizer` when the optional package is present.
+  - If `nlpo3-deepcut` is absent, constructing `DeepcutTokenizer` raises
+    `ImportError` with a clear installation hint.
+- `nlpo3-deepcut` (optional model package, `nlpo3-deepcut-python/`):
+  - Provides `DeepcutTokenizer` backed by the deepcut ONNX model.
+  - Compiled with the `deepcut` Cargo feature: embeds the ONNX model and
+    links `tract-onnx` + `ndarray`.
+  - Declares `nlpo3~=2.0` as a runtime dependency.
 
-Expected install flows:
+Install flows:
 
-- `pip install nlpo3` for lightweight dictionary-based tokenization with
+- `pip install nlpo3` — lightweight dictionary-based tokenization with
   user-supplied dictionary.
-- `pip install nlpo3-dict` to add default dictionary data.
-- `pip install nlpo3-deepcut` to add `DeepcutTokenizer` support.
+- `pip install nlpo3 nlpo3-deepcut` — adds `DeepcutTokenizer` support.
 
-API behavior proposal:
+API behavior:
 
-- Base package exports NewMM classes always.
-- Deepcut import is conditional:
-  - If deepcut package is present, `DeepcutTokenizer` is available.
-  - If absent, import or construction returns a clear guidance error message.
+- Base package always exports `NewmmTokenizer` and `NewmmFstTokenizer`.
+- `DeepcutTokenizer` in the base package is a forwarding shim:
+  - If `nlpo3-deepcut` is installed: `DeepcutTokenizer(...)` constructs and
+    returns an `nlpo3_deepcut.DeepcutTokenizer` instance.
+  - If absent: raises `ImportError` with the hint
+    `pip install nlpo3-deepcut`.
+
+### Rust package layout
+
+| Directory | Cargo crate | Compiled feature set |
+|-----------|-------------|----------------------|
+| `nlpo3-python/` | `nlpo3-python` | no `deepcut` feature |
+| `nlpo3-deepcut-python/` | `nlpo3-deepcut-python` | `deepcut` feature (default) |
 
 ### npm packaging proposal
 
-Proposed packages:
+Proposed packages (not yet implemented):
 
 - `nlpo3` (base):
   - Includes dictionary-based tokenizers only.
@@ -77,27 +86,30 @@ API behavior proposal:
 - Maintain separate release pipelines per package.
 - Keep core tokenizer code in one source tree; package-specific wrappers select
   enabled features and bundled assets.
-- Use compatibility constraints so `-dict` and `-deepcut` packages track the
-  same major/minor line as base.
+- Use compatibility constraints so `-deepcut` package tracks the same
+  major/minor line as base (`nlpo3~=2.0`).
 
 ### CI and test strategy
 
 - Base package CI validates:
-  - NewMM tokenizers, dictionary-from-user-path flows, no deepcut dependency.
-- Dict package CI validates:
-  - Data packaging, default dictionary loading behavior, version sync.
+  - NewMM tokenizers, dictionary-from-user-path flows.
+  - `DeepcutTokenizer` raises `ImportError` with guidance when `nlpo3-deepcut`
+    is absent.
 - Deepcut package CI validates:
-  - Model availability, deepcut inference path, platform wheel/addon coverage.
-- Add compatibility tests for mixed installs (base + dict, base + deepcut,
-  base + dict + deepcut).
+  - Model availability, deepcut inference path, platform wheel coverage.
+  - `nlpo3.DeepcutTokenizer` shim delegates correctly when `nlpo3-deepcut` is
+    installed.
+- Both packages are built and published in the same CI release workflow.
 
 ### Migration and compatibility notes
 
-- Keep current monolithic behavior for one transition window.
-- Provide deprecation notes and migration examples in README/CHANGELOG.
-- Preserve class names and method signatures where possible.
-- Document package-selection matrix for common use cases (small install,
-  dictionary convenience, neural tokenizer support).
+- Class names and method signatures are preserved.
+- Existing code that imports `DeepcutTokenizer` from `nlpo3` continues to work
+  when `nlpo3-deepcut` is installed.
+- Code that imports from `nlpo3_deepcut` directly also works.
+- Users upgrading from `nlpo3<2.0` should run `pip install nlpo3-deepcut` to
+  restore `DeepcutTokenizer` functionality.
+
 
 ## Benchmark dictionary files
 

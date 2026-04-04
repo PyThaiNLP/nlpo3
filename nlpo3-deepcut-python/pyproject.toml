@@ -1,0 +1,106 @@
+[build-system]
+requires = ["setuptools", "setuptools-rust", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nlpo3-deepcut"
+version = "2.0.0"
+description = "Deepcut ONNX tokenizer for nlpO3 — optional extension for nlpo3"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = [
+  "thai",
+  "tokenizer",
+  "tokenization",
+  "deepcut",
+  "nlp",
+  "natural-language-processing",
+  "word-segmentation",
+  "pythainlp",
+  "rust",
+]
+authors = [
+  { name = "Thanathip Suntorntip" },
+  { name = "Arthit Suriyawongkul" },
+  { name = "Wannaphong Phatthiyaphaibun", email = "wannaphong@yahoo.com" },
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Intended Audience :: Developers",
+  "Natural Language :: Thai",
+  "Topic :: Text Processing :: Linguistic",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "nlpo3~=2.0",
+]
+
+[project.urls]
+homepage = "https://github.com/PyThaiNLP/nlpo3/tree/main/nlpo3-deepcut-python"
+repository = "https://github.com/PyThaiNLP/nlpo3/"
+documentation = "https://github.com/PyThaiNLP/nlpo3/blob/main/nlpo3-deepcut-python/README.md"
+
+[tool.black]
+line-length = 79
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.vscode
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+pretty = true
+show_column_numbers = true
+show_error_code_links = true
+show_error_context = true
+strict = true
+strict_equality = true
+strict_equality_for_none = true
+warn_unreachable = true
+# _nlpo3_deepcut_backend is a compiled Rust extension; types come from the
+# .pyi stub.  Ignore the missing-module error at the package level.
+ignore_missing_imports = true
+
+[tool.pylint.main]
+# Exclude type-stub files: pylint does not fully understand .pyi semantics.
+ignore-patterns = [".*\\.pyi$"]
+
+[tool.pylint.typecheck]
+# _nlpo3_deepcut_backend is a compiled Rust extension that requires a build
+# step not run during linting.
+ignored-modules = ["nlpo3_deepcut._nlpo3_deepcut_backend", "_nlpo3_deepcut_backend"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["nlpo3_deepcut"]
+exclude = ["tests", "nlpo3_deepcut.__pycache__"]
+
+[tool.setuptools.package-data]
+nlpo3_deepcut = ["py.typed", "*.pyi"]
+
+[tool.setuptools.exclude-package-data]
+nlpo3_deepcut = ["__pycache__/*", "*.pyc", "*.pyo"]
+
+[[tool.setuptools-rust.ext-modules]]
+target = "nlpo3_deepcut._nlpo3_deepcut_backend"
+path = "Cargo.toml"
+binding = "PyO3"
+strip = "No"
