@@ -17,7 +17,7 @@ on a single-threaded workload.  Each timing is the **mean** of 100 samples
 ## Dictionary backends
 
 | Backend | Prefix-lookup | `contain()` | Memory (62 k words) |
-|---------|--------------|-------------|---------------------|
+| ------- | ------------- | ----------- | ------------------- |
 | `TrieChar` | O(k) trie walk | O(k) trie walk | ~43 MB |
 | `TrieCharLegacy` | O(k) trie walk | O(1) hash lookup | ~49 MB |
 | `FstDict` | O(k·B) FST stream | O(1) hash + O(k·B) fallback | ~0.85 MB |
@@ -46,7 +46,7 @@ let _  = NewmmFstTokenizer::new("dict.txt").unwrap();
 - Dictionaries (all in `tests/data/`):
 
 | File | Words | Word-length profile |
-|------|------:|---------------------|
+| ---- | ----: | ------------------- |
 | `500-short.txt` | 500 | 3–10 chars |
 | `500-long.txt` | 500 | 15–36 chars |
 | `10k.txt` | 10 000 | 1–34 chars |
@@ -66,7 +66,7 @@ Build time for each backend across four dictionary sizes.
 unsorted insert-per-word.
 
 | Backend | 500-short | 500-long | 10k | 62k (words_th) |
-|---------|----------:|---------:|----:|---------------:|
+| ------- | --------: | -------: | --: | -------------: |
 | `TrieChar::new` | **220 µs** | **810 µs** | **5.3 ms** | **42.9 ms** |
 | `TrieCharLegacy::new` | 317 µs | 909 µs | 6.8 ms | 64.4 ms |
 | `FstDict::from_words` | 637 µs | 2.8 ms | 9.6 ms | 60.2 ms |
@@ -79,7 +79,7 @@ before constructing the minimised automaton.
 ### Complexity
 
 | Backend | `new(n words, avg length k)` |
-|---------|------------------------------|
+| ------- | ---------------------------- |
 | `TrieChar` | O(n·k) |
 | `TrieCharLegacy` | O(n·k) + O(n) hash inserts |
 | `FstDict` | O(n·k·log n) (sort + automaton build) |
@@ -94,7 +94,7 @@ This is called on every character position during tokenization.
 ### 500-word dictionaries
 
 | Backend | short_thai (5 ch) | mixed (7 ch) | medium_thai (14 ch) |
-|---------|------------------:|-------------:|--------------------:|
+| ------- | ----------------: | -----------: | ------------------: |
 | `TrieChar::prefix_ref` | **21 ns** | **17 ns** | **22 ns** |
 | `TrieCharLegacy::prefix_ref` | 22 ns | 17 ns | 23 ns |
 | `FstDict::prefix_lengths` | 1 727 ns | 731 ns | 1 672 ns |
@@ -102,7 +102,7 @@ This is called on every character position during tokenization.
 ### 10 000-word dictionary
 
 | Backend | short_thai (5 ch) | mixed (7 ch) | medium_thai (14 ch) |
-|---------|------------------:|-------------:|--------------------:|
+| ------- | ----------------: | -----------: | ------------------: |
 | `TrieChar::prefix_ref` | **53 ns** | **48 ns** | **47 ns** |
 | `TrieCharLegacy::prefix_ref` | 53 ns | 48 ns | 47 ns |
 | `FstDict::prefix_lengths` | 3 438 ns | 1 657 ns | 3 694 ns |
@@ -110,7 +110,7 @@ This is called on every character position during tokenization.
 ### 62 018-word dictionary (words_th)
 
 | Backend | short_thai (5 ch) | mixed (7 ch) | medium_thai (14 ch) |
-|---------|------------------:|-------------:|--------------------:|
+| ------- | ----------------: | -----------: | ------------------: |
 | `TrieChar::prefix_ref` | **68 ns** | **73 ns** | **88 ns** |
 | `TrieCharLegacy::prefix_ref` | 69 ns | 72 ns | 91 ns |
 | `FstDict::prefix_lengths` | 3 686 ns | 2 080 ns | 4 403 ns |
@@ -123,7 +123,7 @@ it streams a byte-level FST automaton.
 ### Complexity
 
 | Backend | `prefix_lengths(k chars)` |
-|---------|---------------------------|
+| ------- | ------------------------- |
 | `TrieChar` | O(k) pointer-chasing trie walk |
 | `TrieCharLegacy` | O(k) — identical trie walk |
 | `FstDict` | O(k·B) where B = bytes/char (3 for Thai) |
@@ -137,7 +137,7 @@ it streams a byte-level FST automaton.
 Each iteration calls `contain` on one word against the pre-built dictionary.
 
 | Backend | 500-short | 500-long | 10k | 62k (words_th) |
-|---------|----------:|---------:|----:|---------------:|
+| ------- | --------: | -------: | --: | -------------: |
 | `TrieChar::contain` | 109 ns | 101 ns | 113 ns | 118 ns |
 | `TrieCharLegacy::contain` | **79 ns** | **77 ns** | **83 ns** | **91 ns** |
 | `FstDict::contains` | 74 ns | 71 ns | 122 ns | 135 ns |
@@ -156,7 +156,7 @@ Each iteration clones the pre-built dictionary, then adds one word.
 This simulates copy-on-write mutation.
 
 | Backend | 500-short | 500-long | 10k | 62k (words_th) |
-|---------|----------:|---------:|----:|---------------:|
+| ------- | --------: | -------: | --: | -------------: |
 | `TrieChar::add` | 133 µs | 591 µs | 2.7 ms | 21.8 ms |
 | `TrieCharLegacy::add` | 159 µs | 621 µs | 3.3 ms | 26.2 ms |
 | `FstDict::add` | **208 ns** | **1.1 µs** | **3.5 µs** | **52.7 µs** |
@@ -169,7 +169,7 @@ without clone is O(k) for trie variants and O(1) for `FstDict`.
 ### remove — delete one word (includes dict-clone overhead)
 
 | Backend | 500-short | 500-long | 10k | 62k (words_th) |
-|---------|----------:|---------:|----:|---------------:|
+| ------- | --------: | -------: | --: | -------------: |
 | `TrieChar::remove` | 133 µs | 595 µs | 2.7 ms | 21.8 ms |
 | `TrieCharLegacy::remove` | 154 µs | 609 µs | 3.4 ms | 25.7 ms |
 | `FstDict::remove` | **201 ns** | **1.1 µs** | **3.5 µs** | **52.7 µs** |
@@ -180,7 +180,7 @@ tracks removals in a small delta `HashSet`.
 ### Complexity summary
 
 | Operation | `TrieChar` | `TrieCharLegacy` | `FstDict` |
-|-----------|-----------|-----------------|-----------|
+| --------- | ---------- | ---------------- | --------- |
 | `contain(k)` | O(k) trie walk | O(1) hash | O(1) hash + O(k·B) FST |
 | `add(k)` pure | O(k) check + O(k) insert | O(1) hash + O(k) insert | O(1) hash delta |
 | `remove(k)` pure | O(k) check + O(k) prune | O(1) hash + O(k) prune | O(1) hash delta |
@@ -196,7 +196,7 @@ Using the full `words_th.txt` dictionary (62 018 words).
 wraps the legacy trie backend; `NewmmFstTokenizer` wraps `FstDict`.
 
 | Tokenizer | short (28 ch) | medium (219 ch) | long (937 ch) |
-|-----------|-------------:|----------------:|--------------:|
+| --------- | ------------: | --------------: | ------------: |
 | `NewmmTokenizer` (TrieChar, safe=false) | **2.65 µs** | **27.7 µs** | **128 µs** |
 | `NewmmTokenizer` (TrieChar, safe=true) | 2.65 µs | 27.6 µs | 172 µs |
 | `NewmmLegacyTokenizer` (TrieCharLegacy, safe=false) | 2.66 µs | 24.8 µs | 129 µs |
@@ -222,7 +222,7 @@ significantly slower than any dictionary-based method.
 ### String representation
 
 | Representation | Heap bytes per character |
-|---|---:|
+| -------------- | -----------------------: |
 | `CharString` (UTF-8 source + `u32` position table) | **6.3 bytes/char** |
 
 Thai characters are 3-byte UTF-8 sequences plus one 4-byte `u32` position
@@ -231,7 +231,7 @@ entry ≈ 7 bytes/char for Thai, less for ASCII.
 ### Dictionary storage (62 018 words)
 
 | Structure | Total | Per word |
-|---|---:|---:|
+| --------- | ----: | -------: |
 | `FstDict` (FST automaton) | ~0.85 MB | **14 bytes** |
 | `TrieChar` (trie, no HashSet) | ~43 MB | **~699 bytes** |
 | `TrieCharLegacy` (trie + HashSet) | ~49 MB | **~791 bytes** |
@@ -255,7 +255,7 @@ The table below was the primary motivation for introducing the optimized
 `TrieChar` (without the parallel `HashSet`).
 
 | Property | `TrieChar` (new) | `TrieCharLegacy` |
-|----------|-----------------|-----------------|
+| -------- | ---------------- | ---------------- |
 | `prefix_ref()` | identical | identical |
 | End-to-end tokenization | identical | identical |
 | `contain()` | O(k) trie walk | **O(1) hash** |
@@ -276,7 +276,7 @@ hot path and the 12 % extra memory is acceptable.
 ## Summary
 
 | Backend | Construction | Prefix-lookup | Memory | `contain()` |
-|---------|-------------|--------------|--------|-------------|
+| ------- | ------------ | ------------- | ------ | ----------- |
 | `TrieChar` (default) | fastest | fastest | medium | O(k) |
 | `TrieCharLegacy` | slower (+50%) | same as TrieChar | +12% | O(1) |
 | `FstDict` | similar to legacy | **29–54× slower** | **49× smaller** | O(1) |
