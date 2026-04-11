@@ -10,7 +10,7 @@ use nlpo3::tokenizer::trie_char::TrieChar;
 const FIRST_TEXT: &str = "นิสสันผ่อนจนเพลียนาวาร่า..";
 const SECOND_TEXT: &str =
     "อาชญากรรมทางการแพทย์.. หลอกลวงคนไข้ผ่าตัด ตัดหมอนรองข้อเข่าอำพราง รพ.กรุงเทพภูเก็ตปลอมเวชระเบียน ตอนที่๑.";
-const DEFAULT_DICT_PATH: &str = "/tests/data/words_th.txt"; // relative to cargo
+const DEFAULT_DICT_PATH: &str = "/tests/data/dict-words-th.txt"; // relative to cargo
 
 #[test]
 fn test_dict_with_empty_line() {
