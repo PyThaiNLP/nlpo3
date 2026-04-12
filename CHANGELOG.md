@@ -20,6 +20,16 @@ Major release with breaking changes.
   `NewmmTokenizer`, `NewmmFstTokenizer`, and `DeepcutTokenizer`.
 - Added better parallel processing controls for large input.
 - Added CLI tokenizer selection (`newmm`, `nf`, `deepcut`).
+- **`TrieChar` memory optimization**: removed the parallel `HashSet<String>`
+  word store. Words are now encoded exclusively in the trie structure,
+  eliminating per-word duplicate string allocations (~92 bytes per word for
+  Thai text, ~12% total reduction for 62k-word dictionary). `contain()` does
+  a trie walk; `iterate()` does a depth-first traversal; a `word_count: usize`
+  counter replaces `HashSet::len()`. Construction is ~35% faster.
+- **`TrieCharLegacy`**: the original `TrieChar` (with `HashSet<String>`) is
+  preserved as `TrieCharLegacy` for comparison and for workloads that call
+  `contain()` on a hot path. It implements `DictBackend` and can be used as
+  `NewmmTokenizer<TrieCharLegacy>`.
 
 ### Changed
 

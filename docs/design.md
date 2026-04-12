@@ -5,6 +5,50 @@ SPDX-License-Identifier: CC0-1.0
 
 # Design notes
 
+## TrieChar optimization: removing the parallel HashSet
+
+### Context
+
+The original `TrieChar` kept two parallel data structures for the dictionary:
+
+1. A trie of `HashMap<char, TrieNode>` nodes — for prefix lookup.
+2. A `HashSet<String>` — for O(1) membership tests and word-count tracking.
+
+### Change
+
+The `HashSet<String>` was removed.  Words are now stored exclusively in the
+trie structure.  A `word_count: usize` counter replaces `HashSet::len()`.
+`contain()` now does a trie walk (O(k)) instead of a hash lookup (O(1)).
+
+The original implementation is preserved as `TrieCharLegacy` for:
+- Direct before/after benchmarking.
+- Workloads that call `contain()` frequently outside the tokenizer.
+- Reference/comparison purposes.
+
+### Rationale
+
+- `contain()` is **not on the hot tokenization path** — `prefix_ref()` is.
+  Benchmarks confirm that end-to-end tokenization throughput is identical
+  for `TrieChar` and `TrieCharLegacy`.
+- Removing the `HashSet` saves ~6 MB (12 %) for the 62 018-word Thai
+  dictionary and cuts construction time by ~35 %.
+- All three backends (`TrieChar`, `TrieCharLegacy`, `FstDict`) implement
+  `DictBackend`, so switching is a single type-parameter change.
+
+### Trade-offs accepted
+
+| Property | `TrieChar` (new) | `TrieCharLegacy` |
+|----------|-----------------|-----------------|
+| `contain()` | O(k) trie walk | O(1) hash |
+| Memory | ~43 MB | ~49 MB |
+| Construction | ~43 ms (62k) | ~64 ms (62k) |
+| Tokenization | identical | identical |
+
+The O(k) `contain()` cost (typically 4–10 character steps for Thai words) is
+acceptable because it is not called in the inner tokenization loop.
+
+---
+
 ## Proposed split packaging for bindings (design only)
 
 Status: proposed architecture. This section documents a packaging direction and

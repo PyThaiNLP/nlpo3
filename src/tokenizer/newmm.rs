@@ -23,7 +23,7 @@ use super::{
     parallel_options::ParallelOptions,
     tcc::tcc_tokenizer,
     tokenizer_trait::Tokenizer,
-    trie_char::TrieChar,
+    trie_char::{TrieChar, TrieCharLegacy},
 };
 use crate::char_string::{CharString, rfind_space_char_index};
 
@@ -190,6 +190,20 @@ impl NewmmTokenizer<TrieChar> {
             word_list.into_iter().map(|w| CharString::new(&w)).collect();
         NewmmTokenizer {
             dict: Arc::new(TrieChar::new(&char_word_list)),
+        }
+    }
+}
+
+impl NewmmTokenizer<TrieCharLegacy> {
+    /// Create a tokenizer from an in-memory word list (TrieCharLegacy backend).
+    ///
+    /// Use this when O(1) `contain()` is preferred over minimal memory.
+    /// Construction from a word list is infallible.
+    pub fn from_word_list(word_list: Vec<String>) -> Self {
+        let char_word_list: Vec<CharString> =
+            word_list.into_iter().map(|w| CharString::new(&w)).collect();
+        NewmmTokenizer {
+            dict: Arc::new(TrieCharLegacy::new(&char_word_list)),
         }
     }
 }
@@ -621,7 +635,7 @@ mod tests {
 
     #[test]
     fn newmm_defaults_match_explicit_options() {
-        let tok = NewmmTokenizer::from_word_list(sample_word_list());
+        let tok = NewmmTokenizer::<TrieChar>::from_word_list(sample_word_list());
         let text = "ภาษาไทยทดสอบการตัดคำ";
 
         let via_default = tok.segment(text).unwrap();
@@ -634,7 +648,7 @@ mod tests {
 
     #[test]
     fn newmm_trait_and_inherent_segment_are_consistent() {
-        let tok = NewmmTokenizer::from_word_list(sample_word_list());
+        let tok = NewmmTokenizer::<TrieChar>::from_word_list(sample_word_list());
         let text = "ภาษาไทยทดสอบการตัดคำ";
 
         let via_inherent = tok.segment(text).unwrap();

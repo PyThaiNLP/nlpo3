@@ -5,19 +5,22 @@
  * Dictionary backend trait for `NewmmTokenizer`.
  *
  * `DictBackend` is the single interface that `NewmmTokenizer` requires from
- * its dictionary. Both `TrieChar` and `FstDict` implement this trait,
- * which means the tokenizer's string-representation choice (`CharString`)
- * and the dictionary-representation choice (`TrieChar` vs `FstDict`)
- * are **completely independent**.
+ * its dictionary. `TrieChar`, `TrieCharLegacy`, and `FstDict` all implement
+ * this trait, which means the tokenizer's string-representation choice
+ * (`CharString`) and the dictionary-representation choice are **completely
+ * independent**.
  *
  * # Which backend to choose?
  *
- * | Backend | Prefix-lookup speed | Memory | Add/remove |
- * |---------|---------------------|--------|------------|
- * | `TrieChar` | very fast (pointer-chasing trie) | ~43 MB for 62k words | O(k) |
- * | `FstDict` | slower (streaming FST) | ~0.85 MB for 62k words | O(k) via delta sets |
+ * | Backend | Prefix-lookup speed | Memory | `contain()` | Add/remove |
+ * |---------|---------------------|--------|-------------|------------|
+ * | `TrieChar` | very fast (O(k) trie) | ~43 MB | O(k) trie walk | O(k) |
+ * | `TrieCharLegacy` | very fast (O(k) trie) | ~49 MB | O(1) hash | O(k) |
+ * | `FstDict` | slower (O(k·B) FST) | ~0.85 MB | O(1) hash + FST | O(1) delta |
  *
- * Use `TrieChar` (the default) for maximum tokenization speed.
+ * Use `TrieChar` (the default) for maximum tokenization speed and lower memory.
+ * Use `TrieCharLegacy` when `contain()` is called frequently outside
+ * tokenization and O(1) membership tests are important.
  * Use `FstDict` when memory is constrained or the dictionary is large.
  */
 use crate::char_string::CharString;

@@ -9,6 +9,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 #[cfg(feature = "deepcut")]
 use nlpo3::tokenizer::deepcut::DeepcutTokenizer;
 use nlpo3::tokenizer::newmm::{NewmmFstTokenizer, NewmmTokenizer};
+use nlpo3::tokenizer::trie_char::TrieChar;
 
 enum TokenizerWrapper {
     Newmm(NewmmTokenizer),
@@ -98,7 +99,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 dict_name => Some(dict_name),
             };
             match dict_path {
-                None => TokenizerWrapper::Newmm(NewmmTokenizer::from_word_list(
+                None => TokenizerWrapper::Newmm(NewmmTokenizer::<TrieChar>::from_word_list(
                     DEFAULT_DICT.lines().map(|s| s.to_owned()).collect(),
                 )),
                 Some(path) => TokenizerWrapper::Newmm(NewmmTokenizer::new(path)?),

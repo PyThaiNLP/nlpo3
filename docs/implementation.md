@@ -111,3 +111,51 @@ default settings.
 - Tokenizer instances are designed for read-heavy concurrent usage.
 - Dictionary structures are shared where possible.
 - Mutation methods use copy-on-write behavior when shared ownership exists.
+
+## Dictionary backends
+
+Three backends implement `DictBackend` and are interchangeable in
+`NewmmTokenizer<D>`.
+
+### TrieChar (default)
+
+- Structure: `HashMap<char, TrieNode>` tree rooted at a single root node.
+- Word storage: exclusively in the trie paths.  No separate word list is kept.
+- `word_count: usize` tracks the number of distinct entries.
+- `contain()` walks the trie O(k); no separate membership data structure.
+- `iterate()` does a depth-first traversal collecting all end-flagged paths.
+- Memory: ~43 MB for 62 018 words (~699 bytes/word, dominated by `HashMap`
+  node overhead of ~80 bytes per character edge).
+
+### TrieCharLegacy
+
+- Same trie structure as `TrieChar`.
+- Also keeps a `HashSet<String>` parallel word store.
+- `contain()` is O(1) via the `HashSet` (vs O(k) trie walk in `TrieChar`).
+- `iterate()` returns `HashSet::iter()` (unspecified order).
+- Memory overhead: ~92 bytes/word extra for the `HashSet` entries
+  (~49 MB total for 62 018 words, +12% vs `TrieChar`).
+- Construction is ~50% slower than `TrieChar` (adds a heap alloc + hash
+  insert per word on top of the trie insert).
+- `contain()` speed advantage has no effect on tokenization throughput because
+  `contain()` is not on the hot path — `prefix_ref()` is.
+- Kept as `TrieCharLegacy` to enable direct comparison with the optimized
+  `TrieChar` and as a fallback for workloads that call `contain()` heavily.
+
+### FstDict
+
+- Structure: `fst::Set<Vec<u8>>` — a minimized finite-state automaton.
+- Immutable base set; dynamic add/remove use small delta `HashSet`s.
+- Memory: ~0.85 MB for 62 018 words (~14 bytes/word, ~49× smaller than trie).
+- `prefix_lengths()` streams the FST byte by byte: O(k·B) where B = 3 for Thai.
+- Add/remove are O(1) delta-set operations (no FST rebuild).
+- Clone clones a ~0.85 MB byte vector, much cheaper than cloning a full trie.
+
+### Choosing a backend
+
+| Scenario | Recommended backend |
+|----------|---------------------|
+| General tokenization | `TrieChar` (default) |
+| Memory-constrained deployment | `FstDict` |
+| Frequent `contain()` calls outside tokenization | `TrieCharLegacy` |
+| Frequent dynamic add/remove | `FstDict` |
