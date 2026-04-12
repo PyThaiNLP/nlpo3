@@ -88,9 +88,9 @@ unsorted insert-per-word.
 
 | Backend | 1k-long | 1k-short | 10k | 62k (words-th) |
 | ------- | ------: | -------: | --: | -------------: |
-| `TrieChar::new` | | | | |
-| `TrieCharLegacy::new` | | | | |
-| `FstDict::from_words` | | | | |
+| `TrieChar::new` | 669.60 µs | 360.42 µs | 3.4156 ms | 26.032 ms |
+| `TrieCharLegacy::new` | 697.20 µs | 392.45 µs | 3.7421 ms | 28.309 ms |
+| `FstDict::from_words` | 1.6467 ms | 670.53 µs | 5.1622 ms | 32.581 ms |
 
 *Run `cargo bench -- dict_construction` to populate this table.*
 
@@ -115,9 +115,9 @@ Three query types: `short-thai` (5 chars), `mixed` (7 chars), `medium-thai` (14 
 
 | Backend | short-thai | mixed | medium-thai |
 | ------- | ---------: | ----: | ----------: |
-| `TrieChar::prefix_ref` | | | |
-| `TrieCharLegacy::prefix_ref` | | | |
-| `FstDict::prefix_lengths` | | | |
+| `TrieChar::prefix_ref` | 39.024 ns | 45.568 ns | 62.569 ns |
+| `TrieCharLegacy::prefix_ref` | 38.914 ns | 45.638 ns | 60.160 ns |
+| `FstDict::prefix_lengths` | 1.6373 µs | 1.0055 µs | 2.0908 µs |
 
 *Run `cargo bench -- prefix_lookup` to populate this table.*
 
@@ -137,9 +137,9 @@ Three query types: `short-thai` (5 chars), `mixed` (7 chars), `medium-thai` (14 
 
 | Backend | 1k-long | 1k-short | 10k | 62k (words-th) |
 | ------- | ------: | -------: | --: | -------------: |
-| `TrieChar::contain` | | | | |
-| `TrieCharLegacy::contain` | | | | |
-| `FstDict::contains` | | | | |
+| `TrieChar::contain` | 105.01 ns | 106.14 ns | 101.12 ns | 104.33 ns |
+| `TrieCharLegacy::contain` | 79.264 ns | 79.450 ns | 77.382 ns | 78.803 ns |
+| `FstDict::contains` | 46.727 ns | 58.818 ns | 77.720 ns | 89.090 ns |
 
 ### add / remove (includes dict-clone overhead)
 
@@ -148,12 +148,12 @@ This simulates copy-on-write mutation.
 
 | Backend | 1k-long | 1k-short | 10k | 62k (words-th) |
 | ------- | ------: | -------: | --: | -------------: |
-| `TrieChar::add` | | | | |
-| `TrieCharLegacy::add` | | | | |
-| `FstDict::add` | | | | |
-| `TrieChar::remove` | | | | |
-| `TrieCharLegacy::remove` | | | | |
-| `FstDict::remove` | | | | |
+| `TrieChar::add` | 341.67 µs | 141.87 µs | 1.3138 ms | 8.1854 ms |
+| `TrieCharLegacy::add` | 368.00 µs | 164.73 µs | 1.6188 ms | 10.470 ms |
+| `FstDict::add` | 1.2322 µs | 331.95 ns | 2.5838 µs | 12.724 µs |
+| `TrieChar::remove` | 341.11 µs | 140.21 µs | 1.3308 ms | 8.7859 ms |
+| `TrieCharLegacy::remove` | 365.81 µs | 164.96 µs | 1.6395 ms | 10.281 ms |
+| `FstDict::remove` | 1.2079 µs | 311.95 ns | 2.5809 µs | 12.727 µs |
 
 *Run `cargo bench -- dict_operations` to populate these tables.*
 
@@ -216,12 +216,12 @@ Text inputs: `text-wikipedia-s` (~2.4 KB), `text-wikipedia-m` (~41 KB).
 
 | Backend / Dict | wikipedia-s | wikipedia-m |
 | -------------- | ----------: | ----------: |
-| `TrieChar / 1k-long` | | |
-| `TrieChar / 1k-short` | | |
-| `TrieChar / 10k` | | |
-| `TrieChar / words-th` | | |
-| `TrieCharLegacy / words-th` | | |
-| `FstDict / words-th` | | |
+| `TrieChar / 1k-long` | 47.713 µs | 1.0240 ms |
+| `TrieChar / 1k-short` | 47.266 µs | 1.0171 ms |
+| `TrieChar / 10k` | 63.857 µs | 1.3502 ms |
+| `TrieChar / words-th` | 70.458 µs | 1.5642 ms |
+| `TrieCharLegacy / words-th` | 70.923 µs | 1.5629 ms |
+| `FstDict / words-th` | 851.90 µs | 128.88 ms |
 
 *Run `cargo bench -- dict_backend_tokenization` to populate this table.*
 
@@ -237,9 +237,9 @@ on larger texts.  `DeepcutTokenizer` included with `--features deepcut`.
 
 | Tokenizer | text-only-10k (low OOV) | text-only-10k-1k (mod. OOV) | wikipedia-l |
 | --------- | ----------------------: | --------------------------: | ----------: |
-| `NewmmTokenizer` (TrieChar) | | | |
-| `NewmmLegacyTokenizer` (TrieCharLegacy) | | | |
-| `DeepcutTokenizer` | | | |
+| `NewmmTokenizer` (TrieChar) | 134.49 ms | 127.89 ms | |
+| `NewmmLegacyTokenizer` (TrieCharLegacy) | 146.10 ms | 125.78 ms | |
+| `DeepcutTokenizer` | 305.69 s | | |
 
 ### Run B — dict-words-th
 
