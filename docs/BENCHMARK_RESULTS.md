@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Benchmark results: dictionary backends and tokenizers compared
 
-Updated on: 2026-04-11
+Updated on: 2026-04-12
 
 This document records the results of running `cargo bench`
 (and `cargo bench --features deepcut` for `DeepcutTokenizer`).
@@ -92,7 +92,9 @@ unsorted insert-per-word.
 | `TrieCharLegacy::new` | 697.20 µs | 392.45 µs | 3.7421 ms | 28.309 ms |
 | `FstDict::from_words` | 1.6467 ms | 670.53 µs | 5.1622 ms | 32.581 ms |
 
-*Run `cargo bench -- dict_construction` to populate this table.*
+*Run `cargo bench -- dict_construction` to reproduce these results.*
+
+**Findings:** `TrieChar` is the fastest to build. `TrieCharLegacy` adds ~9% overhead across all sizes (hash table maintenance during insertion). `FstDict` is 1.9–2.5× slower than `TrieChar` due to the sort pass and FST automaton construction, but the 62k build (32.6 ms) is still fast enough to be practical at startup.
 
 ### Complexity
 
@@ -119,7 +121,9 @@ Three query types: `short-thai` (5 chars), `mixed` (7 chars), `medium-thai` (14 
 | `TrieCharLegacy::prefix_ref` | 38.914 ns | 45.638 ns | 60.160 ns |
 | `FstDict::prefix_lengths` | 1.6373 µs | 1.0055 µs | 2.0908 µs |
 
-*Run `cargo bench -- prefix_lookup` to populate this table.*
+*Run `cargo bench -- prefix_lookup` to reproduce these results.*
+
+**Findings:** `TrieChar` and `TrieCharLegacy` are within 1–2 ns of each other at every query length — the `TrieCharLegacy` hash table is not on the prefix-lookup path. `FstDict` is 22–42× slower per query (3 bytes/Thai char × byte-level FST traversal). This per-query penalty compounds across every character position during tokenization, explaining FstDict's collapse on large texts.
 
 ### Complexity
 
@@ -155,11 +159,11 @@ This simulates copy-on-write mutation.
 | `TrieCharLegacy::remove` | 365.81 µs | 164.96 µs | 1.6395 ms | 10.281 ms |
 | `FstDict::remove` | 1.2079 µs | 311.95 ns | 2.5809 µs | 12.727 µs |
 
-*Run `cargo bench -- dict_operations` to populate these tables.*
+*Run `cargo bench -- dict_operations` to reproduce these results.*
 
-Trie `add`/`remove` times are dominated by the **clone cost** (O(n·k) node
-copies).  `FstDict::add`/`remove` clone only a byte vector plus a small delta
-`HashSet`, making them far cheaper.
+**Findings — contain:** `TrieCharLegacy` O(1) hash is ~24% faster than `TrieChar`'s O(k) trie walk (~79 ns vs ~104 ns), consistent across all dict sizes. `FstDict` is fastest at 1k words (47–59 ns) but approaches trie speeds at 62k (89 ns).
+
+**Findings — add/remove:** Trie `add`/`remove` times are dominated by the **clone cost** (O(n·k) node copies). `FstDict::add`/`remove` clone only a byte vector plus a small delta `HashSet`, making them 280–650× faster at 62k words (12.7 µs vs 8.2–10.5 ms).
 
 ### Complexity summary
 
@@ -223,7 +227,9 @@ Text inputs: `text-wikipedia-s` (~2.4 KB), `text-wikipedia-m` (~41 KB).
 | `TrieCharLegacy / words-th` | 70.923 µs | 1.5629 ms |
 | `FstDict / words-th` | 851.90 µs | 128.88 ms |
 
-*Run `cargo bench -- dict_backend_tokenization` to populate this table.*
+*Run `cargo bench -- dict_backend_tokenization` to reproduce these results.*
+
+**Findings:** `TrieChar` and `TrieCharLegacy` produce identical end-to-end times — the hot path (`prefix_ref`) is shared. `FstDict` is 12× slower on `wikipedia-s` (852 µs vs 70 µs) and 83× slower on `wikipedia-m` (129 ms vs 1.56 ms). The gap widens with text size because OOV characters trigger per-byte FST fallback at every position. Larger dictionaries add a modest latency increase for trie backends (47 µs → 70 µs from 1k to 62k words) with no change to FstDict's relative penalty.
 
 ---
 
@@ -237,25 +243,41 @@ on larger texts.  `DeepcutTokenizer` included with `--features deepcut`.
 
 | Tokenizer | text-only-10k (low OOV) | text-only-10k-1k (mod. OOV) | wikipedia-l |
 | --------- | ----------------------: | --------------------------: | ----------: |
-| `NewmmTokenizer` (TrieChar) | 134.49 ms | 127.89 ms | |
-| `NewmmLegacyTokenizer` (TrieCharLegacy) | 146.10 ms | 125.78 ms | |
-| `DeepcutTokenizer` | 305.69 s | | |
+| `NewmmTokenizer` (TrieChar) | 134.49 ms | 127.89 ms | 48.001 ms |
+| `NewmmLegacyTokenizer` (TrieCharLegacy) | 146.10 ms | 125.78 ms | 47.010 ms |
+| `DeepcutTokenizer` | 305.69 s | 305.15 s | 189.79 s |
 
 ### Run B — dict-words-th
 
 | Tokenizer | text-only-10k (low OOV) | text-only-10k-1k (low OOV) | wikipedia-l | ws-social (high OOV) |
 | --------- | ----------------------: | -------------------------: | ----------: | -------------------: |
-| `NewmmTokenizer` (TrieChar) | | | | |
-| `NewmmLegacyTokenizer` (TrieCharLegacy) | | | | |
-| `DeepcutTokenizer` | | | | |
+| `NewmmTokenizer` (TrieChar) | 151.36 ms | 146.48 ms | 68.517 ms | 9.8367 s |
+| `NewmmLegacyTokenizer` (TrieCharLegacy) | 150.75 ms | 141.02 ms | 65.811 ms | 10.367 s |
+| `DeepcutTokenizer` | 308.69 s | 301.65 s | 295.55 s | n/a (OOM) |
 
-*Run `cargo bench -- tokenizer_performance` to populate these tables.*
+*Run `cargo bench -- tokenizer_performance` to reproduce these results.*
 
-**OOV effect:** When a tokenizer uses `dict-10k` on `text-only-dict-10k-words.txt`
-(no OOV), it should achieve maximum throughput.  The same tokenizer on
-`text-only-dict-10k-1k-words.txt` (moderate OOV from the 1k entries) will be
-measurably slower.  Switching to `dict-words-th` largely eliminates the OOV
-penalty on both text files.
+**Findings — Newmm throughput:**
+
+| Text | Size | Dict | Throughput |
+| ---- | ---: | ---- | ---------: |
+| `text-only-dict-10k-words.txt` | ~1 MB | 10k | ~7.4 MB/s |
+| `text-only-dict-10k-1k-words.txt` | ~1 MB | 10k | ~7.8 MB/s |
+| `text-wikipedia-l.txt` | ~615 KB | 10k | ~12.8 MB/s |
+| `text-only-dict-10k-words.txt` | ~1 MB | 62k | ~6.6 MB/s |
+| `text-only-dict-10k-1k-words.txt` | ~1 MB | 62k | ~6.8 MB/s |
+| `text-wikipedia-l.txt` | ~615 KB | 62k | ~9.0 MB/s |
+| `text-ws-social.txt` | ~6.3 MB | 62k | ~0.64 MB/s |
+
+`NewmmTokenizer` and `NewmmLegacyTokenizer` are within 1–9% of each other across all inputs — the trie traversal path is shared.
+
+`wikipedia-l` achieves higher throughput than the synthetic 1 MB texts because its Thai/Latin mix allows fast ASCII passthrough on Latin characters.
+
+Switching from `dict-10k` to `dict-words-th` costs ~11% on low-OOV Thai text (7.4 → 6.6 MB/s) due to deeper trie traversal in the larger dictionary.
+
+High OOV (`ws-social`) drops throughput by ~90% (6.6 → 0.64 MB/s): the character-level fallback in Newmm fires on every unknown token, turning linear trie walks into per-character scans.
+
+**Findings — DeepcutTokenizer:** ~3.2 KB/s on 1 MB Thai text — approximately **2 300× slower** than `NewmmTokenizer`. The `ws-social` benchmark (6.3 MB) was terminated by the OS (SIGKILL) during Criterion warmup; the ONNX model's memory pressure at that scale exceeded available RAM. `DeepcutTokenizer` is intended for accuracy-critical, latency-tolerant workloads on short to medium texts.
 
 ---
 
@@ -263,13 +285,14 @@ penalty on both text files.
 
 | Property | `TrieChar` (default) | `TrieCharLegacy` |
 | -------- | -------------------- | ---------------- |
-| `prefix_ref()` speed | identical | identical |
-| End-to-end tokenization | identical | identical |
-| `contain()` | O(k) trie walk | **O(1) hash** |
-| Memory (62k words) | **~43 MB** | ~49 MB (+12%) |
-| Construction (62k) | **fastest** | +~50% |
-| `add()` / `remove()` pure | O(k) | O(k) + O(1) hash |
-| Clone cost | O(n·k) | O(n·k) + O(n) |
+| `prefix_ref()` speed | 45.6 ns (62k, mixed) | 45.6 ns — identical |
+| End-to-end tokenization | 1.564 ms (62k, wiki-m) | 1.563 ms — identical |
+| `contain()` | ~104 ns (62k) | **~79 ns — 24% faster** |
+| Memory (62k words) | **~43 MB** | ~49 MB (+14%) |
+| Construction (62k) | **26.0 ms** | 28.3 ms (+9%) |
+| `add()` / `remove()` (clone+mutate, 62k) | ~8–9 ms | ~10–11 ms |
+| `add()` / `remove()` (clone+mutate, 1k) | ~141–342 µs | ~165–368 µs |
+| Clone cost | O(n·k) deep copy | O(n·k) + O(n) strings |
 
 **Use `TrieChar`** for all production tokenization.  It is the default.
 
