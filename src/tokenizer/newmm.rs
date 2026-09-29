@@ -306,32 +306,35 @@ impl<D: DictBackend> NewmmTokenizer<D> {
         graph: &HashMap<CharacterIndex, Vec<CharacterIndex>>,
         start: CharacterIndex,
         goal: CharacterIndex,
-        current_queue: &mut VecDeque<(usize, Vec<usize>)>,
+        current_queue: &mut VecDeque<CharacterIndex>,
     ) -> AnyResult<Vec<CharacterIndex>> {
         current_queue.clear();
 
-        // The visited set ensures each vertex is enqueued at most once.
-        // This avoids the exponential blow-up from revisiting the same nodes.
-        let mut visited: HashSet<CharacterIndex> =
-            HashSet::with_capacity_and_hasher(goal - start, Default::default());
-        visited.insert(start);
+        // Each vertex is enqueued at most once (this also avoids the
+        // exponential blow-up from revisiting nodes). Instead of copying the
+        // whole path at every step, record one predecessor per vertex and
+        // rebuild the path once, when the goal is reached.
+        let mut predecessor: HashMap<CharacterIndex, CharacterIndex> = HashMap::default();
+        predecessor.insert(start, start);
+        current_queue.push_back(start);
 
-        let mut init_path: Vec<usize> = Vec::with_capacity(goal - start);
-        init_path.push(start);
-        current_queue.push_back((start, init_path));
-
-        while let Some((vertex, path)) = current_queue.pop_front() {
+        while let Some(vertex) = current_queue.pop_front() {
             if let Some(idk) = graph.get(&vertex) {
                 for &position in idk {
                     if position == goal {
-                        let mut appended_path = path;
-                        appended_path.push(position);
-                        return Ok(appended_path);
-                    } else if !visited.contains(&position) {
-                        visited.insert(position);
-                        let mut appended_path = path.clone();
-                        appended_path.push(position);
-                        current_queue.push_back((position, appended_path));
+                        let mut path = vec![goal, vertex];
+                        let mut current = vertex;
+                        while current != start {
+                            current = predecessor[&current];
+                            path.push(current);
+                        }
+                        path.reverse();
+                        return Ok(path);
+                    } else if let std::collections::hash_map::Entry::Vacant(entry) =
+                        predecessor.entry(position)
+                    {
+                        entry.insert(vertex);
+                        current_queue.push_back(position);
                     }
                 }
             };
@@ -343,10 +346,9 @@ impl<D: DictBackend> NewmmTokenizer<D> {
     fn one_cut<'a>(input: &'a CharString, custom_dict: &D) -> AnyResult<Vec<&'a str>> {
         let text = input;
         let input_char_len = text.chars_len();
-        let mut reused_queue: VecDeque<(usize, Vec<usize>)> = VecDeque::with_capacity(10);
+        let mut reused_queue: VecDeque<CharacterIndex> = VecDeque::with_capacity(10);
         let mut graph_size: usize = 0;
         let mut graph: HashMap<CharacterIndex, Vec<CharacterIndex>> = HashMap::default();
-        graph.reserve(input_char_len / 10);
         let mut result_str: Vec<&str> = Vec::with_capacity(input_char_len / 10);
 
         // All positions are character indices (not byte offsets).
@@ -395,7 +397,9 @@ impl<D: DictBackend> NewmmTokenizer<D> {
                         &mut reused_queue,
                     )?;
                     graph_size = 0;
-                    graph.clear();
+                    // Not `clear()`: it costs O(capacity), which grows with the
+                    // largest graph seen, and this runs once per resolution.
+                    graph = HashMap::default();
 
                     for &position in group_of_end_position_candidate.iter().skip(1) {
                         let token = text.substring_as_str(end_position, position);
@@ -465,7 +469,7 @@ impl<D: DictBackend> NewmmTokenizer<D> {
                 }
 
                 graph_size = 0;
-                graph.clear();
+                graph = HashMap::default();
                 let token = text.substring_as_str(begin_position, end_position);
                 result_str.push(token);
                 position_list.push(end_position);
