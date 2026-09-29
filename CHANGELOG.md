@@ -41,6 +41,10 @@ Major release with breaking changes.
 ### Fixed
 
 - Fixed major slowdown risks on highly ambiguous tokenization paths.
+- Fixed superlinear (quadratic) tokenization time in `newmm` on long text:
+  the ambiguity graph is no longer cleared with `HashMap::clear()` (which costs
+  O(capacity) per resolution), and BFS rebuilds its path from a predecessor map
+  instead of copying the path at every step.
 
 ### Migration
 

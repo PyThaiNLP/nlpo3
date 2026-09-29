@@ -391,3 +391,53 @@ fn test_newmm_ambiguous_performance() {
         "tokenization took {elapsed:?}; BFS path explosion may still be present"
     );
 }
+
+/// Best of three wall-clock timings of `segment` on `text`.
+fn best_segment_time(tokenizer: &NewmmTokenizer, text: &str) -> std::time::Duration {
+    (0..3)
+        .map(|_| {
+            let start = std::time::Instant::now();
+            let result = tokenizer.segment_with_options(text, false, None).unwrap();
+            let elapsed = start.elapsed();
+            assert_eq!(result.concat(), text);
+            elapsed
+        })
+        .min()
+        .unwrap()
+}
+
+/// Time must grow roughly linearly with text length, so a 4x longer text may
+/// take about 4x as long; the 10x limit catches quadratic behavior (16x).
+#[test]
+fn test_newmm_persistent_ambiguity_scaling() {
+    let mut path = env!("CARGO_MANIFEST_DIR").to_string();
+    path.push_str(DEFAULT_DICT_PATH);
+    let tokenizer = NewmmTokenizer::new(&path).unwrap();
+
+    // "กรรมกร" contains several overlapping dictionary words, so the
+    // ambiguity graph keeps growing across the whole text.
+    let small = best_segment_time(&tokenizer, &"กรรมกร".repeat(3_000));
+    let large = best_segment_time(&tokenizer, &"กรรมกร".repeat(12_000));
+    let limit = small.max(std::time::Duration::from_millis(10)) * 10;
+    assert!(
+        large < limit,
+        "4x longer text took {large:?} vs {small:?}; expected less than {limit:?}"
+    );
+}
+
+/// Ordinary long text must also scale linearly (10x longer text should take
+/// about 10x as long; the 25x limit catches quadratic behavior).
+#[test]
+fn test_newmm_long_text_scaling() {
+    let mut path = env!("CARGO_MANIFEST_DIR").to_string();
+    path.push_str(DEFAULT_DICT_PATH);
+    let tokenizer = NewmmTokenizer::new(&path).unwrap();
+
+    let small = best_segment_time(&tokenizer, &SECOND_TEXT.repeat(1_000));
+    let large = best_segment_time(&tokenizer, &SECOND_TEXT.repeat(10_000));
+    let limit = small.max(std::time::Duration::from_millis(10)) * 25;
+    assert!(
+        large < limit,
+        "10x longer text took {large:?} vs {small:?}; expected less than {limit:?}"
+    );
+}
